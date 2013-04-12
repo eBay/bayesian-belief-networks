@@ -1,4 +1,24 @@
 
+def evaluate(expression, network):
+    '''
+    Assuming we have transformed the question
+    into all conditionals or independant variables
+    then as long as we can look up the values we
+    can evaluate...
+    '''
+    
+class Pdf(object):
+
+    def __init__(self, parameters, eval_func):
+        self.parameters = parameters
+        self.eval_func = eval_func
+
+    def __call__(self, args):
+        # We have to ensure the eval_func
+        # gets called with the correct args
+        pass
+
+
 class EqualityOverideMixin(object):
 
     def __eq__(self, other):
@@ -40,6 +60,7 @@ class RandomVariable(EqualityOverideMixin):
     def __init__(self, name, val=None):
         self.name = name
         self.val = val
+        self.node = None
 
     def __repr__(self):
         if self.val is not None:
@@ -47,6 +68,8 @@ class RandomVariable(EqualityOverideMixin):
         return self.name
 
 
+    def set_node(self, node):
+        self.node = node
 
 class Conditional(EqualityOverideMixin):
     
@@ -64,6 +87,10 @@ class Conditional(EqualityOverideMixin):
 
     def __mul__(self, other):
         return Mult(self, other)
+
+    def __hash__(self):
+        return self.__repr__().__hash__()
+
 
 
 class Prob(EqualityOverideMixin):
@@ -139,7 +166,8 @@ def joint_to_conditional(j):
     vars is a list of variables
     '''
     if len(j) == 1:
-        return Prob(RandomVariable(j.vars[0].name, j.vars[0].val))
+        #return Prob(RandomVariable(j.vars[0].name, j.vars[0].val))
+        return Prob(j.vars[0])
     return Conditional(j.vars[0], j.vars[1:]) * joint_to_conditional(Joint(j.vars[1:]))
 
 
@@ -159,6 +187,7 @@ def conditional_to_joint(c):
 
 def marginizile_head(arguments):
     return 
+
 
 def expand_arguments(arguments):
     '''
@@ -218,7 +247,9 @@ def grass_wet_func(s, r, g):
 
 
 
-def marginalize(func, arguments):
+
+
+def marginalize_dict(func, arguments, keys):
     '''
     For the given func, the arguments
     should be a list containing one
@@ -236,7 +267,10 @@ def marginalize(func, arguments):
     total = 0
     all_combos = expand_arguments(arguments)
     for combo in all_combos:
-        val = func(*combo)
+        d = dict()
+        for k, v in zip(keys, combo):
+            d[k] = v
+        val = func(d)
         print combo, val
         total += val
     return total
@@ -251,6 +285,10 @@ class Node(object):
         self.func = func
         self.name = random_variable.name
         self.parents = parents
+        # Set a pointer back to this node from the
+        # random variable so that we can check whether it
+        # has parents...
+        #random_variable.set_node(self)
 
     def can_answer(self):
         '''
@@ -275,14 +313,31 @@ class Node(object):
             return [Prob(RandomVariable(self.name, True)), Prob(RandomVariable(self.name, False))]
         else:
             parent_vars = [x.random_variable for x in self.parents]
-            return [Conditional(RandomVariable(self.name, True), parent_vars),
-                    Conditional(RandomVariable(self.name, False), parent_vars)]
+            results = []
+            combos = expand_arguments([None] * len(parent_vars))
+            for combo in combos:
+                vars = [RandomVariable(x.name, y) for (x, y) in zip(parent_vars, combo)]
+                results.append(Conditional(RandomVariable(self.name, True), vars))
+                results.append(Conditional(RandomVariable(self.name, False), vars))
+            return results
             
     def __repr__(self):
         return '<Node: %s>' % self.name
 
 
+def get_all_variables(network):
+    # First lets get all the variables for all the functions...
+    if not network:
+        return set([])
+    head = network[0]
+    rest = network[1:]
+    if head.parents:
+        return set([head.name]).union(get_all_variables(rest)).union(get_all_variables(head.parents))
+    return set([head.name]).union(get_all_variables(rest))
 
+
+def iterate(network, evidence):
+    all_vars = get_all_vars(network)
 
 
 def evaluate(node_list, evidence):
@@ -298,8 +353,6 @@ def evaluate(node_list, evidence):
     # 
 
 
-    
-
 def who_can_answer(p, nodes):
     '''
     >>> rain_var = RandomVariable('Rain', True)
@@ -307,7 +360,7 @@ def who_can_answer(p, nodes):
     >>> p = Prob(rain_var)
     >>> who_can_answer(p, [rain_node])
     <Node: Rain>
-    >>> rain_var = RandomVariable('Rain')
+    >>> rain_var = RandomVariable('Rain', True)
     >>> rain_node = Node(rain_var, lambda x: 'dummy', parents=[])
     >>> sprinkler_var = RandomVariable('Sprinkler', True)
     >>> sprinkler_node = Node(sprinkler_var, None, parents=[rain_node])

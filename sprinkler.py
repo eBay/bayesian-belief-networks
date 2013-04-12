@@ -2,32 +2,31 @@
 import sys
 
 from bayesian import RandomVariable, log
-from bayesian import Prob, Joint, Conditional, make_prob
-from bayesian import joint_to_conditional, conditional_to_joint
-from bayesian import Node, who_can_answer, Division, Mult
+from bayesian import Prob, Joint, Conditional, make_prob, expand_arguments
+from bayesian import joint_to_conditional, conditional_to_joint, marginalize
+from bayesian import Node, who_can_answer, Division, Mult, get_all_variables
 
 
-def rain_func(x):
-    assert type(x) == RandomVariable
-    if x.val == True:
+def rain_func(g, s, x):
+    if x == True:
         return 0.2
-    elif x.val == False:
+    elif x == False:
         return 0.8
     raise 'pdf cannot resolve for %s' % x
 
 
-def sprinkler_func(r, s):
-    if r.val == False and s.val == True:
+def sprinkler_func(g, s, r):
+    if r == False and s == True:
         return 0.4
-    if r.val == False and s.val == False:
+    if r == False and s == False:
         return 0.6
-    if r.val == True and s.val == True:
+    if r == True and s == True:
         return 0.01
-    if r.val == True and s.val == False:
+    if r == True and s == False:
         return 0.99
 
 
-def grass_wet_func(s, r, g):
+def grass_wet_func(g, s, r):
     ''' 
     This needs to be a joint probability distribution
     over the inputs and the node itself
@@ -54,33 +53,43 @@ def resolvable(question, answerable):
     return False
 
 
-@log
-def resolve(question, answerable):
+#@log
+def resolve(question, answerable, backref):
     if question == []:
         return []
     if type(question) == float:
         return question
     if type(question) == Conditional:
         if question in answerable:
-            return 'Answered!'
+            return question, answerable[question].func
         question = conditional_to_joint(question)
-        return resolve(question, answerable)
+        return resolve(question, answerable, backref)
     if type(question) == Prob:
         if question in answerable:
             return answerable[question].func(question.x)
         else:
             return 'I give up'
     if type(question) == Division:
+        import ipdb; ipdb.set_trace()
         if type(question.numerator) == float and type(question.denominator) == float:
             return question.numerator / question.denominator
-        return Division(resolve(question.numerator, answerable), resolve(question.denominator, answerable))
+        return Division(resolve(question.numerator, answerable, backref), resolve(question.denominator, answerable, backref))
     if type(question) == Mult:
         if type(question.x) == float and type(question.y) == float:
             return question.x * question.y
-        return Mult(resolve(question.x, answerable), resolve(question.y, answerable))
+        return Mult(resolve(question.x, answerable, backref), resolve(question.y, answerable, backref))
     if type(question) == Joint:
-        question = joint_to_conditional(question)
-        return resolve(question, answerable)
+        # When we have a joint there are TWO equivalent conditionals
+        # We need to make sure that the one we generate is solvable
+        # ie if we have a jP(R,G) there is no point getting
+        # the expansion: cP(R|G) / R
+        #import ipdb; ipdb.set_trace()
+        if not backref[question.vars[0].name].parents:
+            reverse_joint = Joint(question.vars[::-1])
+            question = joint_to_conditional(reverse_joint)
+        else:
+            question = joint_to_conditional(question)
+        return resolve(question, answerable, backref)
     raise "Help!"
 
 
@@ -91,51 +100,119 @@ if __name__ == '__main__':
     c = RandomVariable('C')
     d = Joint([a, b, c])
 
-    rain_var = RandomVariable('R')
-    rain_node = Node(rain_var, rain_func, parents=[])
+    r = RandomVariable('R')
+    rain_node = Node(r, rain_func, parents=[])
 
-    sprinkler_var = RandomVariable('S')
-    sprinkler_node = Node(sprinkler_var, sprinkler_func, parents = [rain_node])
+    s = RandomVariable('S')
+    sprinkler_node = Node(s, sprinkler_func, parents = [rain_node])
+    
 
-    grass_wet_var = RandomVariable('G')
-    grass_wet_node = Node(grass_wet_var, grass_wet_func, parents = [sprinkler_node, rain_node])
+    g = RandomVariable('G')
+    grass_wet_node = Node(g, grass_wet_func, parents = [sprinkler_node, rain_node])
 
     network = [rain_node, sprinkler_node, grass_wet_node]
+
+    backref = dict(
+       R = rain_node,
+       G = grass_wet_node,
+       S = sprinkler_node)
+    #print get_all_variables([rain_node, sprinkler_node, grass_wet_node])
+    #sys.exit(0)
 
     # Try to answer the question from Wikipedia:
     # "What is the probability that it is raining, given the grass is wet?"
 
     # The above question can be asked like this in my framework:
 
-    answerable = {}
-    for node in network:
-        node_answers = node.can_answer()
-        print node, node_answers
-        for node_answer in node_answers:
-            answerable[node_answer] = node
+    #answerable = {}
+    #for node in network:
+    #    node_answers = node.can_answer()
+    #    print node, node_answers
+    #    for node_answer in node_answers:
+    #        answerable[node_answer] = node
 
 
-    r = RandomVariable('R', True)
-    g = RandomVariable('G')
-    s = RandomVariable('S')
-    question = Prob(r)
+    #r.val = True
+    #g.val = None
+    #s.val = None
+    #question = Prob(r)
+    #print 'Question: ', question
+    #print 'Answer: ', resolve(question, answerable, backref)
+
+
+    #r.val = False
+    #g.val = None
+    #s.val = None
+    #question = Prob(r)
+    #print 'Question: ', question
+    ##print 'Answer: ', resolve(question, answerable, backref)
+
+
+    #r.val = True
+    #g.val = None
+    #s.val = True
+    #question = Conditional(s, [r])
+    #print 'Question: ', question
+    #print 'Answer: ', resolve(question, answerable, backref)
+
+
+    r.val = False
+    g.val = False
+    s.val = False
+    question = Conditional(r, [g])
     print 'Question: ', question
-    print 'Answer: ', resolve(question, answerable)
+    question = conditional_to_joint(question)
+    print question
+
+    
+    numerator = question.numerator
+    print 'Numerator before transposing: ', numerator
+    # Now whenever we have a joint we want to re-order it in the best way
+    # for the network, in our case its ['G','S', 'R']
+    numerator_args = dict(G=None, S=None, R = None)
+    for var in numerator.vars:
+        numerator_args[var.name] = var.val
+        
+    
+
+    numerator_args = [numerator_args[x] for x in ['G', 'S', 'R']]
+    print 'Numerator args:', numerator_args
 
 
-    r = RandomVariable('R', False)
-    g = RandomVariable('G')
-    s = RandomVariable('S')
-    question = Prob(r)
-    print 'Question: ', question
-    print 'Answer: ', resolve(question, answerable)
+    denominator = question.denominator
 
+    print 'Denominator before transposing: ', denominator
 
-    r = RandomVariable('R', True)
-    g = RandomVariable('G')
-    s = RandomVariable('S', True)
-    question = Conditional(s, [r])
-    print 'Question: ', question
-    import ipdb; ipdb.set_trace()
-    print 'Answer: ', resolve(question, answerable)
+    denominator_args = dict(G=None, S=None, R = None)
 
+    if type(denominator) == Joint:
+        for var in denominator.vars:
+            denominator_args[var.name] = var.val
+    else:
+        denominator_args[denominator.x.name] = denominator.x.val
+
+    denominator_args = [denominator_args[x] for x in ['G', 'S', 'R']]
+    print 'Denominator args:', denominator_args
+
+    # Now for each of the numerator and denominator we
+    # need to marginalize the joint of ALL variables that are not 
+    # constrained.
+
+    #numerator_combos = expand_arguments(numerator_args)
+    #print numerator_combos
+
+    
+
+    num = marginalize(lambda g, s, r: grass_wet_func(g,s,r) * rain_func(g,s,r) * sprinkler_func(g,s,r), numerator_args)
+    den = marginalize(lambda g, s, r: rain_func(g,s,r) * grass_wet_func(g,s,r) * sprinkler_func(g,s,r), denominator_args)
+
+    print num / den
+
+    #denominator_combos = expand_arguments(denominator_args)
+    #print denominator_combos
+
+    #template = joint_to_conditional(Joint([g, s, r]))
+    #print template
+
+    #print 'Answer: ', resolve(question, answerable, backref)
+    
