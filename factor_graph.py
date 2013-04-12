@@ -104,8 +104,12 @@ def make_product_func(factors):
     args_map = {}
     all_args = []
     for factor in factors:
+        if factor == 1:
+            continue
         args_map[factor] = get_args(factor)
         all_args += args_map[factor]
+    if not all_args:
+        return 1
     # Now we need to make a callable that
     # will take all the arguments and correctly
     # apply them to each factor...
@@ -200,12 +204,13 @@ def make_variable_node_message(node, target_node):
     is a leaf node then send the 
     unity function.
     '''
-    factors = [make_unity(['dummy'])]
+    factors = [1]
     neighbours = node.children + node.parents
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
-        factors.append(node.received_messages[neighbour.name])
+        message = node.received_messages[neighbour.name]
+        factors.append(message.func)
 
     product_func = make_product_func(factors)
     message = Message(node, target_node, product_func)
@@ -224,7 +229,7 @@ class FactorNode(object):
 
     def send_to(self, recipient, message):
         recipient.received_messages[
-            self.func.__name__] = message
+            self.name] = message
         
     def make_sum(self, exclude_var):
         '''
