@@ -65,9 +65,7 @@ Converting the cancer example to a factor graph..
 
 '''
 
-
 class Node(object):
-
 
     def is_leaf(self):
         if not (self.parents and self.children):
@@ -75,9 +73,22 @@ class Node(object):
         return False
 
     def send_to(self, recipient, message):
-        print message
+        print '%s ---> %s' % (self.name, recipient.name), message
         recipient.received_messages[
             self.name] = message
+
+    def message_report(self):
+        '''
+        List out all messages Node
+        currently has received.
+        '''
+        print '------------------------------'
+        print 'Messages at Node %s' % self.name
+        print '------------------------------'
+        for k, v in self.received_messages.iteritems():
+            print '%s <-- Argspec:%s' % (v.source.name, v.argspec)
+            v.list_factors()
+        print '--'
 
 
 class VariableNode(Node):
@@ -93,6 +104,18 @@ class VariableNode(Node):
     def __repr__(self):
         return '<VariableNode: %s>' % self.name
 
+    def marginal(self, val):
+        '''
+        The marginal function is
+        the product of all incoming
+        messages which should be
+        functions of this nodes variable
+        '''
+        product = 1
+        for _, message in self.received_messages.iteritems():
+            product *= message.func(val)
+        return product
+
 
 class FactorNode(Node):
 
@@ -104,17 +127,6 @@ class FactorNode(Node):
         self.received_messages = {}
         self.sent_messages = {}
 
-        
-    def make_sum(self, exclude_var):
-        '''
-        Sum of factors so far excludeing the
-        variable that this sum will be sent 
-        to. This needs to return a function
-        '''
-        args = [x for x in self.func_parameters if x!=exclude_var]
-        
-        for x in []:
-            pass
 
     def __repr__(self):
         return '<FactorNode %s %s(%s)>' % \
@@ -125,41 +137,54 @@ class FactorNode(Node):
 
 class Message(object):
 
-    def __init__(self, source, destination, func):
+    def list_factors(self):
+        print '---------------------------'
+        print 'Factors in message %s -> %s' % (self.source.name, self.destination.name)
+        print '---------------------------'
+        for factor in self.factors:
+            print factor
+
+
+class FactorMessage(Message):
+
+    def __init__(self, source, destination, not_sum):
         self.source = source
         self.destination = destination
-        self.func = func
-        self.argspec = get_args(self.func)
-
-    def __call__(self, *args):
-        return self.func(*args)
-
+        self.factors = not_sum.factors
+        self.not_sum = not_sum
+        self.argspec = [destination.name]
 
     def __repr__(self):
-        return '<Message from %s -> %s: %s(%s)>' % \
-            (self.source, self.destination, 
-             self.func, get_args(self.func))
+        return '<F-Message %s -> %s: ~(%s) %s factors (%s)>' % \
+            (self.source.name, self.destination.name,
+             self.not_sum.exclude_var,
+             len(self.factors), self.argspec)
 
+            
+class VariableMessage(Message):
 
-class MessageProduct(object):
-    '''
-    Represents a product of messages
-    that a Variable Node sends to
-    a factor node
-    '''
-
-    def __init__(self, source, destination, messages):
+    def __init__(self, source, destination, factors):
         self.source = source
         self.destination = destination
-        self.messages = messages
-
+        self.factors = factors
+        self.argspec = [source.name]
 
     def __repr__(self):
-        return '<MessageProduct: %s -> %s %s>' % (
-            self.source.name,
-            self.destination.name,
-            self.messages)
+        return '<V-Message from %s -> %s: %s factors (%s)>' % \
+            (self.source.name, self.destination.name, 
+             len(self.factors), self.argspec)
 
+
+class NotSum(object):
+    
+    def __init__(self, exclude_var, factors):
+        self.exclude_var = exclude_var
+        self.factors = factors
+        self.argspec = [exclude_var]
+
+    def __repr__(self):
+        return '<NotSum(%s, %s)>' % (self.exclude_var, '*'.join([repr(f) for f in self.factors]))
+                                     
 
 
 def make_factor_node_message(node, target_node):
@@ -179,7 +204,8 @@ def make_factor_node_message(node, target_node):
     '''
 
     if node.is_leaf():
-        message = Message(node, target_node, node.func)
+        not_sum = NotSum(target_node.name, [node.func])
+        message = FactorMessage(node, target_node, not_sum)
         return message
 
     args = set(get_args(node.func))
@@ -193,19 +219,27 @@ def make_factor_node_message(node, target_node):
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
-        factors.append(node.received_messages[neighbour.name])
+        # When we pass on a message, we unwrap
+        # the original payload and wrap it
+        # in new headers, this is purely
+        # to verify the procedure is correct
+        # according to usual nomenclature
+        in_message = node.received_messages[neighbour.name]
+        if in_message.destination != node:
+            out_message = VariableMessage(neighbour, node, in_message.factors)
+            out_message.argspec = in_message.argspec
+        else:
+            out_message = in_message
+        factors.append(out_message)
 
     # Now we need to add any other variables 
     # that were added from the other factors
-    for factor in factors:
-        args = args.union(
-            get_args(factor))
+    #for factor in factors:
+    #    args = args.union(
+    #        get_args(factor))
     #args = list(args.difference(set([target_node.name])))
-
-    product_func = make_product_func(factors)
-    sum_func = make_not_sum(
-        target_node.name, product_func)
-    message = Message(node, target_node, sum_func)
+    not_sum = NotSum(target_node.name, factors)
+    message = FactorMessage(node, target_node, not_sum)
     return message
 
 
@@ -221,8 +255,8 @@ def make_variable_node_message(node, target_node):
     then send the unity function.
     '''
     if node.is_leaf():
-        unity_func = make_unity([node.name])
-        message = Message(node, target_node, unity_func)
+        #unity_func = make_unity([node.name])
+        message = VariableMessage(node, target_node, [unity])
         return message
     factors = []
     neighbours = node.children + node.parents
@@ -231,8 +265,8 @@ def make_variable_node_message(node, target_node):
             continue
         factors.append(node.received_messages[neighbour.name])
 
-    product_func = make_product_func(factors)
-    message = Message(node, target_node, product_func)
+    #product_func = make_product_func(factors)
+    message = VariableMessage(node, target_node, factors)
     return message
 
         
@@ -286,36 +320,15 @@ def make_product_func(factors):
     return product_func
 
 
-def make_not_sum(exclude_var, product_func):
-    '''
-    Given the variable to exclude from
-    the summation and a product_func
-    we create a function that marginalizes
-    over all other variables and
-    return it as a new callable.
-    '''
-    args = set(get_args(product_func))
-    args = list(args.difference(
-            set([exclude_var])))
-    args_list = expand_parameters(
-        args, [True, False])
-    def not_sum_func(exclude_var):
-        summands = []
-        for bindings in args_list:
-            summands.append((bindings, product_func))
-        return summands
-    not_sum_func.argspec = product_func.argspec
-    not_sum_func.exclude_var = exclude_var
-    not_sum_func.factors = product_func.factors
-    return not_sum_func
-    
-
 def make_unity(argspec):
     def unity():
         return 1
     unity.argspec = argspec
     unity.__name__ = '1'
     return unity
+
+def unity():
+    return 1
 
 
 def expand_parameters(args, vals):

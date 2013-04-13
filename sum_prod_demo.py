@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     # Step 1 
     # fA -> x1
+    step = 1
     print 'Step 1'
-    import ipdb; ipdb.set_trace()
     message = make_factor_node_message(fA_node, x1)
     fA_node.send_to(x1, message)
 
@@ -117,16 +117,18 @@ if __name__ == '__main__':
     x5.send_to(fE_node, message)
 
     from pprint import pprint
-    pprint(x1.received_messages)
-    pprint(x2.received_messages)
-    pprint(fD_node.received_messages)
-    pprint(fE_node.received_messages)
+    #pprint(x1.received_messages)
+    #pprint(x2.received_messages)
+    #pprint(fD_node.received_messages)
+    #pprint(fE_node.received_messages)
 
     print 'End of Step 1.'
     print '----------------------------------------------------------------------'
 
     # ----------- end of step 1
 
+    print 'Step 2'
+    step = 2
 
     # Step 2
     # x1 already has a message so it just passes that along since
@@ -145,39 +147,40 @@ if __name__ == '__main__':
     # Now 
     message = make_factor_node_message(fE_node, x3)
     fE_node.send_to(x3, message)
-    print 'At fC_node:'
-    pprint(fC_node.received_messages)
+    #print 'At fC_node:'
+    #pprint(fC_node.received_messages)
 
-    print 'At x3 node:'
-    pprint(x3.received_messages)
+    #print 'At x3 node:'
+    #pprint(x3.received_messages)
 
     print 'End of Step 2.'
     print '----------------------------------------------------------------------'
 
     # ----------- end of step 2
 
-
+    step = 3
     # Step 3
     print 'Step 3'
 
 
     message = make_factor_node_message(fC_node, x3)
     fC_node.send_to(x3, message)
-    
+
     message = make_variable_node_message(x3, fC_node)
     x3.send_to(fC_node, message)
 
-    print 'At x3 node:'
-    pprint(x3.received_messages)
+    #print 'At x3 node:'
+    #pprint(x3.received_messages)
     
-    print 'At fC_node:'
-    pprint(fC_node.received_messages)
+    #print 'At fC_node:'
+    #pprint(fC_node.received_messages)
 
 
     print 'End of Step 3.'
     print '-----------------------------------------------------------------------'
 
 
+    step = 4
 
     # Step 4
     print 'Step 4'
@@ -216,7 +219,7 @@ if __name__ == '__main__':
     print 'End of Step 4.'
     print '-----------------------------------------------------------------------'
 
-
+    step = 5
     # Step 5
     print 'Step 5'
 
@@ -235,40 +238,21 @@ if __name__ == '__main__':
     message = make_variable_node_message(x2, fB_node)
     x2.send_to(fB_node, message)
 
-
-    #print 'At fA_node:'
-    #pprint(fA_node.received_messages)
-
-    #print 'At fB_node:'
-    #pprint(fB_node.received_messages)
-
-    #print 'At x4 node:'
-    #pprint(x4.received_messages)
-
-    #print 'At x2 node:'
-    #pprint(x5.received_messages)
-
-    
-
-
     print 'End of Step 5.'
     print '-----------------------------------------------------------------------'
 
 
+    print 'Messages at all nodes:'
+    for node in [x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node]:
+        node.message_report()
 
+    print '-----------------------------------------------------------------------'
+    print 'Marginals'
+    print '-----------------------------------------------------------------------'
+    for node in [x1, x2, x3, x4, x5]:
+        for value in [True, False]:
+            print node.name, value, node.marginal(value)
 
 
     import ipdb; ipdb.set_trace()
 
-
-    sys.exit(0)
-    
-    xray_var.send_to(xray_fac)
-    dyspnoea_var.send_to(dyspnoea_fac)
-
-    # Step 2
-    smoker_var.send_to(cancer_fac)
-    pollution_var.send_to(cancer_fac)
-    
-    #xray_fac.send_to(cancer_var, 
-    
