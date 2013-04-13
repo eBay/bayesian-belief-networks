@@ -112,8 +112,9 @@ class VariableNode(Node):
         functions of this nodes variable
         '''
         product = 1
+        self.val = val
         for _, message in self.received_messages.iteritems():
-            product *= message.func(val)
+            product *= message(self)
         return product
 
 
@@ -126,7 +127,6 @@ class FactorNode(Node):
         self.children = children
         self.received_messages = {}
         self.sent_messages = {}
-
 
     def __repr__(self):
         return '<FactorNode %s %s(%s)>' % \
@@ -159,6 +159,21 @@ class FactorMessage(Message):
             (self.source.name, self.destination.name,
              self.not_sum.exclude_var,
              len(self.factors), self.argspec)
+
+
+    def __call__(self, var):
+        '''
+        Evaluate the message as a function
+        '''
+        assert isinstance(var, VariableNode)
+        # Now check that the name of the
+        # variable matches the argspec...
+        assert var.name == self.argspec[0]
+        product = 1
+        for factor in self.factors:
+            product *= factor(var.val)
+        return product
+        
 
             
 class VariableMessage(Message):
