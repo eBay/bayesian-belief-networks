@@ -2,6 +2,8 @@
 import sys
 import inspect
 
+from itertools import product as iter_product
+
 '''
 The example in SumProd.pdf has exactly the same shape 
 as the cancer example:
@@ -174,8 +176,42 @@ class FactorMessage(Message):
             product *= factor(var.val)
         return product
         
+    def summarize(self):
+        '''
+        For all variables not in
+        the argspec, we want to
+        sum over all possible values
+        '''
+        args_map = {}
+        all_args = set()
+        for factor in self.factors:
+            args_map[factor] = get_args(factor)
+            all_args = all_args.union(
+                set(args_map[factor]))
+        all_args = all_args.difference(
+            set(self.argspec))
+        if not all_args:
+            # There are no variables to
+            # summarize so we are done
+            return 
+        import ipdb; ipdb.set_trace()
+        args = list(all_args)
+        arg_vals = dict()
+        for arg in args:
+            arg_vals[arg] = [True, False]
+        args_list = list(expand_parameters(arg_vals))
+        sum = 0
+        # Now loop through the args_list and for
+        # each factor that we can apply a binding
+        # to we do so and add to the sum so far
+        for factor in self.factors:
+            argspec = args_map[factor]
+            for arg_list in args_list:
+                # We need to construct a binding
+                # in the same order as the argspec
+                
 
-            
+
 class VariableMessage(Message):
 
     def __init__(self, source, destination, factors):
@@ -221,6 +257,7 @@ def make_factor_node_message(node, target_node):
     if node.is_leaf():
         not_sum = NotSum(target_node.name, [node.func])
         message = FactorMessage(node, target_node, not_sum)
+        message.summarize()
         return message
 
     args = set(get_args(node.func))
@@ -255,6 +292,10 @@ def make_factor_node_message(node, target_node):
     #args = list(args.difference(set([target_node.name])))
     not_sum = NotSum(target_node.name, factors)
     message = FactorMessage(node, target_node, not_sum)
+    # For efficieny we marginalize the message
+    # at the time of creation. This is the whole
+    # purpose of the sum product algorithm!
+    message.summarize()
     return message
 
 
@@ -342,29 +383,59 @@ def make_unity(argspec):
     unity.__name__ = '1'
     return unity
 
+
 def unity():
     return 1
 
+def expand_args(args):
+    if not args:
+        return []
+    return 
 
-def expand_parameters(args, vals):
+class Cycler(object):
+    '''
+    Like itertools.cycler
+    except it caches the
+    most recent value for 
+    repeat use.
+    '''
+
+    def __init__(self, vals):
+        self.cycle = cycle(vals)
+        self.current_val = None
+
+    def current(self):
+        if self.current_val is None:
+            self.next()
+        return self.current_val
+
+    def next(self):
+        self.current_val = self.cycle.next()
+        return self.current_val
+
+
+def dict_to_tuples(d):
+    '''
+    Convert a dict whose values
+    are lists to a list of
+    tuples of the key with
+    each of the values
+    '''
+    retval = []
+    for k, vals in d.iteritems():
+        retval.append([(k, v) for v in vals])
+    return retval
+        
+
+def expand_parameters(arg_vals):
     '''
     Given a list of args and values
-    we return a list of tuples
-    containing all possible n length
-    sequences of vals where n is the
-    length of args.
+    return a list of tuples
+    containing all possible sequences
+    of length n.
     '''
-    result = []
-    if not args:
-        return [result]
-    rest = expand_parameters(args[1:], vals)
-    for r in rest:
-        result.append([True] + r)
-        result.append([False] + r)
-    return result
-
-
-
+    arg_tuples = dict_to_tuples(arg_vals)
+    return iter_product(*arg_tuples)
 
 
 

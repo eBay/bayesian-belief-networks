@@ -249,7 +249,6 @@ if __name__ == '__main__':
     print '-----------------------------------------------------------------------'
     print 'Marginals'
     print '-----------------------------------------------------------------------'
-    import ipdb; ipdb.set_trace()
 
     for node in [x1, x2, x3, x4, x5]:
         for value in [True, False]:
