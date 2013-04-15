@@ -9,9 +9,9 @@ def fA(x1):
 
 
 def fB(x2):
-    if S == True:
+    if x2 == True:
         return 0.3
-    if S == False:
+    elif x2 == False:
         return 0.7
 
 
@@ -101,6 +101,7 @@ if __name__ == '__main__':
     # fA -> x1
     step = 1
     print 'Step 1'
+    import ipdb; ipdb.set_trace()
     message = make_factor_node_message(fA_node, x1)
     fA_node.send_to(x1, message)
 

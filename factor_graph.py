@@ -101,6 +101,7 @@ class VariableNode(Node):
         self.children = children
         self.received_messages = {}
         self.sent_messages = {}
+        self.val = None
 
 
     def __repr__(self):
@@ -129,6 +130,7 @@ class FactorNode(Node):
         self.children = children
         self.received_messages = {}
         self.sent_messages = {}
+        self.func.value = None
 
     def __repr__(self):
         return '<FactorNode %s %s(%s)>' % \
@@ -145,6 +147,19 @@ class Message(object):
         print '---------------------------'
         for factor in self.factors:
             print factor
+
+    def __call__(self, var):
+        '''
+        Evaluate the message as a function
+        '''
+        assert isinstance(var, VariableNode)
+        # Now check that the name of the
+        # variable matches the argspec...
+        assert var.name == self.argspec[0]
+        product = 1
+        for factor in self.factors:
+            product *= factor(var.value)
+        return product
 
 
 class FactorMessage(Message):
@@ -163,28 +178,25 @@ class FactorMessage(Message):
              len(self.factors), self.argspec)
 
 
-    def __call__(self, var):
-        '''
-        Evaluate the message as a function
-        '''
-        assert isinstance(var, VariableNode)
-        # Now check that the name of the
-        # variable matches the argspec...
-        assert var.name == self.argspec[0]
-        product = 1
-        for factor in self.factors:
-            product *= factor(var.val)
-        return product
         
     def summarize(self):
         '''
         For all variables not in
         the argspec, we want to
-        sum over all possible values
+        sum over all possible values.
+        summarize should *replace*
+        the current factors with
+        a new list of factors 
+        where each factor has been
+        marginalized.
+        
         '''
+        new_factors = []
         args_map = {}
         all_args = set()
         for factor in self.factors:
+            if factor.value is not None:
+                continue
             args_map[factor] = get_args(factor)
             all_args = all_args.union(
                 set(args_map[factor]))
@@ -194,22 +206,43 @@ class FactorMessage(Message):
             # There are no variables to
             # summarize so we are done
             return 
-        import ipdb; ipdb.set_trace()
         args = list(all_args)
         arg_vals = dict()
         for arg in args:
             arg_vals[arg] = [True, False]
         args_list = list(expand_parameters(arg_vals))
-        sum = 0
         # Now loop through the args_list and for
         # each factor that we can apply a binding
         # to we do so and add to the sum so far
         for factor in self.factors:
-            argspec = args_map[factor]
+            if isinstance(factor, FactorMessage) and not factor.value is None:
+                factor.summarize()
+                #new_factors.append(factor)
+                continue
+            if factor.value is not None:
+                continue
+            arg_spec = args_map[factor]
+            # If the not_sum exclude_var is in the
+            # arg spec of this factor then we cannot
+            # summarize this particular factor
+            if self.not_sum.exclude_var in arg_spec:
+                continue
+            
+            arg_vals = dict()
+            for arg in arg_spec:
+                arg_vals[arg] = [True, False]
+            args_list = list(expand_parameters(arg_vals))
+            if len(args_list[0]) != len(arg_spec):
+                continue
+            sum = 0
             for arg_list in args_list:
-                # We need to construct a binding
-                # in the same order as the argspec
-                
+                bindings = build_bindings(arg_spec, arg_list)
+                import ipdb; ipdb.set_trace()
+                sum += factor(*bindings)
+            factor.value = sum
+        if all(map(lambda x: isinstance(x.value, (int, float)), self.factors)):
+            self.value = reduce(lambda x, y: x.value * y.value, factors)
+            
 
 
 class VariableMessage(Message):
@@ -219,6 +252,10 @@ class VariableMessage(Message):
         self.destination = destination
         self.factors = factors
         self.argspec = [source.name]
+        self.value = None
+        if all(map(lambda x: isinstance(x, (int, float)), factors)):
+            self.value = reduce(lambda x, y: x * y, factors)
+
 
     def __repr__(self):
         return '<V-Message from %s -> %s: %s factors (%s)>' % \
@@ -236,6 +273,20 @@ class NotSum(object):
     def __repr__(self):
         return '<NotSum(%s, %s)>' % (self.exclude_var, '*'.join([repr(f) for f in self.factors]))
                                      
+
+def build_bindings(arg_spec, arg_vals):
+    '''
+    Build a list of values from 
+    a dict that matches the arg_spec
+    '''
+    assert len(arg_spec) == len(arg_vals)
+    bindings = []
+    #bindings = [arg_vals[arg] for arg in arg_spec]
+    for arg in arg_spec:
+        var = VariableNode(arg)
+        var.value = arg_vals[arg]
+        bindings.append(var)
+    return bindings
 
 
 def make_factor_node_message(node, target_node):
@@ -312,7 +363,7 @@ def make_variable_node_message(node, target_node):
     '''
     if node.is_leaf():
         #unity_func = make_unity([node.name])
-        message = VariableMessage(node, target_node, [unity])
+        message = VariableMessage(node, target_node, [1])
         return message
     factors = []
     neighbours = node.children + node.parents
@@ -377,7 +428,7 @@ def make_product_func(factors):
 
 
 def make_unity(argspec):
-    def unity():
+    def unity(x):
         return 1
     unity.argspec = argspec
     unity.__name__ = '1'
@@ -435,7 +486,7 @@ def expand_parameters(arg_vals):
     of length n.
     '''
     arg_tuples = dict_to_tuples(arg_vals)
-    return iter_product(*arg_tuples)
+    return [dict(args) for args in iter_product(*arg_tuples)]
 
 
 
