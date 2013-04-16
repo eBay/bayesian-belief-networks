@@ -1,5 +1,6 @@
 '''From SumProd.pdf'''
 import sys
+import copy
 import inspect
 
 from itertools import product as iter_product
@@ -101,7 +102,6 @@ class VariableNode(Node):
         self.children = children
         self.received_messages = {}
         self.sent_messages = {}
-        self.val = None
 
 
     def __repr__(self):
@@ -115,9 +115,10 @@ class VariableNode(Node):
         functions of this nodes variable
         '''
         product = 1
-        self.val = val
+        v = VariableNode(self.name)
+        v.value = val
         for _, message in self.received_messages.iteritems():
-            product *= message(self)
+            product *= message(v)
         return product
 
 
@@ -152,30 +153,29 @@ class Message(object):
         '''
         Evaluate the message as a function
         '''
+        if getattr(self.func, '__name__', None) == 'unity':
+            return 1
         assert isinstance(var, VariableNode)
         # Now check that the name of the
         # variable matches the argspec...
-        assert var.name == self.argspec[0]
-        product = 1
-        for factor in self.factors:
-            product *= factor(var)
-        return product
+        #assert var.name == self.argspec[0]
+        return self.func(var)
 
 
 class FactorMessage(Message):
 
-    def __init__(self, source, destination, not_sum):
+    def __init__(self, source, destination, factors, func):
         self.source = source
         self.destination = destination
-        self.factors = not_sum.factors
-        self.not_sum = not_sum
-        self.argspec = [destination.name]
+        self.factors = factors
+        self.func = func
+        self.argspec = get_args(func)
 
     def __repr__(self):
-        return '<F-Message %s -> %s: ~(%s) %s factors (%s)>' % \
+        return '<F-Message %s -> %s: ~(%s) %s factors.>' % \
             (self.source.name, self.destination.name,
-             self.not_sum.exclude_var,
-             len(self.factors), self.argspec)
+             self.argspec,
+             len(self.factors))
 
 
         
@@ -240,10 +240,8 @@ class FactorMessage(Message):
                 total += factor(*bindings)
             factor.value = total
         if all(map(lambda x: isinstance(x.value, (int, float)), self.factors)):
-            import ipdb; ipdb.set_trace()
             self.value = reduce(lambda x, y: x.value * y.value, factors)
             
-
 
 def eliminate_var(f, var):
     '''
@@ -251,14 +249,12 @@ def eliminate_var(f, var):
     function which sums over the variable
     we want to eliminate
     '''
-    import ipdb; ipdb.set_trace()
     arg_spec = get_args(f)
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     new_spec.remove(var)
     
     def eliminated(*args):
-        import ipdb; ipdb.set_trace()
         template = arg_spec[:]
         total = 0
         for val in [True, False]:
@@ -278,19 +274,17 @@ def eliminate_var(f, var):
     return eliminated
 
     
-
-
-
 class VariableMessage(Message):
 
-    def __init__(self, source, destination, factors):
+    def __init__(self, source, destination, factors, func):
         self.source = source
         self.destination = destination
         self.factors = factors
-        self.argspec = [source.name]
-        self.value = None
-        if all(map(lambda x: isinstance(x, (int, float)), factors)):
-            self.value = reduce(lambda x, y: x * y, factors)
+        self.argspec = get_args(func)
+        self.func = func
+        #self.value = None
+        #if all(map(lambda x: isinstance(x, (int, float)), factors)):
+        #    self.value = reduce(lambda x, y: x * y, factors)
 
 
     def __repr__(self):
@@ -310,6 +304,22 @@ class NotSum(object):
         return '<NotSum(%s, %s)>' % (self.exclude_var, '*'.join([repr(f) for f in self.factors]))
                                      
 
+
+def make_not_sum_func(product_func, keep_var):
+    '''
+    Given a function with some set of
+    arguments, and a single argument to keep,
+    construct a new function only of the
+    keep_var, summarized over all the other
+    variables.
+    '''
+    args = get_args(product_func)
+    new_func = copy.deepcopy(product_func)
+    for arg in args:
+        if arg != keep_var:
+            new_func = eliminate_var(new_func, arg)
+    return new_func
+
 def build_bindings(arg_spec, arg_vals):
     '''
     Build a list of values from 
@@ -325,7 +335,7 @@ def build_bindings(arg_spec, arg_vals):
     return bindings
 
 
-def make_factor_node_message(node, target_node):
+def m1ake_factor_node_message(node, target_node):
     '''
     The rules for a factor node are:
     take the product of all the incoming
@@ -385,8 +395,60 @@ def make_factor_node_message(node, target_node):
     message.summarize()
     return message
 
+def make_factor_node_message(node, target_node):
+    '''
+    The rules for a factor node are:
+    take the product of all the incoming
+    messages (except for the destination
+    node) and then take the sum over
+    all the variables except for the
+    destination variable.
+    >>> def f(x1, x2, x3): pass
+    >>> node = object()
+    >>> node.func = f
+    >>> target_node = object()
+    >>> target_node.name = 'x2'
+    >>> make_factor_node_message(node, target_node)
+    '''
 
-def make_variable_node_message(node, target_node):
+    if node.is_leaf():
+        not_sum_func = make_not_sum_func(node.func, target_node.name)
+        message = FactorMessage(node, target_node, [node.func], not_sum_func)
+        return message
+
+    args = set(get_args(node.func))
+    
+    # Compile list of factors for message
+    factors = [node.func]
+    
+    # Now add the message that came from each
+    # of the non-destination neighbours...
+    neighbours = node.children + node.parents
+    for neighbour in neighbours:
+        if neighbour == target_node:
+            continue
+        # When we pass on a message, we unwrap
+        # the original payload and wrap it
+        # in new headers, this is purely
+        # to verify the procedure is correct
+        # according to usual nomenclature
+        in_message = node.received_messages[neighbour.name]
+        if in_message.destination != node:
+            out_message = VariableMessage(neighbour, node, in_message.factors, in_message.func)
+            out_message.argspec = in_message.argspec
+        else:
+            out_message = in_message
+        factors.append(out_message)
+
+    product_func = make_product_func(factors)
+    not_sum_func = make_not_sum_func(product_func, target_node.name)
+    message = FactorMessage(node, target_node, factors, not_sum_func)
+    return message
+
+
+
+
+def m1ake_variable_node_message(node, target_node):
     '''
     To construct the message from 
     a variable node to a factor
@@ -410,6 +472,32 @@ def make_variable_node_message(node, target_node):
 
     #product_func = make_product_func(factors)
     message = VariableMessage(node, target_node, factors)
+    return message
+
+def make_variable_node_message(node, target_node):
+    '''
+    To construct the message from 
+    a variable node to a factor
+    node we take the product of
+    all messages received from
+    neighbours except for any
+    message received from the target.
+    If the source node is a leaf node
+    then send the unity function.
+    '''
+    if node.is_leaf():
+        #unity_func = make_unity([node.name])
+        message = VariableMessage(node, target_node, [1], unity)
+        return message
+    factors = []
+    neighbours = node.children + node.parents
+    for neighbour in neighbours:
+        if neighbour == target_node:
+            continue
+        factors.append(node.received_messages[neighbour.name])
+
+    product_func = make_product_func(factors)
+    message = VariableMessage(node, target_node, factors, product_func)
     return message
 
         
@@ -445,19 +533,32 @@ def make_product_func(factors):
         #    continue
         args_map[factor] = get_args(factor)
         all_args += args_map[factor]
-    #if not all_args:
-    #    return 1
-    # Now we need to make a callable that
-    # will take all the arguments and correctly
-    # apply them to each factor...
     args = list(set(all_args))
-    #args.sort()
-    args_list = expand_parameters(args, [True, False])
+
     def product_func(*args):
+        arg_dict = dict([(a.name, a) for a in args])
         result = 1
         for factor in factors:
-            result *= factor(args)
+            # We need to build the correct argument
+            # list to call this factor with.
+            factor_args = []
+            for arg in get_args(factor):
+                if arg in arg_dict:
+                    factor_args.append(arg_dict[arg])
+            if not factor_args:
+                # Since we always require
+                # at least one argument we
+                # insert a dummy argument
+                # so that the unity function works.
+                factor_args.append('dummy')
+            try:
+                result *= factor(*factor_args)
+            except:
+                import ipdb; ipdb.set_trace()
+                print factor, factor_args, get_args(factor)
+                
         return result
+
     product_func.argspec = args
     product_func.factors = factors
     return product_func

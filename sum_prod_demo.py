@@ -185,7 +185,6 @@ if __name__ == '__main__':
     # Step 4
     print 'Step 4'
 
-    import ipdb; ipdb.set_trace()
     ###### To make it easiser to see I will print the messages as I go along
 
     message = make_factor_node_message(fC_node, x1)
@@ -246,11 +245,20 @@ if __name__ == '__main__':
     print 'Messages at all nodes:'
     for node in [x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node]:
         node.message_report()
+    x1.message_report()
 
+    # Create a test variable to play with
+    t1 = VariableNode('x1')
+    t1.value = True
+
+    #v2 = VariableNode('v2')
+    #v2.value = False
+
+    import ipdb; ipdb.set_trace()
+    res = x1.received_messages['fC'](t1)
     print '-----------------------------------------------------------------------'
     print 'Marginals'
     print '-----------------------------------------------------------------------'
-
     for node in [x1, x2, x3, x4, x5]:
         for value in [True, False]:
             print node.name, value, node.marginal(value)
