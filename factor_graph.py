@@ -158,7 +158,7 @@ class Message(object):
         assert var.name == self.argspec[0]
         product = 1
         for factor in self.factors:
-            product *= factor(var.value)
+            product *= factor(var)
         return product
 
 
@@ -234,15 +234,51 @@ class FactorMessage(Message):
             args_list = list(expand_parameters(arg_vals))
             if len(args_list[0]) != len(arg_spec):
                 continue
-            sum = 0
+            total = 0
             for arg_list in args_list:
                 bindings = build_bindings(arg_spec, arg_list)
-                import ipdb; ipdb.set_trace()
-                sum += factor(*bindings)
-            factor.value = sum
+                total += factor(*bindings)
+            factor.value = total
         if all(map(lambda x: isinstance(x.value, (int, float)), self.factors)):
+            import ipdb; ipdb.set_trace()
             self.value = reduce(lambda x, y: x.value * y.value, factors)
             
+
+
+def eliminate_var(f, var):
+    '''
+    Given a function f return a new
+    function which sums over the variable
+    we want to eliminate
+    '''
+    import ipdb; ipdb.set_trace()
+    arg_spec = get_args(f)
+    pos = arg_spec.index(var)
+    new_spec = arg_spec[:]
+    new_spec.remove(var)
+    
+    def eliminated(*args):
+        import ipdb; ipdb.set_trace()
+        template = arg_spec[:]
+        total = 0
+        for val in [True, False]:
+            v = VariableNode(name=var)
+            v.value = val
+            
+            template[pos] = v
+            call_args = template[:]
+            for arg in args:
+                arg_pos = call_args.index(arg.name)
+                call_args[arg_pos] = arg
+                
+            total += f(*call_args)
+        return total
+
+    eliminated.argspec = new_spec
+    return eliminated
+
+    
+
 
 
 class VariableMessage(Message):

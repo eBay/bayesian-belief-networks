@@ -2,16 +2,16 @@ from factor_graph import *
 
 
 def fA(x1):
-    if x1 == True:
+    if x1.value == True:
         return 0.1
-    elif x1 == False:
+    elif x1.value == False:
         return 0.9
 
 
 def fB(x2):
-    if x2 == True:
+    if x2.value == True:
         return 0.3
-    elif x2 == False:
+    elif x2.value == False:
         return 0.7
 
 
@@ -30,9 +30,9 @@ def fC(x1, x2, x3):
     table['fft'] = 0.001
     table['fff'] = 0.999
     key = ''
-    key = key + 't' if x1 else key + 'f'
-    key = key + 't' if x2 else key + 'f'
-    key = key + 't' if x3  else key + 'f'
+    key = key + 't' if x1.value else key + 'f'
+    key = key + 't' if x2.value else key + 'f'
+    key = key + 't' if x3.value  else key + 'f'
     return table[key]
 
 
@@ -43,8 +43,8 @@ def fD(x3, x4):
     table['ft'] = 0.2
     table['ff'] = 0.8
     key = ''
-    key = key + 't' if x3 else key + 'f'
-    key = key + 't' if x4 else key + 'f'
+    key = key + 't' if x3.value else key + 'f'
+    key = key + 't' if x4.value else key + 'f'
     return table[key]
 
 
@@ -55,8 +55,8 @@ def fE(x3, x5):
     table['ft'] = 0.3
     table['ff'] = 0.7
     key = ''
-    key = key + 't' if x3 else key + 'f'
-    key = key + 't' if x5 else key + 'f'
+    key = key + 't' if x3.value else key + 'f'
+    key = key + 't' if x5.value else key + 'f'
     return table[key]
 
 
@@ -101,7 +101,6 @@ if __name__ == '__main__':
     # fA -> x1
     step = 1
     print 'Step 1'
-    import ipdb; ipdb.set_trace()
     message = make_factor_node_message(fA_node, x1)
     fA_node.send_to(x1, message)
 
@@ -186,6 +185,7 @@ if __name__ == '__main__':
     # Step 4
     print 'Step 4'
 
+    import ipdb; ipdb.set_trace()
     ###### To make it easiser to see I will print the messages as I go along
 
     message = make_factor_node_message(fC_node, x1)
