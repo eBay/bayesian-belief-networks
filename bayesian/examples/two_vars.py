@@ -1,4 +1,4 @@
-from factor_graph import *
+from bayesian.factor_graph import *
 
 
 # sunny
@@ -12,9 +12,9 @@ def fA(x1):
 def fB(x1, x2):
     table = dict()
     table['tt'] = 0.20
-    table['tf'] = 0 #0.80
+    table['tf'] = 0.80
     table['ft'] = 0.05
-    table['ff'] = 0 #0.95
+    table['ff'] = 0.95
     key = ''
     key = key + 't' if x1.value else key + 'f'
     key = key + 't' if x2.value else key + 'f'
@@ -23,7 +23,7 @@ def fB(x1, x2):
 
 # One way to add 'evidence' is to rewrite all
 # factor functions with the non observed discrete values set to 0 
-def fB(x1, x2):
+def fB_(x1, x2):
     table = dict()
     table['tt'] = 0.20 / 0.5
     table['tf'] = 0 #0.80
@@ -34,6 +34,9 @@ def fB(x1, x2):
     key = key + 't' if x2.value else key + 'f'
     return table[key]
 
+# Another way is to modify the eliminate_var to 
+# only sum over the single value for the
+# variable that is set
 
 
 if __name__ == '__main__':

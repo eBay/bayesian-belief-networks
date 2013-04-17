@@ -93,6 +93,12 @@ class Node(object):
             v.list_factors()
         print '--'
 
+    def get_target(self):
+        neighbours = self.parents + self.children
+        targets = [neighbour for neighbour in neighbours if not neighbour in self.received_messages]
+        if len(targets) == 1:
+            return targets[0]
+
 
 class VariableNode(Node):
     
@@ -102,24 +108,29 @@ class VariableNode(Node):
         self.children = children
         self.received_messages = {}
         self.sent_messages = {}
+        self.value = None
 
+    def construct_message(self):
+        target = self.get_target()
+        message = make_variable_node_message(self, target)
+        return message
 
     def __repr__(self):
         return '<VariableNode: %s>' % self.name
 
-    def marginal(self, val):
+    def marginal(self, val, normalizer=1.0):
         '''
         The marginal function is
         the product of all incoming
         messages which should be
-        functions of this nodes variable
+        functions of this nodes variable.
         '''
         product = 1
         v = VariableNode(self.name)
         v.value = val
         for _, message in self.received_messages.iteritems():
             product *= message(v)
-        return product
+        return product / normalizer
 
 
 class FactorNode(Node):
@@ -132,6 +143,12 @@ class FactorNode(Node):
         self.received_messages = {}
         self.sent_messages = {}
         self.func.value = None
+        self.cached_functions = []
+
+    def construct_message(self):
+        target = self.get_target()
+        message = make_factor_node_message(self, target)
+        return message
 
     def __repr__(self):
         return '<FactorNode %s %s(%s)>' % \
@@ -163,6 +180,31 @@ class FactorNode(Node):
             call_args.append('dummy')
         product *= self.func(*call_args)
         return product
+    
+
+    def add_evidence(self, node, value):
+        '''
+        Here we modify the factor function
+        to return 0 whenever it is called
+        with the observed variable having
+        a value other than the observed value.
+        '''
+        args = get_args(self.func)
+        pos = args.index(node.name)
+        # Save the old func so that we
+        # can remove the evidence later
+        old_func = self.func
+        self.cached_functions.insert(0, old_func)
+        def evidence_func(*args):
+            if args[pos].value != value:
+                return 0
+            return old_func(*args)
+        evidence_func.argspec = args
+        self.func = evidence_func
+
+        
+    def pop_evidence(self):
+        self.func = self.cached_functions.pop()
 
 
 
@@ -306,7 +348,8 @@ def eliminate_var(f, var):
     def eliminated(*args):
         template = arg_spec[:]
         total = 0
-        for val in [True, False]:
+        summation_vals = [True, False]
+        for val in summation_vals:
             v = VariableNode(name=var)
             v.value = val
             
@@ -316,6 +359,7 @@ def eliminate_var(f, var):
                 arg_pos = call_args.index(arg.name)
                 call_args[arg_pos] = arg
                 
+            #if not(arg.name=='x2' and val==False):
             total += f(*call_args)
         return total
 
@@ -678,8 +722,54 @@ def expand_parameters(arg_vals):
     return [dict(args) for args in iter_product(*arg_tuples)]
 
 
+def add_evidence(node, value):
+    '''
+    Set a variable node to an observed value.
+    Note that for now this is achieved
+    by modifying the factor functions
+    which this node is connected to.
+    After updating the factor nodes
+    we need to re-run the sum-product
+    algorithm. We also need to normalize
+    all marginal outcomes.
+    '''
+    neighbours = node.parents + node.children
+    for factor_node in neighbours:
+        if node.name in get_args(factor_node.func):
+            factor_node.add_evidence(node, value)
 
+def propagate(graph):
+    
+    while True:
+        eligible_senders = graph.get_eligible_senders()
+        if not eligible_senders:
+            break
+        for node in eligible_senders:
+            target_node = node.get_target()
+            
 
+class FactorGraph(object):
+
+    def __init__(self, nodes):
+        self.nodes = nodes
+
+    def get_leaves(self):
+        return [node for node in self.nodes if node.is_leaf()]
+        
+    def get_eligible_senders(self):
+        '''
+        Return a list of nodes that is eligible to
+        send messages at this round.
+        Only nodes that have received
+        messages from all but one neighbour
+        may send at any round.
+        '''
+        eligible = []
+        for node in self.nodes:
+            if len(node.parents + node.children) - len(node.received_messages) == 1:
+                eligible.append(node)
+        return eligible
+    
 
 
 
