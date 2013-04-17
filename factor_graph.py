@@ -139,6 +139,33 @@ class FactorNode(Node):
              self.func.__name__,
              get_args(self.func))
 
+    def marginal(self, val_dict):
+        # The Joint marginal of the
+        # neighbour variables of a factor
+        # node is given by the product
+        # of the incoming messages and the factor
+        product = 1
+        neighbours = self.parents + self.children
+        for neighbour in neighbours:
+            message = self.received_messages[neighbour.name]
+            call_args = []
+            for arg in get_args(message):
+                call_args.append(val_dict[arg])
+            if not call_args:
+                call_args.append('dummy')
+            product *= message(*call_args)
+        # Finally we also need to multiply
+        # by the factor itself
+        call_args = []
+        for arg in get_args(self.func):
+            call_args.append(val_dict[arg])
+        if not call_args:
+            call_args.append('dummy')
+        product *= self.func(*call_args)
+        return product
+
+
+
 
 class Message(object):
 
@@ -243,6 +270,28 @@ class FactorMessage(Message):
             self.value = reduce(lambda x, y: x.value * y.value, factors)
             
 
+def replace_var(f, var, val):
+    arg_spec = get_args(f)
+    pos = arg_spec.index(var)
+    new_spec = arg_spec[:]
+    new_spec.remove(var)
+    
+    def replaced(*args):
+        template = arg_spec[:]
+        v = VariableNode(name=var)
+        v.value = val
+        template[pos] = v
+        call_args = template[:]
+        for arg in args:
+            arg_pos = call_args.index(arg.name)
+            call_args[arg_pos] = arg
+                
+        return f(*call_args)
+
+    replaced.argspec = new_spec
+    return replaced
+
+    
 def eliminate_var(f, var):
     '''
     Given a function f return a new
@@ -317,7 +366,10 @@ def make_not_sum_func(product_func, keep_var):
     new_func = copy.deepcopy(product_func)
     for arg in args:
         if arg != keep_var:
-            new_func = eliminate_var(new_func, arg)
+            if arg == 'x544':
+                new_func = replace_var(new_func, 'x5', True)
+            else:
+                new_func = eliminate_var(new_func, arg)
     return new_func
 
 def build_bindings(arg_spec, arg_vals):

@@ -61,6 +61,17 @@ def fE(x3, x5):
 
 
 if __name__ == '__main__':
+
+    # Now lets try and set x5=True as an observed value
+    # One way to do this is to replace all functions 
+    # taking x5 with a new function replacing the x5
+    # with True and therefore eliminating it...
+    # Lets try....
+    #def fE_(x3):
+    #    return fE(x3, True)
+    #fE_.argspec = ['x3']
+
+
     # Note we need to set some of the  parents and children afterwards
     fA_node = FactorNode('fA', fA)
     fB_node = FactorNode('fB', fB)
@@ -260,8 +271,11 @@ if __name__ == '__main__':
     print 'Marginals'
     print '-----------------------------------------------------------------------'
     for node in [x1, x2, x3, x4, x5]:
-        for value in [True, False]:
+        for value in [True]:
             print node.name, value, node.marginal(value)
+
+
+    
 
 
 
