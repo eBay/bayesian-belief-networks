@@ -159,6 +159,46 @@ def test_construct_message():
     assert message.argspec == ['x2']
     assert message.factors == [fB_node.func]
 
+def test_send_message():
+    message = x4.construct_message()
+    x4.send(message)
+    assert message.destination.received_messages['x4'] == message
+    message = x5.construct_message()
+    x5.send(message)
+    assert message.destination.received_messages['x5'] == message
+    message = fA_node.construct_message()
+    fA_node.send(message)
+    assert message.destination.received_messages['fA'] == message
+    message = fB_node.construct_message()
+    fB_node.send(message)
+    assert message.destination.received_messages['fB'] == message
+
+def test_sent_messages():
+    sent = x4.get_sent_messages()
+    assert sent['fD'] == fD_node.received_messages['x4']
+    sent = x5.get_sent_messages()
+    assert sent['fE'] == fE_node.received_messages['x5']
+    sent = fA_node.get_sent_messages()
+    assert sent['x1'] == x1.received_messages['fA']
+    sent = fB_node.get_sent_messages()
+    assert sent['x2'] == x2.received_messages['fB']
+
+
+def test_graph_reset():
+    graph.reset()
+    for node in graph.nodes:
+        assert node.received_messages == {}
+
+def test_propagate():
+    graph.reset()
+    import ipdb; ipdb.set_trace()
+    graph.propagate()
+    for node in graph.nodes():
+        node.message_report()
+
+
+
+
 if __name__ == '__main__':
 
     # Note we need to set some of the  parents and children afterwards

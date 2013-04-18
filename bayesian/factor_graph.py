@@ -80,6 +80,21 @@ class Node(object):
         recipient.received_messages[
             self.name] = message
 
+    def send(self, message):
+        recipient = message.destination
+        print '%s ---> %s' % (self.name, recipient.name), message
+        recipient.received_messages[
+            self.name] = message
+
+    def get_sent_messages(self):
+        sent_messages = {}
+        for neighbour in self.parents + self.children:
+            if neighbour.received_messages.get(self.name):
+                sent_messages[neighbour.name] = \
+                    neighbour.received_messages.get(self.name)
+        return sent_messages
+        
+
     def message_report(self):
         '''
         List out all messages Node
@@ -94,10 +109,18 @@ class Node(object):
         print '--'
 
     def get_target(self):
+        '''
+        A node can only send to a neighbour if
+        it has not already sent to that neighbour
+        and it has received messages from all other
+        neighbours.
+        '''
         neighbours = self.parents + self.children
-        targets = [neighbour for neighbour in neighbours if not neighbour in self.received_messages]
-        if len(targets) == 1:
-            return targets[0]
+        if len(neighbours) - len(self.received_messages) != 1:
+            return None
+        sent = self.get_sent_messages()
+        targets = [node for node in neighbours if not node.name in sent]
+        return targets[0]
 
 
 class VariableNode(Node):
@@ -431,66 +454,6 @@ def build_bindings(arg_spec, arg_vals):
     return bindings
 
 
-def m1ake_factor_node_message(node, target_node):
-    '''
-    The rules for a factor node are:
-    take the product of all the incoming
-    messages (except for the destination
-    node) and then take the sum over
-    all the variables except for the
-    destination variable.
-    >>> def f(x1, x2, x3): pass
-    >>> node = object()
-    >>> node.func = f
-    >>> target_node = object()
-    >>> target_node.name = 'x2'
-    >>> make_factor_node_message(node, target_node)
-    '''
-
-    if node.is_leaf():
-        not_sum = NotSum(target_node.name, [node.func])
-        message = FactorMessage(node, target_node, not_sum)
-        message.summarize()
-        return message
-
-    args = set(get_args(node.func))
-    
-    # Compile list of factors for message
-    factors = [node.func]
-    
-    # Now add the message that came from each
-    # of the non-destination neighbours...
-    neighbours = node.children + node.parents
-    for neighbour in neighbours:
-        if neighbour == target_node:
-            continue
-        # When we pass on a message, we unwrap
-        # the original payload and wrap it
-        # in new headers, this is purely
-        # to verify the procedure is correct
-        # according to usual nomenclature
-        in_message = node.received_messages[neighbour.name]
-        if in_message.destination != node:
-            out_message = VariableMessage(neighbour, node, in_message.factors)
-            out_message.argspec = in_message.argspec
-        else:
-            out_message = in_message
-        factors.append(out_message)
-
-    # Now we need to add any other variables 
-    # that were added from the other factors
-    #for factor in factors:
-    #    args = args.union(
-    #        get_args(factor))
-    #args = list(args.difference(set([target_node.name])))
-    not_sum = NotSum(target_node.name, factors)
-    message = FactorMessage(node, target_node, not_sum)
-    # For efficieny we marginalize the message
-    # at the time of creation. This is the whole
-    # purpose of the sum product algorithm!
-    message.summarize()
-    return message
-
 def make_factor_node_message(node, target_node):
     '''
     The rules for a factor node are:
@@ -542,34 +505,6 @@ def make_factor_node_message(node, target_node):
     return message
 
 
-
-
-def m1ake_variable_node_message(node, target_node):
-    '''
-    To construct the message from 
-    a variable node to a factor
-    node we take the product of
-    all messages received from
-    neighbours except for any
-    message received from the target.
-    If the source node is a leaf node
-    then send the unity function.
-    '''
-    if node.is_leaf():
-        #unity_func = make_unity([node.name])
-        message = VariableMessage(node, target_node, [1])
-        return message
-    factors = []
-    neighbours = node.children + node.parents
-    for neighbour in neighbours:
-        if neighbour == target_node:
-            continue
-        factors.append(node.received_messages[neighbour.name])
-
-    #product_func = make_product_func(factors)
-    message = VariableMessage(node, target_node, factors)
-    return message
-
 def make_variable_node_message(node, target_node):
     '''
     To construct the message from 
@@ -582,22 +517,23 @@ def make_variable_node_message(node, target_node):
     then send the unity function.
     '''
     if node.is_leaf():
-        #unity_func = make_unity([node.name])
-        message = VariableMessage(node, target_node, [1], unity)
+        message = VariableMessage(
+            node, target_node, [1], unity)
         return message
     factors = []
     neighbours = node.children + node.parents
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
-        factors.append(node.received_messages[neighbour.name])
+        factors.append(
+            node.received_messages[neighbour.name])
 
     product_func = make_product_func(factors)
-    message = VariableMessage(node, target_node, factors, product_func)
+    message = VariableMessage(
+        node, target_node, factors, product_func)
     return message
 
         
-
 def get_args(func):
     '''
     Return the names of the arguments
@@ -738,20 +674,23 @@ def add_evidence(node, value):
         if node.name in get_args(factor_node.func):
             factor_node.add_evidence(node, value)
 
-def propagate(graph):
     
-    while True:
-        eligible_senders = graph.get_eligible_senders()
-        if not eligible_senders:
-            break
-        for node in eligible_senders:
-            target_node = node.get_target()
+            
             
 
 class FactorGraph(object):
 
     def __init__(self, nodes):
         self.nodes = nodes
+
+    def reset(self):
+        '''
+        Reset all nodes back to their initial state.
+        We should do this before or after adding
+        or removing evidence.
+        '''
+        for node in self.nodes:
+            node.received_messages = {}
 
     def get_leaves(self):
         return [node for node in self.nodes if node.is_leaf()]
@@ -766,10 +705,24 @@ class FactorGraph(object):
         '''
         eligible = []
         for node in self.nodes:
-            if len(node.parents + node.children) - len(node.received_messages) == 1:
+            if node.get_target():
                 eligible.append(node)
         return eligible
     
+    def propagate(self):
+        '''
+        This is the heart of the sum-product algorithm.
+        '''
+        while True:
+            eligible_senders = self.get_eligible_senders()
+            if not eligible_senders:
+                break
+            for node in eligible_senders:
+                target_node = node.get_target()
+                message = node.construct_message()
+                node.send(message)
+
+        
 
 
 
