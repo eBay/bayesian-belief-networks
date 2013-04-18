@@ -349,8 +349,33 @@ def test_add_evidence_x2_true_and_x3_true():
     m = marg(x5, False, normalizer)
     assert m == 0.350
     
-
-
+def test_add_evidence_x5_true_x2_true():
+    graph.reset()
+    add_evidence(x5, True)
+    add_evidence(x2, True)
+    graph.propagate()
+    normalizer = x5.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.102
+    m = marg(x1, False, normalizer)
+    assert m == 0.898
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 0.067
+    m = marg(x3, False, normalizer)
+    assert m == 0.933
+    m = marg(x4, True, normalizer)
+    assert m == 0.247
+    m = marg(x4, False, normalizer)
+    assert m == 0.753
+    m = marg(x5, True, normalizer)
+    assert m == 1.0
+    m = marg(x5, False, normalizer)
+    assert m == 0.0
+    
 
 if __name__ == '__main__':
 
