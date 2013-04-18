@@ -1,15 +1,16 @@
-'''From SumProd.pdf'''
+'''Implements Sum-Product Algorithm over Factor Graphs'''
 import sys
 import copy
 import inspect
 
+from collections import defaultdict
 from itertools import product as iter_product
 
 '''
 The example in SumProd.pdf has exactly the same shape 
 as the cancer example:
 
-(Note arrows are from x1->x3, x2->x3, x3->x4 and x3->x5)
+(Note: arrows are from x1->x3, x2->x3, x3->x4 and x3->x5)
 
       x1      x2
        \      /
@@ -25,7 +26,7 @@ as the cancer example:
 The equivalent Factor Graph is:
 
 
-     fA P      fB
+     fA        fB
      |          |
      x1---fC---x2
            |
@@ -40,32 +41,6 @@ fC(x1,x2,x3) = p(x3|x1,x2)
 fD(x3,x4) = p(x4|x3)
 fE(x3,x5) = p(x5|x3)
 
-Lets simulate this, from SumProd.pdf:
-
-Step1:
-Start at all the leaf nodes ie fA, fB, x4, x5
-
-mfA -> x1 = fA(x1)  ie this is passing along a function and a parameter
-mfB -> x2 = fB(x2) 
-mx4 -> fD = 1       when starting from a variable node we always send a 1 (Not sure for the constrained version)
-mx5 -> fE = 1
-
-So at this point we have recorded the message *at* the recipient
-
-Step 2:
-mx1 -> fC = fA(x1)  This is the same message that fA passed to x1 in step 1
-mx2 -> fC = fB(x2)  This is the same message that fB passed to x2 in step 1
-mfD -> x3 = sum(fD(x3,x4) * mx4 -> fD (Note that the sum should *exclude* x3 and that the mx4->fd messages is 1
-mfE -> x3 = sum(fE(x3,x5) * mx5 -> fE
-
-???? Parts I dont understand is *when* is anything actually evaluated?
-It seems that messages are either a 1 (if it originiated at a leaf variable) or they are a sum of functions
-with unbound variables or do the factor nodes substitute the value they got into the equation?????
-
-Only thing to do is try it!
-
-Converting the cancer example to a factor graph..
-
 '''
 
 class Node(object):
@@ -76,13 +51,15 @@ class Node(object):
         return False
 
     def send_to(self, recipient, message):
-        print '%s ---> %s' % (self.name, recipient.name), message
+        print '%s ---> %s' % (
+            self.name, recipient.name), message
         recipient.received_messages[
             self.name] = message
 
     def send(self, message):
         recipient = message.destination
-        print '%s ---> %s' % (self.name, recipient.name), message
+        print '%s ---> %s' % (
+            self.name, recipient.name), message
         recipient.received_messages[
             self.name] = message
 
@@ -94,7 +71,6 @@ class Node(object):
                     neighbour.received_messages.get(self.name)
         return sent_messages
         
-
     def message_report(self):
         '''
         List out all messages Node
@@ -116,11 +92,12 @@ class Node(object):
         neighbours.
         '''
         neighbours = self.parents + self.children
-        if len(neighbours) - len(self.received_messages) != 1:
+        if len(neighbours) - len(self.received_messages) > 1:
             return None
-        sent = self.get_sent_messages()
-        targets = [node for node in neighbours if not node.name in sent]
-        return targets[0]
+        for node in neighbours:
+            if not self.name in node.received_messages:
+                return node
+        return None
 
 
 class VariableNode(Node):
@@ -143,10 +120,13 @@ class VariableNode(Node):
 
     def marginal(self, val, normalizer=1.0):
         '''
-        The marginal function is
-        the product of all incoming
-        messages which should be
-        functions of this nodes variable.
+        The marginal function in a Variable
+        Node is the product of all incoming
+        messages. These should all be functions
+        of this nodes variable.
+        When any of the variables in the
+        network are constrained we need to
+        normalize.
         '''
         product = 1
         v = VariableNode(self.name)

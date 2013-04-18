@@ -120,6 +120,7 @@ def test_graph_get_leaves():
 
 # Tests at step 1
 def test_graph_get_step_1_eligible_senders():
+    import ipdb; ipdb.set_trace()
     eligible_senders = graph.get_eligible_senders()
     assert eligible_senders == [x4, x5, fA_node, fB_node]
 
