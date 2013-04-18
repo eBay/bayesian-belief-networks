@@ -120,12 +120,11 @@ def test_graph_get_leaves():
 
 # Tests at step 1
 def test_graph_get_step_1_eligible_senders():
-    import ipdb; ipdb.set_trace()
     eligible_senders = graph.get_eligible_senders()
     assert eligible_senders == [x4, x5, fA_node, fB_node]
 
 
-def test_node_get_target():
+def test_node_get_step_1_target():
     assert x1.get_target() is None
     assert x2.get_target() is None
     assert x3.get_target() is None
@@ -160,6 +159,7 @@ def test_construct_message():
     assert message.argspec == ['x2']
     assert message.factors == [fB_node.func]
 
+
 def test_send_message():
     message = x4.construct_message()
     x4.send(message)
@@ -174,6 +174,7 @@ def test_send_message():
     fB_node.send(message)
     assert message.destination.received_messages['fB'] == message
 
+
 def test_sent_messages():
     sent = x4.get_sent_messages()
     assert sent['fD'] == fD_node.received_messages['x4']
@@ -185,6 +186,11 @@ def test_sent_messages():
     assert sent['x2'] == x2.received_messages['fB']
 
 
+def test_node_get_step_2_target():
+    assert x1.get_target() == fC_node
+    assert x2.get_target() == fC_node
+
+
 def test_graph_reset():
     graph.reset()
     for node in graph.nodes:
@@ -192,11 +198,97 @@ def test_graph_reset():
 
 def test_propagate():
     graph.reset()
-    import ipdb; ipdb.set_trace()
     graph.propagate()
-    for node in graph.nodes():
+    for node in graph.nodes:
         node.message_report()
 
+def marg(x, val, normalizer=1.0):
+    return round(x.marginal(val, normalizer), 3)
+
+
+def test_marginals():
+    m = marg(x1, True)
+    assert m == 0.1
+    m = marg(x1, False)
+    assert m == 0.9
+    m = marg(x2, True)
+    assert m == 0.3
+    m = marg(x2, False)
+    assert m == 0.7
+    m = marg(x3, True)
+    assert m == 0.012  # Note slight rounding difference to BAI
+    m = marg(x3, False)
+    assert m == 0.988
+    m = marg(x4, True)
+    assert m == 0.208
+    m = marg(x4, False)
+    assert m == 0.792
+    m = marg(x5, True)
+    assert m == 0.304
+    m = marg(x5, False)
+    assert m == 0.696
+
+def test_add_evidence():
+    ''' 
+    We will set x5=True, this
+    corresponds to variable D in BAI
+    '''
+    graph.reset()
+    add_evidence(x5, True)
+    graph.propagate()
+    normalizer = marg(x5, True)
+    assert normalizer == 0.304
+    m = marg(x1, True, normalizer)
+    assert m == 0.102
+    m = marg(x1, False, normalizer)
+    assert m == 0.898
+    m = marg(x2, True, normalizer)
+    assert m == 0.307
+    m = marg(x2, False, normalizer)
+    assert m == 0.693
+    m = marg(x3, True, normalizer)
+    assert m == 0.025
+    m = marg(x3, False, normalizer)
+    assert m == 0.975
+    m = marg(x4, True, normalizer)
+    assert m == 0.217
+    m = marg(x4, False, normalizer)
+    assert m == 0.783
+    m = marg(x5, True, normalizer)
+    assert m == 1.0
+    m = marg(x5, False, normalizer)
+    assert m == 0.0
+    
+def test_add_evidence_x2_true():
+    '''
+    x2 = S in BAI
+    '''
+    graph.reset()
+    add_evidence(x2, True)
+    graph.propagate()
+    normalizer = marg(x2, True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.1
+    m = marg(x1, False, normalizer)
+    assert m == 0.9
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 0.032
+    m = marg(x3, False, normalizer)
+    assert m == 0.968
+    m = marg(x4, True, normalizer)
+    assert m == 0.222
+    m = marg(x4, False, normalizer)
+    assert m == 0.778
+    m = marg(x5, True, normalizer)
+    assert m == 0.311
+    m = marg(x5, False, normalizer)
+    assert m == 0.689
+    
+    
 
 
 

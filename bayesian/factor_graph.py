@@ -92,12 +92,18 @@ class Node(object):
         neighbours.
         '''
         neighbours = self.parents + self.children
-        if len(neighbours) - len(self.received_messages) > 1:
-            return None
-        for node in neighbours:
-            if not self.name in node.received_messages:
-                return node
-        return None
+        #if len(neighbours) - len(self.received_messages) > 1:
+        #    return None
+        needed_to_send = defaultdict(int)
+        for target in neighbours:
+            needed_to_send[target] = len(neighbours) - 1
+        for _, message in self.received_messages.items():
+            for target in neighbours:
+                if message.source != target:
+                    needed_to_send[target] -= 1
+        for k, v in needed_to_send.items():
+            if v == 0 and not self.name in k.received_messages:
+                return k
 
 
 class VariableNode(Node):
@@ -134,6 +140,9 @@ class VariableNode(Node):
         for _, message in self.received_messages.iteritems():
             product *= message(v)
         return product / normalizer
+
+    def reset(self):
+        self.received_messages = {}
 
 
 class FactorNode(Node):
@@ -205,11 +214,13 @@ class FactorNode(Node):
         evidence_func.argspec = args
         self.func = evidence_func
 
-        
+    def reset(self):
+        self.received_messages = {}
+        if self.cached_functions:
+            self.pop_evidence()
+
     def pop_evidence(self):
         self.func = self.cached_functions.pop()
-
-
 
 
 class Message(object):
@@ -670,7 +681,7 @@ class FactorGraph(object):
         or removing evidence.
         '''
         for node in self.nodes:
-            node.received_messages = {}
+            node.reset()
 
     def get_leaves(self):
         return [node for node in self.nodes if node.is_leaf()]
@@ -691,16 +702,20 @@ class FactorGraph(object):
     
     def propagate(self):
         '''
-        This is the heart of the sum-product algorithm.
+        This is the heart of the sum-product
+        Message Passing Algorithm.
         '''
+        step = 1
         while True:
             eligible_senders = self.get_eligible_senders()
+            print 'Step: %s %s nodes can send.' % (step, len(eligible_senders))
+            print [x.name for x in eligible_senders]
             if not eligible_senders:
                 break
             for node in eligible_senders:
-                target_node = node.get_target()
                 message = node.construct_message()
                 node.send(message)
+            step += 1
 
         
 
