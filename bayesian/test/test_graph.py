@@ -377,9 +377,22 @@ def test_add_evidence_x5_true_x2_true():
     assert m == 0.0
     
 
-if __name__ == '__main__':
+# Now we are going to test based on the second
+# half of table 2.2 where the prior for prior
+# for the Smoking parameter (x2=True) is
+# set to 0.5. We start by redefining the
+# PMF for fB and then rebuilding the factor
+# graph
 
-    # Note we need to set some of the  parents and children afterwards
+
+def test_marginals_table_22_part_2_x2_prior_change():
+    def fB(x2):
+        if x2.value == True:
+            return 0.5
+        elif x2.value == False:
+            return 0.5
+
+    # Build the network
     fA_node = FactorNode('fA', fA)
     fB_node = FactorNode('fB', fB)
     fC_node = FactorNode('fC', fC)
@@ -413,212 +426,165 @@ if __name__ == '__main__':
     fD_node.children = [x4]
     fE_node.children = [x5]
 
-    # Now we will start the algorithm to compute the marginals
-    # Step 1 
-    # fA -> x1
-    step = 1
-    print 'Step 1'
-    message = make_factor_node_message(fA_node, x1)
-    fA_node.send_to(x1, message)
-
-    # fB -> x2
-    message = make_factor_node_message(fB_node, x2)
-    fB_node.send_to(x2, message)
-
-    # x4 -> fD
-    message = make_variable_node_message(x4, fD_node)
-    x4.send_to(fD_node, message)
-
-    # x5 -> fE
-    message = make_variable_node_message(x5, fE_node)
-    x5.send_to(fE_node, message)
-
-    from pprint import pprint
-    #pprint(x1.received_messages)
-    #pprint(x2.received_messages)
-    #pprint(fD_node.received_messages)
-    #pprint(fE_node.received_messages)
-
-    print 'End of Step 1.'
-    print '----------------------------------------------------------------------'
-
-    # ----------- end of step 1
-
-    print 'Step 2'
-    step = 2
-
-    # Step 2
-    # x1 already has a message so it just passes that along since
-    # apart from the destination it has no other neighbours
-    message = x1.received_messages['fA']
-    x1.send_to(fC_node, message)
-
-    message = x2.received_messages['fB']
-    x2.send_to(fC_node, message)
-
-    # Now when fd sends to x3 it needs to *add itself* as a factor too.
-    # and them sum over the product of all factors.
-    message = make_factor_node_message(fD_node, x3)
-    fD_node.send_to(x3, message)
-
-    # Now 
-    message = make_factor_node_message(fE_node, x3)
-    fE_node.send_to(x3, message)
-    #print 'At fC_node:'
-    #pprint(fC_node.received_messages)
-
-    #print 'At x3 node:'
-    #pprint(x3.received_messages)
-
-    print 'End of Step 2.'
-    print '----------------------------------------------------------------------'
-
-    # ----------- end of step 2
-
-    step = 3
-    # Step 3
-    print 'Step 3'
-
-
-    message = make_factor_node_message(fC_node, x3)
-    fC_node.send_to(x3, message)
-
-    message = make_variable_node_message(x3, fC_node)
-    x3.send_to(fC_node, message)
-
-    #print 'At x3 node:'
-    #pprint(x3.received_messages)
+    graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
+    graph.propagate()
+    m = marg(x1, True)
+    assert m == 0.1
+    m = marg(x1, False)
+    assert m == 0.9
+    m = marg(x2, True)
+    assert m == 0.5
+    m = marg(x2, False)
+    assert m == 0.5
+    m = marg(x3, True)
+    assert m == 0.017
+    m = marg(x3, False)
+    assert m == 0.983
+    m = marg(x4, True)
+    assert m == 0.212
+    m = marg(x4, False)
+    assert m == 0.788
+    m = marg(x5, True)
+    assert m == 0.306
+    m = marg(x5, False)
+    assert m == 0.694
     
-    #print 'At fC_node:'
-    #pprint(fC_node.received_messages)
+    # Now set D=T (x5=True)
+    graph.reset()
+    add_evidence(x5, True)
+    graph.propagate()
+    normalizer = marg(x5, True)
+    assert normalizer == 0.306
+    m = marg(x1, True, normalizer)
+    assert m == 0.102
+    m = marg(x1, False, normalizer)
+    assert m == 0.898
+    m = marg(x2, True, normalizer)
+    assert m == 0.508
+    m = marg(x2, False, normalizer)
+    assert m == 0.492
+    m = marg(x3, True, normalizer)
+    assert m == 0.037
+    m = marg(x3, False, normalizer)
+    assert m == 0.963
+    m = marg(x4, True, normalizer)
+    assert m == 0.226
+    m = marg(x4, False, normalizer)
+    assert m == 0.774
+    m = marg(x5, True, normalizer)
+    assert m == 1.0
+    m = marg(x5, False, normalizer)
+    assert m == 0.0
 
 
-    print 'End of Step 3.'
-    print '-----------------------------------------------------------------------'
+    graph.reset()
+    add_evidence(x2, True)
+    graph.propagate()
+    normalizer = marg(x2, True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.1
+    m = marg(x1, False, normalizer)
+    assert m == 0.9
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 0.032
+    m = marg(x3, False, normalizer)
+    assert m == 0.968
+    m = marg(x4, True, normalizer)
+    assert m == 0.222 # Note that in Table 2.2 x4 and x5 marginals are reversed
+    m = marg(x4, False, normalizer)
+    assert m == 0.778
+    m = marg(x5, True, normalizer)
+    assert m == 0.311
+    m = marg(x5, False, normalizer)
+    assert m == 0.689
+
+    '''
+    x3 = True in BAI this is Cancer = True
+    '''
+    graph.reset()
+    add_evidence(x3, True)
+    graph.propagate()
+    normalizer = x3.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.201
+    m = marg(x1, False, normalizer)
+    assert m == 0.799
+    m = marg(x2, True, normalizer)
+    assert m == 0.917
+    m = marg(x2, False, normalizer)
+    assert m == 0.083
+    m = marg(x3, True, normalizer)
+    assert m == 1.0
+    m = marg(x3, False, normalizer)
+    assert m == 0.0
+    m = marg(x4, True, normalizer)
+    assert m == 0.9
+    m = marg(x4, False, normalizer)
+    assert m == 0.1
+    m = marg(x5, True, normalizer)
+    assert m == 0.650
+    m = marg(x5, False, normalizer)
+    assert m == 0.350
+
+    '''
+    x2 = True in BAI this is Smoker = True
+    x3 = True in BAI this is Cancer = True
+    '''
+    graph.reset()
+    add_evidence(x2, True)
+    add_evidence(x3, True)
+    graph.propagate()
+    normalizer = x3.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.156
+    m = marg(x1, False, normalizer)
+    assert m == 0.844
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 1.0
+    m = marg(x3, False, normalizer)
+    assert m == 0.0
+    m = marg(x4, True, normalizer)
+    assert m == 0.9
+    m = marg(x4, False, normalizer)
+    assert m == 0.1
+    m = marg(x5, True, normalizer)
+    assert m == 0.650
+    m = marg(x5, False, normalizer)
+    assert m == 0.350
 
 
-    step = 4
-
-    # Step 4
-    print 'Step 4'
-
-    ###### To make it easiser to see I will print the messages as I go along
-
-    message = make_factor_node_message(fC_node, x1)
-    fC_node.send_to(x1, message)
-
-    message = make_factor_node_message(fC_node, x2)
-    fC_node.send_to(x2, message)
-
-    
-    message = make_variable_node_message(x3, fD_node)
-    x3.send_to(fD_node, message)
-
-    message = make_variable_node_message(x3, fE_node)
-    x3.send_to(fE_node, message)
-
-
-    #print 'At x1 node:'
-    #pprint(x1.received_messages)
-
-
-    #print 'At x2 node:'
-    #pprint(x2.received_messages)
-
-    
-    #print 'At fD_node:'
-    #pprint(fD_node.received_messages)
-
-    #print 'At fE_node:'
-    #pprint(fE_node.received_messages)
-
-
-    print 'End of Step 4.'
-    print '-----------------------------------------------------------------------'
-
-    step = 5
-    # Step 5
-    print 'Step 5'
-
-
-
-    message = make_factor_node_message(fD_node, x4)
-    fD_node.send_to(x4, message)
-
-    message = make_factor_node_message(fE_node, x5)
-    fE_node.send_to(x5, message)
-
-    
-    message = make_variable_node_message(x1, fA_node)
-    x1.send_to(fA_node, message)
-
-    message = make_variable_node_message(x2, fB_node)
-    x2.send_to(fB_node, message)
-
-    print 'End of Step 5.'
-    print '-----------------------------------------------------------------------'
-
-
-    print 'Messages at all nodes:'
-    for node in [x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node]:
-        node.message_report()
-    x1.message_report()
-
-    # Create a test variable to play with
-    t1 = VariableNode('x1')
-    t1.value = True
-
-    #v2 = VariableNode('v2')
-    #v2.value = False
-
-    res = x1.received_messages['fC'](t1)
-    print '-----------------------------------------------------------------------'
-    print 'Un-normalized Marginals'
-    print '-----------------------------------------------------------------------'
-    marginals = dict()
-    for node in [x1, x2, x3, x4, x5]:
-        for value in [True]:
-            marginals[node.name] = round(node.marginal(value), 3)
-            print node.name, value, marginals[node.name]
-
-    # Now since we added evidence for x5 we need to 
-    # use the un-normalized marginal of x5 as the normalizer
-    normalizer = marginals['x2']
-
-    print '-----------------------------------------------------------------------'
-    print 'Normalized Marginals'
-    print '-----------------------------------------------------------------------'
-    marginals = dict()
-    for node in [x1, x2, x3, x4, x5]:
-        for value in [True]:
-            marginals[node.name] = round(node.marginal(value, normalizer), 3)
-            print node.name, value, marginals[node.name]
-
-    # See BAI_Chapter2 Table 2.2
-    #assert marginals['x1'] == 0.100
-    #assert marginals['x2'] == 0.300
-    #assert marginals['x3'] == 0.012  # Note difference in rounding from Table 2.2
-    #assert marginals['x4'] == 0.208
-    #assert marginals['x5'] == 0.304
-
-    # These are the assertions for the normalized marginals for D=T (x5=True)
-    #assert marginals['x1']  == 0.102
-    #assert marginals['x2']  == 0.307
-    #assert marginals['x3']  == 0.025
-    #assert marginals['x4']  == 0.217
-    #assert marginals['x5']  == 1.000
-
-    # These are the assertions for the normalized marginals for S=T (x2=True)
-    assert marginals['x1']  == 0.100
-    assert marginals['x2']  == 1.000
-    assert marginals['x3']  == 0.032
-    assert marginals['x4']  == 0.222
-    assert marginals['x5']  == 0.311
-
-
-    print 'Yippee! All assertions past!'
-
-    # Now we will add evidence by setting D=T. (x5=True) remember to normalize!
-
+    graph.reset()
+    add_evidence(x5, True)
+    add_evidence(x2, True)
+    graph.propagate()
+    normalizer = x5.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.102
+    m = marg(x1, False, normalizer)
+    assert m == 0.898
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 0.067
+    m = marg(x3, False, normalizer)
+    assert m == 0.933
+    m = marg(x4, True, normalizer)
+    assert m == 0.247
+    m = marg(x4, False, normalizer)
+    assert m == 0.753
+    m = marg(x5, True, normalizer)
+    assert m == 1.0
+    m = marg(x5, False, normalizer)
+    assert m == 0.0
 
 
