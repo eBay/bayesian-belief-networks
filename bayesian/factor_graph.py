@@ -50,12 +50,6 @@ class Node(object):
             return True
         return False
 
-    def send_to(self, recipient, message):
-        print '%s ---> %s' % (
-            self.name, recipient.name), message
-        recipient.received_messages[
-            self.name] = message
-
     def send(self, message):
         recipient = message.destination
         print '%s ---> %s' % (
@@ -261,71 +255,6 @@ class FactorMessage(Message):
              len(self.factors))
 
 
-        
-    def summarize(self):
-        '''
-        For all variables not in
-        the argspec, we want to
-        sum over all possible values.
-        summarize should *replace*
-        the current factors with
-        a new list of factors 
-        where each factor has been
-        marginalized.
-        
-        '''
-        new_factors = []
-        args_map = {}
-        all_args = set()
-        for factor in self.factors:
-            if factor.value is not None:
-                continue
-            args_map[factor] = get_args(factor)
-            all_args = all_args.union(
-                set(args_map[factor]))
-        all_args = all_args.difference(
-            set(self.argspec))
-        if not all_args:
-            # There are no variables to
-            # summarize so we are done
-            return 
-        args = list(all_args)
-        arg_vals = dict()
-        for arg in args:
-            arg_vals[arg] = [True, False]
-        args_list = list(expand_parameters(arg_vals))
-        # Now loop through the args_list and for
-        # each factor that we can apply a binding
-        # to we do so and add to the sum so far
-        for factor in self.factors:
-            if isinstance(factor, FactorMessage) and not factor.value is None:
-                factor.summarize()
-                #new_factors.append(factor)
-                continue
-            if factor.value is not None:
-                continue
-            arg_spec = args_map[factor]
-            # If the not_sum exclude_var is in the
-            # arg spec of this factor then we cannot
-            # summarize this particular factor
-            if self.not_sum.exclude_var in arg_spec:
-                continue
-            
-            arg_vals = dict()
-            for arg in arg_spec:
-                arg_vals[arg] = [True, False]
-            args_list = list(expand_parameters(arg_vals))
-            if len(args_list[0]) != len(arg_spec):
-                continue
-            total = 0
-            for arg_list in args_list:
-                bindings = build_bindings(arg_spec, arg_list)
-                total += factor(*bindings)
-            factor.value = total
-        if all(map(lambda x: isinstance(x.value, (int, float)), self.factors)):
-            self.value = reduce(lambda x, y: x.value * y.value, factors)
-            
-
 def replace_var(f, var, val):
     arg_spec = get_args(f)
     pos = arg_spec.index(var)
@@ -400,17 +329,6 @@ class VariableMessage(Message):
              len(self.factors), self.argspec)
 
 
-class NotSum(object):
-    
-    def __init__(self, exclude_var, factors):
-        self.exclude_var = exclude_var
-        self.factors = factors
-        self.argspec = [exclude_var]
-
-    def __repr__(self):
-        return '<NotSum(%s, %s)>' % (self.exclude_var, '*'.join([repr(f) for f in self.factors]))
-                                     
-
 
 def make_not_sum_func(product_func, keep_var):
     '''
@@ -424,25 +342,8 @@ def make_not_sum_func(product_func, keep_var):
     new_func = copy.deepcopy(product_func)
     for arg in args:
         if arg != keep_var:
-            if arg == 'x544':
-                new_func = replace_var(new_func, 'x5', True)
-            else:
-                new_func = eliminate_var(new_func, arg)
+            new_func = eliminate_var(new_func, arg)
     return new_func
-
-def build_bindings(arg_spec, arg_vals):
-    '''
-    Build a list of values from 
-    a dict that matches the arg_spec
-    '''
-    assert len(arg_spec) == len(arg_vals)
-    bindings = []
-    #bindings = [arg_vals[arg] for arg in arg_spec]
-    for arg in arg_spec:
-        var = VariableNode(arg)
-        var.value = arg_vals[arg]
-        bindings.append(var)
-    return bindings
 
 
 def make_factor_node_message(node, target_node):
@@ -602,27 +503,6 @@ def expand_args(args):
     if not args:
         return []
     return 
-
-class Cycler(object):
-    '''
-    Like itertools.cycler
-    except it caches the
-    most recent value for 
-    repeat use.
-    '''
-
-    def __init__(self, vals):
-        self.cycle = cycle(vals)
-        self.current_val = None
-
-    def current(self):
-        if self.current_val is None:
-            self.next()
-        return self.current_val
-
-    def next(self):
-        self.current_val = self.cycle.next()
-        return self.current_val
 
 
 def dict_to_tuples(d):
