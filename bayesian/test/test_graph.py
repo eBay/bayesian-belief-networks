@@ -2,7 +2,6 @@ import pytest
 from bayesian.factor_graph import *
 
 
-#@pytest.fixture
 def fA(x1):
     if x1.value == True:
         return 0.1
@@ -185,7 +184,7 @@ def test_sent_messages():
     sent = fB_node.get_sent_messages()
     assert sent['x2'] == x2.received_messages['fB']
 
-
+# Step 2
 def test_node_get_step_2_target():
     assert x1.get_target() == fC_node
     assert x2.get_target() == fC_node
@@ -288,6 +287,67 @@ def test_add_evidence_x2_true():
     m = marg(x5, False, normalizer)
     assert m == 0.689
     
+
+def test_add_evidence_x3_true():
+    '''
+    x3 = True in BAI this is Cancer = True
+    '''
+    graph.reset()
+    add_evidence(x3, True)
+    graph.propagate()
+    normalizer = x3.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.249
+    m = marg(x1, False, normalizer)
+    assert m == 0.751
+    m = marg(x2, True, normalizer)
+    assert m == 0.825
+    m = marg(x2, False, normalizer)
+    assert m == 0.175
+    m = marg(x3, True, normalizer)
+    assert m == 1.0
+    m = marg(x3, False, normalizer)
+    assert m == 0.0
+    m = marg(x4, True, normalizer)
+    assert m == 0.9
+    m = marg(x4, False, normalizer)
+    assert m == 0.1
+    m = marg(x5, True, normalizer)
+    assert m == 0.650
+    m = marg(x5, False, normalizer)
+    assert m == 0.350
+
+
+def test_add_evidence_x2_true_and_x3_true():
+    '''
+    x2 = True in BAI this is Smoker = True
+    x3 = True in BAI this is Cancer = True
+    '''
+    graph.reset()
+    add_evidence(x2, True)
+    add_evidence(x3, True)
+    graph.propagate()
+    normalizer = x3.marginal(True)
+    m = marg(x1, True, normalizer)
+    assert m == 0.156
+    m = marg(x1, False, normalizer)
+    assert m == 0.844
+    m = marg(x2, True, normalizer)
+    assert m == 1.0
+    m = marg(x2, False, normalizer)
+    assert m == 0.0
+    m = marg(x3, True, normalizer)
+    assert m == 1.0
+    m = marg(x3, False, normalizer)
+    assert m == 0.0
+    m = marg(x4, True, normalizer)
+    assert m == 0.9
+    m = marg(x4, False, normalizer)
+    assert m == 0.1
+    m = marg(x5, True, normalizer)
+    assert m == 0.650
+    m = marg(x5, False, normalizer)
+    assert m == 0.350
     
 
 
