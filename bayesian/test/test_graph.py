@@ -8,6 +8,7 @@ def fA(x1):
     elif x1.value == False:
         return 0.9
 
+fA.domains = dict(x1=[True, False])
 
 def fB(x2):
     if x2.value == True:

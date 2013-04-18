@@ -275,8 +275,8 @@ def replace_var(f, var, val):
 
     replaced.argspec = new_spec
     return replaced
-
     
+
 def eliminate_var(f, var):
     '''
     Given a function f return a new
@@ -287,27 +287,30 @@ def eliminate_var(f, var):
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     new_spec.remove(var)
-    
+    domains = dict(
+        x1 = [True, False],
+        x2 = [True, False],
+        x3 = [True, False],
+        x4 = [True, False],
+        x5 = [True, False])
     def eliminated(*args):
         template = arg_spec[:]
         total = 0
         summation_vals = [True, False]
+        call_args = template[:]
+        for arg in args:
+            arg_pos = template.index(arg.name)
+            call_args[arg_pos] = arg
         for val in summation_vals:
             v = VariableNode(name=var)
             v.value = val
-            
-            template[pos] = v
-            call_args = template[:]
-            for arg in args:
-                arg_pos = call_args.index(arg.name)
-                call_args[arg_pos] = arg
-                
-            #if not(arg.name=='x2' and val==False):
+            call_args[pos] = v
             total += f(*call_args)
         return total
 
     eliminated.argspec = new_spec
     return eliminated
+
 
     
 class VariableMessage(Message):
@@ -553,6 +556,16 @@ class FactorGraph(object):
 
     def __init__(self, nodes):
         self.nodes = nodes
+        # Cash the 
+        self.domains = dict(
+            x1 = [True, False],
+            x2 = [True, False],
+            x3 = [True, False],
+            x4 = [True, False],
+            x5 = [True, False])
+        #for node in nodes:
+        #    if isinstance(
+
 
     def reset(self):
         '''
