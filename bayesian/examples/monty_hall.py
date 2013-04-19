@@ -1,109 +1,112 @@
-'''This is the example from Chapter 2 BAI'''
+'''The Monty Hall Problem Modelled as a Bayesian Belief Network'''
 from bayesian.factor_graph import *
 
+'''
 
-def fP(P):
-    if P.value == 'high':
-        return 0.1
-    elif P.value == 'low':
-        return 0.9
-
-fP.domains = dict(P=['high', 'low'])
-
-def fS(S):
-    if S.value == True:
-        return 0.3
-    elif S.value == False:
-        return 0.7
-
-fS.domains = dict(S=[True, False])
-
-def fC(P, S, C):
-    ''' 
-    This needs to be a joint probability distribution
-    over the inputs and the node itself
-    '''
-    table = dict()
-    table['ttt'] = 0.05
-    table['ttf'] = 0.95
-    table['tft'] = 0.02
-    table['tff'] = 0.98
-    table['ftt'] = 0.03
-    table['ftf'] = 0.97
-    table['fft'] = 0.001
-    table['fff'] = 0.999
-    key = ''
-    key = key + 't' if P.value=='high' else key + 'f'
-    key = key + 't' if S.value else key + 'f'
-    key = key + 't' if C.value  else key + 'f'
-    return table[key]
+As BBN:
 
 
-fC.domains = dict(P=['high', 'low'], S=[True, False], C=[True, False])
+         GuestDoor        ActualDoor
+           |    \          /
+           |     MontyDoor    p(M|G,A)
+           \       /
+            SecondDoor p(S|G,M)
 
-def fX(C, X):
-    table = dict()
-    table['tt'] = 0.9
-    table['tf'] = 0.1
-    table['ft'] = 0.2
-    table['ff'] = 0.8
-    key = ''
-    key = key + 't' if C.value else key + 'f'
-    key = key + 't' if X.value else key + 'f'
-    return table[key]
 
-fX.domains = dict(C=[True, False], X=[True, False])
+             fGuestDoor               fActualDoor
+                  |                        |
+              GuestDoor                ActualDoor
+                  |                        |
+                  +------fMontyDoor--------+           
+                             |               
+                         MontyDoor           
+                             |               
+                     fGuestSecondDoor  
+                             |
+                      GuestSecondDoor
 
-def fD(C, D):
-    table = dict()
-    table['tt'] = 0.65
-    table['tf'] = 0.35
-    table['ft'] = 0.3
-    table['ff'] = 0.7
-    key = ''
-    key = key + 't' if C.value else key + 'f'
-    key = key + 't' if D.value else key + 'f'
-    return table[key]
+'''
 
-fD.domains = dict(C=[True, False], D=[True, False])
+domains = (
+    ActualDoor = ['A', 'B', 'C'],
+    GuestDoor = ['A', 'B', 'C'],
+    MontyDoor = ['A', 'B', 'C'],
+    GuestSecondDoor = ['A', 'B', 'C'])
+
+
+def fActualDoor(ActualDoor):
+    if ActualDoor.value == 'A':
+        return 1.0 / 3
+    elif ActualDoor.value == 'B':
+        return 1.0 / 3
+    elif ActualDoor.value == 'C':
+        return 1.0 / 3
+
+fActualDoor.domains = domains
+
+def fGuestDoor(GuestDoor):
+    if GuestDoor.value == 'A':
+        return 1.0 / 3
+    elif GuestDoor.value == 'B':
+        return 1.0 / 3
+    elif GuestDoor.value == 'C':
+        return 1.0 / 3
+
+fGuestDoor.domains = domains
+
+def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
+    if ActualDoor == GuestDoor:
+        return 0.5
+    if ActualDoor == MontyDoor:
+        return 0
+    return 0.5
+
+fMontyDoor.domains = domains
+
+def fGuestSecondDoor(MontyDoor, GuestSecondDoor):
+    if GuestSecondDoor == MontyDoor:
+        return 0
+    else:
+        return 0.5
+
+fGuestSecondDoor.domains = domains
+
+
 
 
 # Build the network
 
-fP_node = FactorNode('fP', fP)
-fS_node = FactorNode('fS', fS)
-fC_node = FactorNode('fC', fC)
-fX_node = FactorNode('fX', fX)
-fD_node = FactorNode('fD', fD)
+fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
+fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
+fGuestSecondDoor_node = FactorNode('fGuestSecondDoor', fGuestSecondDoor)
 
-P = VariableNode('P', parents=[fP_node])
-S = VariableNode('S', parents=[fS_node])
-C = VariableNode('C', parents=[fC_node])
-X = VariableNode('X', parents=[fX_node])
-D = VariableNode('D', parents=[fD_node])
+GuestDoor = VariableNode('GuestDoor', parents=[fGuestDoor_node])
+MontyDoor = VariableNode('MontyDoor', parents=[fMontyDoor_node])
+GuestSecondDoor = VariableNode('GuestSecondDoor', parents=[fGuestSecondDoor_node])
+
 
 # Now set the parents for the factor nodes...
-fP_node.parents = []
-fS_node.parents = []
-fC_node.parents = [P, S]
-fX_node.parents = [C]
-fD_node.parents = [C]
+fGuestDoor_node.parents = []
+fMontyDoor_node.parents = [GuestDoor]
+fGuestSecondDoor_node.parents = [MontyDoor]
 
 # Now set children for Variable Nodes...
-P.children = [fC_node]
-S.children = [fC_node]
-C.children = [fX_node, fD_node]
-X.children = []
-D.children = []
+GuestDoor.children = [fMontyDoor_node]
+MontyDoor.children = [fGuestSecondDoor_node]
+GuestSecondDoor.children = []
 
 # Now set the children for the factor nodes...
-fP_node.children = [P]
-fS_node.children = [S]
-fC_node.children = [C]
-fX_node.children = [X]
-fD_node.children = [D]
+fGuestDoor_node.children = [GuestDoor]
+fMontyDoor_node.children = [MontyDoor]
+fGuestSecondDoor_node.children = [GuestSecondDoor]
 
-graph = FactorGraph([P, S, C, X, D, fP_node, fS_node, fC_node, fX_node, fD_node])
+graph = FactorGraph([
+        GuestDoor,
+        MontyDoor,
+        GuestSecondDoor,
+        fGuestDoor_node,
+        fMontyDoor_node,
+        fGuestSecondDoor_node])
 
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
@@ -113,11 +116,9 @@ def marg(x, val, normalizer=1.0):
 if __name__ == '__main__':
     graph.propagate()
 
-    print marg(P, 'high')
-    print marg(S, True)
-    print marg(C, True)
-    print marg(X, True)
-    print marg(D, True)
+    print marg(GuestDoor, 'A')
+    print marg(GuestDoor, 'B')
+    print marg(GuestDoor, 'C')
 
 def test_add_evidence():
     ''' 

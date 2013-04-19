@@ -247,6 +247,7 @@ class FactorMessage(Message):
         self.factors = factors
         self.func = func
         self.argspec = get_args(func)
+        self.domains = func.domains
 
     def __repr__(self):
         return '<F-Message %s -> %s: ~(%s) %s factors.>' % \
@@ -287,12 +288,7 @@ def eliminate_var(f, var):
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     new_spec.remove(var)
-    domains = dict(
-        x1 = [True, False],
-        x2 = [True, False],
-        x3 = [True, False],
-        x4 = [True, False],
-        x5 = [True, False])
+
     def eliminated(*args):
         template = arg_spec[:]
         total = 0
@@ -301,7 +297,7 @@ def eliminate_var(f, var):
         for arg in args:
             arg_pos = template.index(arg.name)
             call_args[arg_pos] = arg
-        for val in summation_vals:
+        for val in f.domains[var]:
             v = VariableNode(name=var)
             v.value = val
             call_args[pos] = v
@@ -309,6 +305,9 @@ def eliminate_var(f, var):
         return total
 
     eliminated.argspec = new_spec
+    eliminated.domains = f.domains
+    if not eliminated.domains:
+        import ipdb; ipdb.set_trace()
     return eliminated
 
 
@@ -455,17 +454,21 @@ def make_product_func(factors):
     '''
     args_map = {}
     all_args = []
+    domains = {}
     for factor in factors:
         #if factor == 1:
         #    continue
         args_map[factor] = get_args(factor)
         all_args += args_map[factor]
+        if hasattr(factor, 'domains'):
+            domains.update(factor.domains)
     args = list(set(all_args))
 
     def product_func(*args):
         arg_dict = dict([(a.name, a) for a in args])
         result = 1
         for factor in factors:
+            #domains.update(factor.domains)
             # We need to build the correct argument
             # list to call this factor with.
             factor_args = []
@@ -478,16 +481,13 @@ def make_product_func(factors):
                 # insert a dummy argument
                 # so that the unity function works.
                 factor_args.append('dummy')
-            try:
-                result *= factor(*factor_args)
-            except:
-                import ipdb; ipdb.set_trace()
-                print factor, factor_args, get_args(factor)
+            result *= factor(*factor_args)
                 
         return result
 
     product_func.argspec = args
     product_func.factors = factors
+    product_func.domains = domains
     return product_func
 
 
