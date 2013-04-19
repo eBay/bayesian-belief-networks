@@ -76,19 +76,17 @@ fC_node = FactorNode('fC', fC)
 fX_node = FactorNode('fX', fX)
 fD_node = FactorNode('fD', fD)
 
-P = VariableNode('P', neighbours=[fP_node, fC_node])
-S = VariableNode('S', neighbours=[fS_node, fC_node])
-C = VariableNode('C', neighbours=[fC_node, fX_node, fD_node])
-X = VariableNode('X', neighbours=[fX_node])
-D = VariableNode('D', neighbours=[fD_node])
+P = VariableNode('P')
+S = VariableNode('S')
+C = VariableNode('C')
+X = VariableNode('X')
+D = VariableNode('D')
 
-# Now set the neighbours for the factor nodes...
-fP_node.neighbours = [P]
-fS_node.neighbours = [S]
-fC_node.neighbours = [P, S, C]
-fX_node.neighbours = [C, X]
-fD_node.neighbours = [C, D]
-
+connect(fP_node, P)
+connect(fS_node, S)
+connect(fC_node, [P, S, C])
+connect(fX_node, [C, X])
+connect(fD_node, [C, D])
 
 graph = FactorGraph([P, S, C, X, D, fP_node, fS_node, fC_node, fX_node, fD_node])
 
@@ -96,163 +94,11 @@ def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
 
 
-
 if __name__ == '__main__':
     graph.propagate()
-
     print marg(P, 'high')
     print marg(S, True)
     print marg(C, True)
     print marg(X, True)
     print marg(D, True)
-
-def test_add_evidence():
-    ''' 
-    We will set x5=True, this
-    corresponds to variable D in BAI
-    '''
-    graph.reset()
-    add_evidence(x5, True)
-    graph.propagate()
-    normalizer = marg(x5, True)
-    assert normalizer == 0.304
-    m = marg(x1, True, normalizer)
-    assert m == 0.102
-    m = marg(x1, False, normalizer)
-    assert m == 0.898
-    m = marg(x2, True, normalizer)
-    assert m == 0.307
-    m = marg(x2, False, normalizer)
-    assert m == 0.693
-    m = marg(x3, True, normalizer)
-    assert m == 0.025
-    m = marg(x3, False, normalizer)
-    assert m == 0.975
-    m = marg(x4, True, normalizer)
-    assert m == 0.217
-    m = marg(x4, False, normalizer)
-    assert m == 0.783
-    m = marg(x5, True, normalizer)
-    assert m == 1.0
-    m = marg(x5, False, normalizer)
-    assert m == 0.0
-    
-def test_add_evidence_x2_true():
-    '''
-    x2 = S in BAI
-    '''
-    graph.reset()
-    add_evidence(x2, True)
-    graph.propagate()
-    normalizer = marg(x2, True)
-    m = marg(x1, True, normalizer)
-    assert m == 0.1
-    m = marg(x1, False, normalizer)
-    assert m == 0.9
-    m = marg(x2, True, normalizer)
-    assert m == 1.0
-    m = marg(x2, False, normalizer)
-    assert m == 0.0
-    m = marg(x3, True, normalizer)
-    assert m == 0.032
-    m = marg(x3, False, normalizer)
-    assert m == 0.968
-    m = marg(x4, True, normalizer)
-    assert m == 0.222
-    m = marg(x4, False, normalizer)
-    assert m == 0.778
-    m = marg(x5, True, normalizer)
-    assert m == 0.311
-    m = marg(x5, False, normalizer)
-    assert m == 0.689
-    
-
-def test_add_evidence_x3_true():
-    '''
-    x3 = True in BAI this is Cancer = True
-    '''
-    graph.reset()
-    add_evidence(x3, True)
-    graph.propagate()
-    normalizer = x3.marginal(True)
-    m = marg(x1, True, normalizer)
-    assert m == 0.249
-    m = marg(x1, False, normalizer)
-    assert m == 0.751
-    m = marg(x2, True, normalizer)
-    assert m == 0.825
-    m = marg(x2, False, normalizer)
-    assert m == 0.175
-    m = marg(x3, True, normalizer)
-    assert m == 1.0
-    m = marg(x3, False, normalizer)
-    assert m == 0.0
-    m = marg(x4, True, normalizer)
-    assert m == 0.9
-    m = marg(x4, False, normalizer)
-    assert m == 0.1
-    m = marg(x5, True, normalizer)
-    assert m == 0.650
-    m = marg(x5, False, normalizer)
-    assert m == 0.350
-
-
-def test_add_evidence_x2_true_and_x3_true():
-    '''
-    x2 = True in BAI this is Smoker = True
-    x3 = True in BAI this is Cancer = True
-    '''
-    graph.reset()
-    add_evidence(x2, True)
-    add_evidence(x3, True)
-    graph.propagate()
-    normalizer = x3.marginal(True)
-    m = marg(x1, True, normalizer)
-    assert m == 0.156
-    m = marg(x1, False, normalizer)
-    assert m == 0.844
-    m = marg(x2, True, normalizer)
-    assert m == 1.0
-    m = marg(x2, False, normalizer)
-    assert m == 0.0
-    m = marg(x3, True, normalizer)
-    assert m == 1.0
-    m = marg(x3, False, normalizer)
-    assert m == 0.0
-    m = marg(x4, True, normalizer)
-    assert m == 0.9
-    m = marg(x4, False, normalizer)
-    assert m == 0.1
-    m = marg(x5, True, normalizer)
-    assert m == 0.650
-    m = marg(x5, False, normalizer)
-    assert m == 0.350
-    
-def test_add_evidence_x5_true_x2_true():
-    graph.reset()
-    add_evidence(x5, True)
-    add_evidence(x2, True)
-    graph.propagate()
-    normalizer = x5.marginal(True)
-    m = marg(x1, True, normalizer)
-    assert m == 0.102
-    m = marg(x1, False, normalizer)
-    assert m == 0.898
-    m = marg(x2, True, normalizer)
-    assert m == 1.0
-    m = marg(x2, False, normalizer)
-    assert m == 0.0
-    m = marg(x3, True, normalizer)
-    assert m == 0.067
-    m = marg(x3, False, normalizer)
-    assert m == 0.933
-    m = marg(x4, True, normalizer)
-    assert m == 0.247
-    m = marg(x4, False, normalizer)
-    assert m == 0.753
-    m = marg(x5, True, normalizer)
-    assert m == 1.0
-    m = marg(x5, False, normalizer)
-    assert m == 0.0
-    
 

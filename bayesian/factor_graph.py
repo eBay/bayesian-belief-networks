@@ -104,7 +104,7 @@ class VariableNode(Node):
     
     def __init__(self, name, neighbours=[]):
         self.name = name
-        self.neighbours = neighbours
+        self.neighbours = neighbours[:]
         self.received_messages = {}
         self.value = None
 
@@ -142,7 +142,7 @@ class FactorNode(Node):
     def __init__(self, name, func, neighbours=[]):
         self.name = name
         self.func = func
-        self.neighbours = neighbours
+        self.neighbours = neighbours[:]
         self.received_messages = {}
         self.func.value = None
         self.cached_functions = []
@@ -236,6 +236,22 @@ class Message(object):
         return self.func(var)
 
 
+class VariableMessage(Message):
+
+    def __init__(self, source, destination, factors, func):
+        self.source = source
+        self.destination = destination
+        self.factors = factors
+        self.argspec = get_args(func)
+        self.func = func
+
+
+    def __repr__(self):
+        return '<V-Message from %s -> %s: %s factors (%s)>' % \
+            (self.source.name, self.destination.name, 
+             len(self.factors), self.argspec)
+
+
 class FactorMessage(Message):
 
     def __init__(self, source, destination, factors, func):
@@ -251,6 +267,19 @@ class FactorMessage(Message):
             (self.source.name, self.destination.name,
              self.argspec,
              len(self.factors))
+
+
+def connect(a, b):
+    '''
+    Make an edge between two nodes
+    or between a source and several
+    neighbours.
+    '''
+    if not isinstance(b, list):
+        b = [b]
+    for b_ in b:
+        a.neighbours.append(b_)
+        b_.neighbours.append(a)
 
 
 def replace_var(f, var, val):
@@ -309,24 +338,6 @@ def eliminate_var(f, var):
 
 
     
-class VariableMessage(Message):
-
-    def __init__(self, source, destination, factors, func):
-        self.source = source
-        self.destination = destination
-        self.factors = factors
-        self.argspec = get_args(func)
-        self.func = func
-        #self.value = None
-        #if all(map(lambda x: isinstance(x, (int, float)), factors)):
-        #    self.value = reduce(lambda x, y: x * y, factors)
-
-
-    def __repr__(self):
-        return '<V-Message from %s -> %s: %s factors (%s)>' % \
-            (self.source.name, self.destination.name, 
-             len(self.factors), self.argspec)
-
 
 
 def make_not_sum_func(product_func, keep_var):

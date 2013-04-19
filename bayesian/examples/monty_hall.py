@@ -69,15 +69,47 @@ fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
 fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
 fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
 
-ActualDoor = VariableNode('ActualDoor', neighbours=[fActualDoor_node, fMontyDoor_node])
-GuestDoor = VariableNode('GuestDoor', neighbours=[fGuestDoor_node, fMontyDoor_node])
-MontyDoor = VariableNode('MontyDoor', neighbours=[fMontyDoor_node])
+ActualDoor = VariableNode('ActualDoor')
+GuestDoor = VariableNode('GuestDoor')
+MontyDoor = VariableNode('MontyDoor')
 
+import ipdb; ipdb.set_trace()
+
+print 'Neighbours before first call to connect:'
+for node in [ActualDoor,
+             GuestDoor,
+             MontyDoor,
+             fActualDoor_node,
+             fGuestDoor_node,
+             fMontyDoor_node]:
+    print node.name, node.neighbours
+connect(fActualDoor_node, ActualDoor)
+print 'Neighbours after first call to connect:'
+for node in [ActualDoor,
+             GuestDoor,
+             MontyDoor,
+             fActualDoor_node,
+             fGuestDoor_node,
+             fMontyDoor_node]:
+    print node.name, node.neighbours
+
+
+connect(fGuestDoor_node, GuestDoor)
+connect(fMontyDoor_node, ActualDoor)
+connect(fMontyDoor_node, GuestDoor)
+connect(fMontyDoor_node, MontyDoor)
+
+
+#ActualDoor = VariableNode('ActualDoor', neighbours=[fActualDoor_node, fMontyDoor_node])
+#GuestDoor = VariableNode('GuestDoor', neighbours=[fGuestDoor_node, fMontyDoor_node])
+#MontyDoor = VariableNode('MontyDoor', neighbours=[fMontyDoor_node])
 
 # Now set the parents for the factor nodes...
-fActualDoor_node.neighbours = [ActualDoor]
-fGuestDoor_node.neighbours = [GuestDoor]
-fMontyDoor_node.neighbours = [GuestDoor, ActualDoor, MontyDoor]
+#fActualDoor_node.neighbours = [ActualDoor]
+#fGuestDoor_node.neighbours = [GuestDoor]
+#fMontyDoor_node.neighbours = [GuestDoor, ActualDoor, MontyDoor]
+
+import ipdb; ipdb.set_trace()
 
 graph = FactorGraph([
         ActualDoor,

@@ -75,7 +75,6 @@ fE.domains = dict(
     x3=[True, False],
     x5=[True, False])
 
-
 # Build the network
 
 fA_node = FactorNode('fA', fA)
@@ -84,20 +83,33 @@ fC_node = FactorNode('fC', fC)
 fD_node = FactorNode('fD', fD)
 fE_node = FactorNode('fE', fE)
 
-x1 = VariableNode('x1', neighbours=[fA_node, fC_node])
-x2 = VariableNode('x2', neighbours=[fB_node, fC_node])
-x3 = VariableNode('x3', neighbours=[fC_node, fD_node, fE_node])
-x4 = VariableNode('x4', neighbours=[fD_node])
-x5 = VariableNode('x5', neighbours=[fE_node])
+x1 = VariableNode('x1')
+x2 = VariableNode('x2')
+x3 = VariableNode('x3')
+x4 = VariableNode('x4')
+x5 = VariableNode('x5')
 
-# Now set the neighbours for the factor nodes...
-fA_node.neighbours = [x1]
-fB_node.neighbours = [x2]
-fC_node.neighbours = [x1, x2, x3]
-fD_node.neighbours = [x3, x4]
-fE_node.neighbours = [x3, x5]
+connect(fA_node, x1)
+connect(fB_node, x2)
+connect(fC_node, [x1, x2, x3])
+connect(fD_node, [x3, x4])
+connect(fE_node, [x3, x5])
 
-graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
+def test_connect():
+    assert fA_node.neighbours == [x1]
+    assert fB_node.neighbours == [x2]
+    assert fC_node.neighbours == [x1, x2, x3]
+    assert fD_node.neighbours == [x3, x4]
+    assert fE_node.neighbours == [x3, x5]
+    assert x1.neighbours == [fA_node, fC_node]
+    assert x2.neighbours == [fB_node, fC_node]
+    assert x3.neighbours == [fC_node, fD_node, fE_node]
+    assert x4.neighbours == [fD_node]
+    assert x5.neighbours == [fE_node]
+
+
+graph = FactorGraph([x1, x2, x3, x4, x5,
+                     fA_node, fB_node, fC_node, fD_node, fE_node])
 
 def test_variable_node_is_leaf():
     assert not x1.is_leaf()
