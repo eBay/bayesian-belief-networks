@@ -84,32 +84,18 @@ fC_node = FactorNode('fC', fC)
 fD_node = FactorNode('fD', fD)
 fE_node = FactorNode('fE', fE)
 
-x1 = VariableNode('x1', parents=[fA_node])
-x2 = VariableNode('x2', parents=[fB_node])
-x3 = VariableNode('x3', parents=[fC_node])
-x4 = VariableNode('x4', parents=[fD_node])
-x5 = VariableNode('x5', parents=[fE_node])
+x1 = VariableNode('x1', neighbours=[fA_node, fC_node])
+x2 = VariableNode('x2', neighbours=[fB_node, fC_node])
+x3 = VariableNode('x3', neighbours=[fC_node, fD_node, fE_node])
+x4 = VariableNode('x4', neighbours=[fD_node])
+x5 = VariableNode('x5', neighbours=[fE_node])
 
-# Now set the parents for the factor nodes...
-fA_node.parents = []
-fB_node.parents = []
-fC_node.parents = [x1, x2]
-fD_node.parents = [x3]
-fE_node.parents = [x3]
-
-# Now set children for Variable Nodes...
-x1.children = [fC_node]
-x2.children = [fC_node]
-x3.children = [fD_node, fE_node]
-x4.children = []
-x5.children = []
-
-# Now set the children for the factor nodes...
-fA_node.children = [x1]
-fB_node.children = [x2]
-fC_node.children = [x3]
-fD_node.children = [x4]
-fE_node.children = [x5]
+# Now set the neighbours for the factor nodes...
+fA_node.neighbours = [x1]
+fB_node.neighbours = [x2]
+fC_node.neighbours = [x1, x2, x3]
+fD_node.neighbours = [x3, x4]
+fE_node.neighbours = [x3, x5]
 
 graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
 
@@ -415,32 +401,18 @@ def test_marginals_table_22_part_2_x2_prior_change():
     fD_node = FactorNode('fD', fD)
     fE_node = FactorNode('fE', fE)
 
-    x1 = VariableNode('x1', parents=[fA_node])
-    x2 = VariableNode('x2', parents=[fB_node])
-    x3 = VariableNode('x3', parents=[fC_node])
-    x4 = VariableNode('x4', parents=[fD_node])
-    x5 = VariableNode('x5', parents=[fE_node])
+    x1 = VariableNode('x1', neighbours=[fA_node, fC_node])
+    x2 = VariableNode('x2', neighbours=[fB_node, fC_node])
+    x3 = VariableNode('x3', neighbours=[fC_node, fD_node, fE_node])
+    x4 = VariableNode('x4', neighbours=[fD_node])
+    x5 = VariableNode('x5', neighbours=[fE_node])
 
-    # Now set the parents for the factor nodes...
-    fA_node.parents = []
-    fB_node.parents = []
-    fC_node.parents = [x1, x2]
-    fD_node.parents = [x3]
-    fE_node.parents = [x3]
-
-    # Now set children for Variable Nodes...
-    x1.children = [fC_node]
-    x2.children = [fC_node]
-    x3.children = [fD_node, fE_node]
-    x4.children = []
-    x5.children = []
-
-    # Now set the children for the factor nodes...
-    fA_node.children = [x1]
-    fB_node.children = [x2]
-    fC_node.children = [x3]
-    fD_node.children = [x4]
-    fE_node.children = [x5]
+    # Now set the neighbours for the factor nodes...
+    fA_node.neighbours = [x1]
+    fB_node.neighbours = [x2]
+    fC_node.neighbours = [x1, x2, x3]
+    fD_node.neighbours = [x3, x4]
+    fE_node.neighbours = [x3, x5]
 
     graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
     graph.propagate()

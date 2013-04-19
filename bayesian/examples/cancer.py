@@ -76,32 +76,19 @@ fC_node = FactorNode('fC', fC)
 fX_node = FactorNode('fX', fX)
 fD_node = FactorNode('fD', fD)
 
-P = VariableNode('P', parents=[fP_node])
-S = VariableNode('S', parents=[fS_node])
-C = VariableNode('C', parents=[fC_node])
-X = VariableNode('X', parents=[fX_node])
-D = VariableNode('D', parents=[fD_node])
+P = VariableNode('P', neighbours=[fP_node, fC_node])
+S = VariableNode('S', neighbours=[fS_node, fC_node])
+C = VariableNode('C', neighbours=[fC_node, fX_node, fD_node])
+X = VariableNode('X', neighbours=[fX_node])
+D = VariableNode('D', neighbours=[fD_node])
 
-# Now set the parents for the factor nodes...
-fP_node.parents = []
-fS_node.parents = []
-fC_node.parents = [P, S]
-fX_node.parents = [C]
-fD_node.parents = [C]
+# Now set the neighbours for the factor nodes...
+fP_node.neighbours = [P]
+fS_node.neighbours = [S]
+fC_node.neighbours = [P, S, C]
+fX_node.neighbours = [C, X]
+fD_node.neighbours = [C, D]
 
-# Now set children for Variable Nodes...
-P.children = [fC_node]
-S.children = [fC_node]
-C.children = [fX_node, fD_node]
-X.children = []
-D.children = []
-
-# Now set the children for the factor nodes...
-fP_node.children = [P]
-fS_node.children = [S]
-fC_node.children = [C]
-fX_node.children = [X]
-fD_node.children = [D]
 
 graph = FactorGraph([P, S, C, X, D, fP_node, fS_node, fC_node, fX_node, fD_node])
 

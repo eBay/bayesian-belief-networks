@@ -46,7 +46,7 @@ fE(x3,x5) = p(x5|x3)
 class Node(object):
 
     def is_leaf(self):
-        if not (self.parents and self.children):
+        if len(self.neighbours) == 1:
             return True
         return False
 
@@ -59,7 +59,7 @@ class Node(object):
 
     def get_sent_messages(self):
         sent_messages = {}
-        for neighbour in self.parents + self.children:
+        for neighbour in self.neighbours:
             if neighbour.received_messages.get(self.name):
                 sent_messages[neighbour.name] = \
                     neighbour.received_messages.get(self.name)
@@ -85,7 +85,7 @@ class Node(object):
         and it has received messages from all other
         neighbours.
         '''
-        neighbours = self.parents + self.children
+        neighbours = self.neighbours
         #if len(neighbours) - len(self.received_messages) > 1:
         #    return None
         needed_to_send = defaultdict(int)
@@ -102,10 +102,9 @@ class Node(object):
 
 class VariableNode(Node):
     
-    def __init__(self, name, parents=[], children=[]):
+    def __init__(self, name, neighbours=[]):
         self.name = name
-        self.parents = parents
-        self.children = children
+        self.neighbours = neighbours
         self.received_messages = {}
         self.value = None
 
@@ -140,11 +139,10 @@ class VariableNode(Node):
 
 class FactorNode(Node):
 
-    def __init__(self, name, func, parents=[], children=[]):
+    def __init__(self, name, func, neighbours=[]):
         self.name = name
         self.func = func
-        self.parents = parents
-        self.children = children
+        self.neighbours = neighbours
         self.received_messages = {}
         self.func.value = None
         self.cached_functions = []
@@ -166,7 +164,7 @@ class FactorNode(Node):
         # node is given by the product
         # of the incoming messages and the factor
         product = 1
-        neighbours = self.parents + self.children
+        neighbours = self.neighbours
         for neighbour in neighbours:
             message = self.received_messages[neighbour.name]
             call_args = []
@@ -375,7 +373,7 @@ def make_factor_node_message(node, target_node):
     
     # Now add the message that came from each
     # of the non-destination neighbours...
-    neighbours = node.children + node.parents
+    neighbours = node.neighbours
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
@@ -414,7 +412,7 @@ def make_variable_node_message(node, target_node):
             node, target_node, [1], unity)
         return message
     factors = []
-    neighbours = node.children + node.parents
+    neighbours = node.neighbours
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
@@ -542,7 +540,7 @@ def add_evidence(node, value):
     algorithm. We also need to normalize
     all marginal outcomes.
     '''
-    neighbours = node.parents + node.children
+    neighbours = node.neighbours
     for factor_node in neighbours:
         if node.name in get_args(factor_node.func):
             factor_node.add_evidence(node, value)

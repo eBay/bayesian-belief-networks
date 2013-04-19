@@ -44,7 +44,6 @@ def fGuestDoor(GuestDoor):
 fGuestDoor.domains = domains
 
 def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
-    #key = ActualDoor.value + GuestDoor.value + MontyDoor.value
     # AA
     if ActualDoor.value == GuestDoor.value:
         # AAA
@@ -70,25 +69,15 @@ fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
 fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
 fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
 
-ActualDoor = VariableNode('ActualDoor', parents=[fActualDoor_node])
-GuestDoor = VariableNode('GuestDoor', parents=[fGuestDoor_node])
-MontyDoor = VariableNode('MontyDoor', parents=[fMontyDoor_node])
+ActualDoor = VariableNode('ActualDoor', neighbours=[fActualDoor_node, fMontyDoor_node])
+GuestDoor = VariableNode('GuestDoor', neighbours=[fGuestDoor_node, fMontyDoor_node])
+MontyDoor = VariableNode('MontyDoor', neighbours=[fMontyDoor_node])
 
 
 # Now set the parents for the factor nodes...
-fActualDoor_node.parents = []
-fGuestDoor_node.parents = []
-fMontyDoor_node.parents = [GuestDoor, ActualDoor]
-
-# Now set children for Variable Nodes...
-ActualDoor.children = [fMontyDoor_node]
-GuestDoor.children = [fMontyDoor_node]
-MontyDoor.children = []
-
-# Now set the children for the factor nodes...
-fActualDoor_node.children = [ActualDoor]
-fGuestDoor_node.children = [GuestDoor]
-fMontyDoor_node.children = [MontyDoor]
+fActualDoor_node.neighbours = [ActualDoor]
+fGuestDoor_node.neighbours = [GuestDoor]
+fMontyDoor_node.neighbours = [GuestDoor, ActualDoor, MontyDoor]
 
 graph = FactorGraph([
         ActualDoor,
