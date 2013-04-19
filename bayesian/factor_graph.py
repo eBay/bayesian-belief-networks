@@ -206,6 +206,7 @@ class FactorNode(Node):
                 return 0
             return old_func(*args)
         evidence_func.argspec = args
+        evidence_func.domains = old_func.domains
         self.func = evidence_func
 
     def reset(self):
