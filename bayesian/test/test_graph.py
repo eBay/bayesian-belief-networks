@@ -16,6 +16,8 @@ def fB(x2):
     elif x2.value == False:
         return 0.7
 
+fB.domains = dict(x2=[True, False])
+
 
 def fC(x1, x2, x3):
     ''' 
@@ -37,6 +39,10 @@ def fC(x1, x2, x3):
     key = key + 't' if x3.value  else key + 'f'
     return table[key]
 
+fC.domains = dict(
+    x1=[True, False],
+    x2=[True, False],
+    x3=[True, False])
 
 def fD(x3, x4):
     table = dict()
@@ -49,6 +55,10 @@ def fD(x3, x4):
     key = key + 't' if x4.value else key + 'f'
     return table[key]
 
+fD.domains = dict(
+    x3=[True, False],
+    x4=[True, False])
+
 
 def fE(x3, x5):
     table = dict()
@@ -60,6 +70,10 @@ def fE(x3, x5):
     key = key + 't' if x3.value else key + 'f'
     key = key + 't' if x5.value else key + 'f'
     return table[key]
+
+fE.domains = dict(
+    x3=[True, False],
+    x5=[True, False])
 
 
 # Build the network
@@ -392,6 +406,7 @@ def test_marginals_table_22_part_2_x2_prior_change():
             return 0.5
         elif x2.value == False:
             return 0.5
+    fB.domains = dict(x2=[True, False])
 
     # Build the network
     fA_node = FactorNode('fA', fA)
