@@ -107,7 +107,6 @@ class VariableNode(Node):
         self.parents = parents
         self.children = children
         self.received_messages = {}
-        self.sent_messages = {}
         self.value = None
 
     def construct_message(self):
@@ -147,7 +146,6 @@ class FactorNode(Node):
         self.parents = parents
         self.children = children
         self.received_messages = {}
-        self.sent_messages = {}
         self.func.value = None
         self.cached_functions = []
 
