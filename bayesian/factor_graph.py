@@ -6,42 +6,6 @@ import inspect
 from collections import defaultdict
 from itertools import product as iter_product
 
-'''
-The example in SumProd.pdf has exactly the same shape 
-as the cancer example:
-
-(Note: arrows are from x1->x3, x2->x3, x3->x4 and x3->x5)
-
-      x1      x2
-       \      /
-        \    /
-         \  /
-          x3
-         /  \
-        /    \
-       /      \
-      x4      x5
-
-
-The equivalent Factor Graph is:
-
-
-     fA        fB
-     |          |
-     x1---fC---x2
-           |
-     fD---x3---fE
-     |          |
-     x4         x5
-
-
-fA(x1) = p(x1)
-fB(x2) = p(x2)
-fC(x1,x2,x3) = p(x3|x1,x2)
-fD(x3,x4) = p(x4|x3)
-fE(x3,x5) = p(x5|x3)
-
-'''
 
 class Node(object):
 
@@ -64,7 +28,7 @@ class Node(object):
                 sent_messages[neighbour.name] = \
                     neighbour.received_messages.get(self.name)
         return sent_messages
-        
+
     def message_report(self):
         '''
         List out all messages Node
@@ -101,7 +65,7 @@ class Node(object):
 
 
 class VariableNode(Node):
-    
+
     def __init__(self, name, neighbours=[]):
         self.name = name
         self.neighbours = neighbours[:]
@@ -182,7 +146,6 @@ class FactorNode(Node):
             call_args.append('dummy')
         product *= self.func(*call_args)
         return product
-    
 
     def add_evidence(self, node, value):
         '''
@@ -197,10 +160,12 @@ class FactorNode(Node):
         # can remove the evidence later
         old_func = self.func
         self.cached_functions.insert(0, old_func)
+
         def evidence_func(*args):
             if args[pos].value != value:
                 return 0
             return old_func(*args)
+
         evidence_func.argspec = args
         evidence_func.domains = old_func.domains
         self.func = evidence_func
@@ -218,7 +183,8 @@ class Message(object):
 
     def list_factors(self):
         print '---------------------------'
-        print 'Factors in message %s -> %s' % (self.source.name, self.destination.name)
+        print 'Factors in message %s -> %s' % \
+            (self.source.name, self.destination.name)
         print '---------------------------'
         for factor in self.factors:
             print factor
@@ -245,10 +211,9 @@ class VariableMessage(Message):
         self.argspec = get_args(func)
         self.func = func
 
-
     def __repr__(self):
         return '<V-Message from %s -> %s: %s factors (%s)>' % \
-            (self.source.name, self.destination.name, 
+            (self.source.name, self.destination.name,
              len(self.factors), self.argspec)
 
 
@@ -287,7 +252,7 @@ def replace_var(f, var, val):
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     new_spec.remove(var)
-    
+
     def replaced(*args):
         template = arg_spec[:]
         v = VariableNode(name=var)
@@ -297,12 +262,12 @@ def replace_var(f, var, val):
         for arg in args:
             arg_pos = call_args.index(arg.name)
             call_args[arg_pos] = arg
-                
+
         return f(*call_args)
 
     replaced.argspec = new_spec
     return replaced
-    
+
 
 def eliminate_var(f, var):
     '''
@@ -332,12 +297,7 @@ def eliminate_var(f, var):
 
     eliminated.argspec = new_spec
     eliminated.domains = f.domains
-    if not eliminated.domains:
-        import ipdb; ipdb.set_trace()
     return eliminated
-
-
-    
 
 
 def make_not_sum_func(product_func, keep_var):
@@ -378,10 +338,10 @@ def make_factor_node_message(node, target_node):
         return message
 
     args = set(get_args(node.func))
-    
+
     # Compile list of factors for message
     factors = [node.func]
-    
+
     # Now add the message that came from each
     # of the non-destination neighbours...
     neighbours = node.neighbours
@@ -395,7 +355,9 @@ def make_factor_node_message(node, target_node):
         # according to usual nomenclature
         in_message = node.received_messages[neighbour.name]
         if in_message.destination != node:
-            out_message = VariableMessage(neighbour, node, in_message.factors, in_message.func)
+            out_message = VariableMessage(
+                neighbour, node, in_message.factors,
+                in_message.func)
             out_message.argspec = in_message.argspec
         else:
             out_message = in_message
@@ -409,7 +371,7 @@ def make_factor_node_message(node, target_node):
 
 def make_variable_node_message(node, target_node):
     '''
-    To construct the message from 
+    To construct the message from
     a variable node to a factor
     node we take the product of
     all messages received from
@@ -435,7 +397,7 @@ def make_variable_node_message(node, target_node):
         node, target_node, factors, product_func)
     return message
 
-        
+
 def get_args(func):
     '''
     Return the names of the arguments
@@ -452,13 +414,12 @@ def get_args(func):
     return inspect.getargspec(func).args
 
 
-
 def make_product_func(factors):
     '''
     Return a single callable from
     a list of factors which correctly
-    applies the arguments to each 
-    individual factor
+    applies the arguments to each
+    individual factor.
     '''
     args_map = {}
     all_args = []
@@ -490,7 +451,7 @@ def make_product_func(factors):
                 # so that the unity function works.
                 factor_args.append('dummy')
             result *= factor(*factor_args)
-                
+
         return result
 
     product_func.argspec = args
@@ -510,10 +471,11 @@ def make_unity(argspec):
 def unity():
     return 1
 
+
 def expand_args(args):
     if not args:
         return []
-    return 
+    return
 
 
 def dict_to_tuples(d):
@@ -527,7 +489,7 @@ def dict_to_tuples(d):
     for k, vals in d.iteritems():
         retval.append([(k, v) for v in vals])
     return retval
-        
+
 
 def expand_parameters(arg_vals):
     '''
@@ -556,24 +518,11 @@ def add_evidence(node, value):
         if node.name in get_args(factor_node.func):
             factor_node.add_evidence(node, value)
 
-    
-            
-            
 
 class FactorGraph(object):
 
     def __init__(self, nodes):
         self.nodes = nodes
-        # Cash the 
-        self.domains = dict(
-            x1 = [True, False],
-            x2 = [True, False],
-            x3 = [True, False],
-            x4 = [True, False],
-            x5 = [True, False])
-        #for node in nodes:
-        #    if isinstance(
-
 
     def reset(self):
         '''
@@ -586,12 +535,12 @@ class FactorGraph(object):
 
     def get_leaves(self):
         return [node for node in self.nodes if node.is_leaf()]
-        
+
     def get_eligible_senders(self):
         '''
-        Return a list of nodes that is eligible to
-        send messages at this round.
-        Only nodes that have received
+        Return a list of nodes that are
+        eligible to send messages at this
+        round. Only nodes that have received
         messages from all but one neighbour
         may send at any round.
         '''
@@ -600,7 +549,7 @@ class FactorGraph(object):
             if node.get_target():
                 eligible.append(node)
         return eligible
-    
+
     def propagate(self):
         '''
         This is the heart of the sum-product
@@ -617,8 +566,6 @@ class FactorGraph(object):
                 message = node.construct_message()
                 node.send(message)
             step += 1
-
-        
 
 
 

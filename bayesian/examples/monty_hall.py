@@ -7,20 +7,20 @@ As BBN:
 
          GuestDoor     ActualDoor
                \         /
-                MontyDoor   
+                MontyDoor
                 p(M|G,A)
-        
+
 
 As Factor Graph:
-    
+
         fGuestDoor               fActualDoor
              |                        |
          GuestDoor                ActualDoor
              |                        |
-             +------fMontyDoor--------+           
-                         |               
-                     MontyDoor           
-            
+             +------fMontyDoor--------+
+                         |
+                     MontyDoor
+
 Now Query: Given Guest chooses door A
 and Monty chooses door B, should guest
 switch to C or stay with A?
@@ -28,9 +28,9 @@ switch to C or stay with A?
 '''
 
 domains = dict(
-    ActualDoor = ['A', 'B', 'C'],
-    GuestDoor = ['A', 'B', 'C'],
-    MontyDoor = ['A', 'B', 'C'])
+    ActualDoor=['A', 'B', 'C'],
+    GuestDoor=['A', 'B', 'C'],
+    MontyDoor=['A', 'B', 'C'])
 
 
 def fActualDoor(ActualDoor):
@@ -38,10 +38,12 @@ def fActualDoor(ActualDoor):
 
 fActualDoor.domains = domains
 
+
 def fGuestDoor(GuestDoor):
     return 1.0 / 3
 
 fGuestDoor.domains = domains
+
 
 def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
     # AA
@@ -77,13 +79,14 @@ connect(fActualDoor_node, ActualDoor)
 connect(fGuestDoor_node, GuestDoor)
 connect(fMontyDoor_node, [ActualDoor, GuestDoor, MontyDoor])
 
-graph = FactorGraph([
-        ActualDoor,
-        GuestDoor,
-        MontyDoor,
-        fActualDoor_node,
-        fGuestDoor_node,
-        fMontyDoor_node])
+graph = FactorGraph(
+    [ActualDoor,
+     GuestDoor,
+     MontyDoor,
+     fActualDoor_node,
+     fGuestDoor_node,
+     fMontyDoor_node])
+
 
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
@@ -108,7 +111,7 @@ if __name__ == '__main__':
     print marg(ActualDoor, 'A', normalizer)
     print marg(ActualDoor, 'B', normalizer)
     print marg(ActualDoor, 'C', normalizer)
-    
+
     # As you will see the likelihood of C is
     # twice that of A, given the evidence above
     # so we should switch.

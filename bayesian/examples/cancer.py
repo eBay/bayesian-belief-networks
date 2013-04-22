@@ -3,6 +3,7 @@ from bayesian.factor_graph import *
 
 
 def fP(P):
+    '''Pollution'''
     if P.value == 'high':
         return 0.1
     elif P.value == 'low':
@@ -10,19 +11,19 @@ def fP(P):
 
 fP.domains = dict(P=['high', 'low'])
 
+
 def fS(S):
-    if S.value == True:
+    '''Smoker'''
+    if S.value is True:
         return 0.3
-    elif S.value == False:
+    elif S.value is False:
         return 0.7
 
 fS.domains = dict(S=[True, False])
 
+
 def fC(P, S, C):
-    ''' 
-    This needs to be a joint probability distribution
-    over the inputs and the node itself
-    '''
+    '''Cancer'''
     table = dict()
     table['ttt'] = 0.05
     table['ttf'] = 0.95
@@ -33,15 +34,17 @@ def fC(P, S, C):
     table['fft'] = 0.001
     table['fff'] = 0.999
     key = ''
-    key = key + 't' if P.value=='high' else key + 'f'
+    key = key + 't' if P.value == 'high' else key + 'f'
     key = key + 't' if S.value else key + 'f'
-    key = key + 't' if C.value  else key + 'f'
+    key = key + 't' if C.value else key + 'f'
     return table[key]
 
 
 fC.domains = dict(P=['high', 'low'], S=[True, False], C=[True, False])
 
+
 def fX(C, X):
+    '''X-ray'''
     table = dict()
     table['tt'] = 0.9
     table['tf'] = 0.1
@@ -52,9 +55,12 @@ def fX(C, X):
     key = key + 't' if X.value else key + 'f'
     return table[key]
 
+
 fX.domains = dict(C=[True, False], X=[True, False])
 
+
 def fD(C, D):
+    '''Dyspnoeia'''
     table = dict()
     table['tt'] = 0.65
     table['tf'] = 0.35
@@ -64,6 +70,7 @@ def fD(C, D):
     key = key + 't' if C.value else key + 'f'
     key = key + 't' if D.value else key + 'f'
     return table[key]
+
 
 fD.domains = dict(C=[True, False], D=[True, False])
 
@@ -88,7 +95,11 @@ connect(fC_node, [P, S, C])
 connect(fX_node, [C, X])
 connect(fD_node, [C, D])
 
-graph = FactorGraph([P, S, C, X, D, fP_node, fS_node, fC_node, fX_node, fD_node])
+graph = FactorGraph(
+    [P, S, C, X, D,
+     fP_node, fS_node,
+     fC_node, fX_node, fD_node])
+
 
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
@@ -101,4 +112,3 @@ if __name__ == '__main__':
     print marg(C, True)
     print marg(X, True)
     print marg(D, True)
-
