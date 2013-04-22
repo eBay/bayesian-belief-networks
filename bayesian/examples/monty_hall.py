@@ -73,43 +73,9 @@ ActualDoor = VariableNode('ActualDoor')
 GuestDoor = VariableNode('GuestDoor')
 MontyDoor = VariableNode('MontyDoor')
 
-import ipdb; ipdb.set_trace()
-
-print 'Neighbours before first call to connect:'
-for node in [ActualDoor,
-             GuestDoor,
-             MontyDoor,
-             fActualDoor_node,
-             fGuestDoor_node,
-             fMontyDoor_node]:
-    print node.name, node.neighbours
 connect(fActualDoor_node, ActualDoor)
-print 'Neighbours after first call to connect:'
-for node in [ActualDoor,
-             GuestDoor,
-             MontyDoor,
-             fActualDoor_node,
-             fGuestDoor_node,
-             fMontyDoor_node]:
-    print node.name, node.neighbours
-
-
 connect(fGuestDoor_node, GuestDoor)
-connect(fMontyDoor_node, ActualDoor)
-connect(fMontyDoor_node, GuestDoor)
-connect(fMontyDoor_node, MontyDoor)
-
-
-#ActualDoor = VariableNode('ActualDoor', neighbours=[fActualDoor_node, fMontyDoor_node])
-#GuestDoor = VariableNode('GuestDoor', neighbours=[fGuestDoor_node, fMontyDoor_node])
-#MontyDoor = VariableNode('MontyDoor', neighbours=[fMontyDoor_node])
-
-# Now set the parents for the factor nodes...
-#fActualDoor_node.neighbours = [ActualDoor]
-#fGuestDoor_node.neighbours = [GuestDoor]
-#fMontyDoor_node.neighbours = [GuestDoor, ActualDoor, MontyDoor]
-
-import ipdb; ipdb.set_trace()
+connect(fMontyDoor_node, [ActualDoor, GuestDoor, MontyDoor])
 
 graph = FactorGraph([
         ActualDoor,
@@ -122,14 +88,18 @@ graph = FactorGraph([
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
 
-
 if __name__ == '__main__':
     graph.propagate()
-
+    # Initial Marginals without any knowledge...
     print marg(ActualDoor, 'A')
     print marg(ActualDoor, 'B')
     print marg(ActualDoor, 'C')
 
+    # Now we suppose the Guest chooses A
+    # and Monty chooses B. Should we
+    # switch or not? To answer this
+    # we look at the likelyhood for
+    # the actual door given the evidence...
     graph.reset()
     add_evidence(GuestDoor, 'A')
     add_evidence(MontyDoor, 'B')
@@ -138,6 +108,7 @@ if __name__ == '__main__':
     print marg(ActualDoor, 'A', normalizer)
     print marg(ActualDoor, 'B', normalizer)
     print marg(ActualDoor, 'C', normalizer)
-
-
-
+    
+    # As you will see the likelihood of C is
+    # twice that of A, given the evidence above
+    # so we should switch.
