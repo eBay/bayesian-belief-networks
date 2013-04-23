@@ -115,3 +115,15 @@ if __name__ == '__main__':
     # As you will see the likelihood of C is
     # twice that of A, given the evidence above
     # so we should switch.
+    graph.reset()
+    add_evidence(MontyDoor, 'B')
+    graph.propagate()
+    normalizer = MontyDoor.marginal('B')
+    print marg(ActualDoor, 'A', normalizer)
+    print marg(ActualDoor, 'B', normalizer)
+    print marg(ActualDoor, 'C', normalizer)
+    print marg(GuestDoor, 'A', normalizer)
+    print marg(GuestDoor, 'B', normalizer)
+    print marg(GuestDoor, 'C', normalizer)
+
+    
