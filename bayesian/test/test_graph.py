@@ -588,3 +588,40 @@ def test_marginals_table_22_part_2_x2_prior_change():
     assert m == 0.0
 
 
+def test_verify_node_neighbour_type():
+
+    def fA(x1):
+        return 0.5
+
+    fA_node = FactorNode('fA', fA)
+
+    x1 = VariableNode('x1')
+
+    connect(fA_node, x1)
+    assert fA_node.verify_neighbour_types() is True
+    assert x1.verify_neighbour_types() is True
+
+    x2 = VariableNode('x2')
+    x3 = VariableNode('x3')
+    connect(x2, x3)
+    assert x2.verify_neighbour_types() is False
+    assert x3.verify_neighbour_types() is False
+
+def test_verify_graph():
+    def fA(x1):
+        return 0.5
+
+    fA_node = FactorNode('fA', fA)
+
+    x1 = VariableNode('x1')
+
+    connect(fA_node, x1)
+    graph = FactorGraph([fA_node, x1])
+    assert graph.verify() is True
+
+    graph = FactorGraph([fA_node, fA_node])
+    assert graph.verify() is False
+
+    graph = FactorGraph([x1, x1])
+    assert graph.verify() is False
+

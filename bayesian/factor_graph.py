@@ -100,6 +100,15 @@ class VariableNode(Node):
     def reset(self):
         self.received_messages = {}
 
+    def verify_neighbour_types(self):
+        '''
+        Check that all neighbours are of VariableNode type.
+        '''
+        for node in self.neighbours:
+            if not isinstance(node, FactorNode):
+                return False
+        return True
+
 
 class FactorNode(Node):
 
@@ -115,6 +124,15 @@ class FactorNode(Node):
         target = self.get_target()
         message = make_factor_node_message(self, target)
         return message
+
+    def verify_neighbour_types(self):
+        '''
+        Check that all neighbours are of VariableNode type.
+        '''
+        for node in self.neighbours:
+            if not isinstance(node, VariableNode):
+                return False
+        return True
 
     def __repr__(self):
         return '<FactorNode %s %s(%s)>' % \
@@ -532,6 +550,21 @@ class FactorGraph(object):
         '''
         for node in self.nodes:
             node.reset()
+
+    def verify(self):
+        '''
+        Check several properties of the Factor Graph
+        that should hold.
+        '''
+        # First check that for each node
+        # only connects to nodes of the
+        # other type.
+        print 'Checking neighbour node types...'
+        for node in self.nodes:
+            if not node.verify_neighbour_types():
+                print '%s has invalid neighbour type.' % node
+                return False
+        return True
 
     def get_leaves(self):
         return [node for node in self.nodes if node.is_leaf()]
