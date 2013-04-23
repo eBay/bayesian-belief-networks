@@ -1,11 +1,12 @@
-'''Implements Sum-Product Algorithm over Factor Graphs'''
+'''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import sys
 import copy
 import inspect
+import random
 
 from collections import defaultdict
 from itertools import product as iter_product
-
+from itertools import cycle
 
 class Node(object):
 
@@ -195,6 +196,23 @@ class FactorNode(Node):
 
     def pop_evidence(self):
         self.func = self.cached_functions.pop()
+
+    def sample(self):
+        '''
+        Return a random value from the distribution.
+        '''
+        s = dict()
+        for k, values in self.func.domains.items():
+            total = 0
+            r = random.random()
+            for val in values:
+                var = VariableNode(name=k)
+                var.value = val
+                total += self.func(var)
+                if total >= r:
+                    return var.value
+
+
 
 
 class Message(object):
@@ -600,12 +618,64 @@ class FactorGraph(object):
                 node.send(message)
             step += 1
 
-
-
-
-
-
-
+    def gibbs_sample(self):
+        # set initial state randomly
+        ActualDoor = self.nodes[0]
+        ActualDoor.value = 'A'
+        GuestDoor = self.nodes[1]
+        GuestDoor.value = 'B'
+        MontyDoor = self.nodes[2]
+        MontyDoor.value = 'B'
+        
+        # Now we set the initial state to this
+        # configuration
+        state = dict(
+            ActualDoor=ActualDoor,
+            GuestDoor=GuestDoor,
+            MontyDoor=MontyDoor)
+        vals = ['A', 'B', 'C']
+        # Now we cycle through the variables...
+        for var in cycle([ActualDoor, GuestDoor, MontyDoor]):
+            random.shuffle(vals)
+            if var.name == 'ActualDoor':
+                total = 0
+                r = random.random()
+                for val in vals:
+                    state['ActualDoor'].value = val
+                    p = self.nodes[5].func(
+                        state['ActualDoor'],
+                        state['GuestDoor'],
+                        state['MontyDoor'])
+                    total += p
+                    if total > r:
+                        yield state
+                        break
+            elif var.name == 'GuestDoor':
+                total = 0
+                r = random.random()
+                for val in vals:
+                    state['GuestDoor'].value = val
+                    p = self.nodes[5].func(
+                        state['ActualDoor'],
+                        state['GuestDoor'],
+                        state['MontyDoor'])
+                    total += p
+                    if total > r:
+                        yield state
+                        break
+            elif var.name == 'MontyDoor':
+                total = 0
+                r = random.random()
+                for val in vals:
+                    state['MontyDoor'].val = val
+                    p = self.nodes[5].func(
+                        state['ActualDoor'],
+                        state['GuestDoor'],
+                        state['MontyDoor'])
+                    total += p
+                    if total > r:
+                        yield state
+                        break
 
 
 
