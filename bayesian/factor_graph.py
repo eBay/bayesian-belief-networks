@@ -16,8 +16,8 @@ class Node(object):
 
     def send(self, message):
         recipient = message.destination
-        print '%s ---> %s' % (
-            self.name, recipient.name), message
+        #print '%s ---> %s' % (
+        #    self.name, recipient.name), message
         recipient.received_messages[
             self.name] = message
 
@@ -119,6 +119,13 @@ class FactorNode(Node):
         self.received_messages = {}
         self.func.value = None
         self.cached_functions = []
+        # If no domains were supplied assume
+        # binary
+        if not hasattr(func, 'domains'):
+            domains = dict()
+            for arg in get_args(func):
+                domains.update({arg:[True, False]})
+            self.func.domains = domains
 
     def construct_message(self):
         target = self.get_target()
@@ -591,8 +598,8 @@ class FactorGraph(object):
         step = 1
         while True:
             eligible_senders = self.get_eligible_senders()
-            print 'Step: %s %s nodes can send.' % (step, len(eligible_senders))
-            print [x.name for x in eligible_senders]
+            #print 'Step: %s %s nodes can send.' % (step, len(eligible_senders))
+            #print [x.name for x in eligible_senders]
             if not eligible_senders:
                 break
             for node in eligible_senders:
