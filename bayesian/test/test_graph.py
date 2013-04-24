@@ -610,18 +610,25 @@ def test_verify_node_neighbour_type():
 def test_verify_graph():
     def fA(x1):
         return 0.5
+    def fB(x2):
+        return 0.5
 
     fA_node = FactorNode('fA', fA)
+    fB_node = FactorNode('fB', fB)
 
     x1 = VariableNode('x1')
+    x2 = VariableNode('x2')
+
 
     connect(fA_node, x1)
     graph = FactorGraph([fA_node, x1])
     assert graph.verify() is True
 
-    graph = FactorGraph([fA_node, fA_node])
+    connect(fA_node, fB_node)
+    graph = FactorGraph([fA_node, fB_node])
     assert graph.verify() is False
 
-    graph = FactorGraph([x1, x1])
+    connect(x1, x2)
+    graph = FactorGraph([x1, x2])
     assert graph.verify() is False
 
