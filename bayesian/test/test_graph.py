@@ -413,18 +413,17 @@ def test_marginals_table_22_part_2_x2_prior_change():
     fD_node = FactorNode('fD', fD)
     fE_node = FactorNode('fE', fE)
 
-    x1 = VariableNode('x1', neighbours=[fA_node, fC_node])
-    x2 = VariableNode('x2', neighbours=[fB_node, fC_node])
-    x3 = VariableNode('x3', neighbours=[fC_node, fD_node, fE_node])
-    x4 = VariableNode('x4', neighbours=[fD_node])
-    x5 = VariableNode('x5', neighbours=[fE_node])
+    x1 = VariableNode('x1')
+    x2 = VariableNode('x2')
+    x3 = VariableNode('x3')
+    x4 = VariableNode('x4')
+    x5 = VariableNode('x5')
 
-    # Now set the neighbours for the factor nodes...
-    fA_node.neighbours = [x1]
-    fB_node.neighbours = [x2]
-    fC_node.neighbours = [x1, x2, x3]
-    fD_node.neighbours = [x3, x4]
-    fE_node.neighbours = [x3, x5]
+    connect(x1, [fA_node, fC_node])
+    connect(x2, [fB_node, fC_node])
+    connect(x3, [fC_node, fD_node, fE_node])
+    connect(x4, fD_node)
+    connect(x5, fE_node)
 
     graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
     graph.propagate()
@@ -632,3 +631,4 @@ def test_verify_graph():
     graph = FactorGraph([x1, x2])
     assert graph.verify() is False
 
+    

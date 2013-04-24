@@ -66,9 +66,9 @@ class Node(object):
 
 class VariableNode(Node):
 
-    def __init__(self, name, neighbours=[]):
+    def __init__(self, name):
         self.name = name
-        self.neighbours = neighbours[:]
+        self.neighbours = []
         self.received_messages = {}
         self.value = None
 
