@@ -631,4 +631,25 @@ def test_verify_graph():
     graph = FactorGraph([x1, x2])
     assert graph.verify() is False
 
-    
+def test_set_func_domains_from_variable_domains():
+    def fA(x1):
+        return 0.5
+
+    def fB(x2):
+        return 0.5
+
+    x1 = VariableNode('x1', domain=['high', 'low'])
+    fA_node = FactorNode('fA', fA)
+    connect(x1, fA_node)
+    graph = FactorGraph([x1, fA_node])
+    assert fA_node.func.domains == dict(x1=['high', 'low'])
+
+    x2 = VariableNode('x2')
+    fB_node = FactorNode('fB', fB)
+    connect(x2, fB_node)
+    graph = FactorGraph([x2, fB_node])
+    assert fB_node.func.domains == dict(x2=[True, False])
+
+
+
+

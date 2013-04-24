@@ -27,22 +27,22 @@ switch to C or stay with A?
 
 '''
 
-domains = dict(
-    ActualDoor=['A', 'B', 'C'],
-    GuestDoor=['A', 'B', 'C'],
-    MontyDoor=['A', 'B', 'C'])
+#domains = dict(
+#    ActualDoor=['A', 'B', 'C'],
+#    GuestDoor=['A', 'B', 'C'],
+#    MontyDoor=['A', 'B', 'C'])
 
 
 def fActualDoor(ActualDoor):
     return 1.0 / 3
 
-fActualDoor.domains = domains
+#fActualDoor.domains = domains
 
 
 def fGuestDoor(GuestDoor):
     return 1.0 / 3
 
-fGuestDoor.domains = domains
+#fGuestDoor.domains = domains
 
 
 def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
@@ -63,7 +63,7 @@ def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
     # ABC
     return 1
 
-fMontyDoor.domains = domains
+#fMontyDoor.domains = domains
 
 # Build the network
 
@@ -71,9 +71,9 @@ fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
 fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
 fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
 
-ActualDoor = VariableNode('ActualDoor')
-GuestDoor = VariableNode('GuestDoor')
-MontyDoor = VariableNode('MontyDoor')
+ActualDoor = VariableNode('ActualDoor', domain=['A', 'B', 'C'])
+GuestDoor = VariableNode('GuestDoor', domain=['A', 'B', 'C'])
+MontyDoor = VariableNode('MontyDoor', domain=['A', 'B', 'C'])
 
 connect(fActualDoor_node, ActualDoor)
 connect(fGuestDoor_node, GuestDoor)

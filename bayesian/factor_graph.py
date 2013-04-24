@@ -66,8 +66,9 @@ class Node(object):
 
 class VariableNode(Node):
 
-    def __init__(self, name):
+    def __init__(self, name, domain=[True, False]):
         self.name = name
+        self.domain = domain
         self.neighbours = []
         self.received_messages = {}
         self.value = None
@@ -121,11 +122,11 @@ class FactorNode(Node):
         self.cached_functions = []
         # If no domains were supplied assume
         # binary
-        if not hasattr(func, 'domains'):
-            domains = dict()
-            for arg in get_args(func):
-                domains.update({arg:[True, False]})
-            self.func.domains = domains
+        #if not hasattr(func, 'domains'):
+        #    domains = dict()
+        #    for arg in get_args(func):
+        #        domains.update({arg:[True, False]})
+        #    self.func.domains = domains
 
     def construct_message(self):
         target = self.get_target()
@@ -548,6 +549,34 @@ class FactorGraph(object):
 
     def __init__(self, nodes):
         self.nodes = nodes
+        # We need to divine the domains for Factor nodes here...
+        # First compile a mapping of factors to variables
+        # from the arg spec...
+        function_args = dict()
+        arg_domains = dict()
+        for node in self.nodes:
+            if isinstance(node, VariableNode):
+                #if not hasattr(node, 'domain'):
+                #    node.domain = [True, False]
+                arg_domains[node.name] = node.domain
+            elif isinstance(node, FactorNode):
+                function_args[node.func.__name__] = get_args(node.func)
+        # Now if the domains for the
+        # factor functions have not been explicitely
+        # set we create them based on the variable
+        # values it can take.
+        for node in self.nodes:
+            if isinstance(node, FactorNode):
+                if hasattr(node.func, 'domains'):
+                    continue
+                domains = dict()
+                for arg in get_args(node.func):
+                    if not arg in arg_domains:
+                        print 'WARNING: missing variable for arg:%s' % arg
+                    else:
+                        domains.update({arg:arg_domains[arg]})
+                node.func.domains = domains
+
 
     def reset(self):
         '''
@@ -571,6 +600,12 @@ class FactorGraph(object):
             if not node.verify_neighbour_types():
                 print '%s has invalid neighbour type.' % node
                 return False
+        print 'Checking that all factor functions have domains...'
+        for node in self.nodes:
+            if isinstance(node, FactorNode):
+                if not hasattr(node.func, 'domains'):
+                    print '%s has no domains.' % node
+                    return False
         return True
 
     def get_leaves(self):
