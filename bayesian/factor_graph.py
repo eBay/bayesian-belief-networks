@@ -5,7 +5,7 @@ import inspect
 
 from collections import defaultdict
 from itertools import product as iter_product
-
+from prettytable import PrettyTable
 
 class Node(object):
 
@@ -100,6 +100,7 @@ class VariableNode(Node):
 
     def reset(self):
         self.received_messages = {}
+        self.value = None
 
     def verify_neighbour_types(self):
         '''
@@ -120,13 +121,6 @@ class FactorNode(Node):
         self.received_messages = {}
         self.func.value = None
         self.cached_functions = []
-        # If no domains were supplied assume
-        # binary
-        #if not hasattr(func, 'domains'):
-        #    domains = dict()
-        #    for arg in get_args(func):
-        #        domains.update({arg:[True, False]})
-        #    self.func.domains = domains
 
     def construct_message(self):
         target = self.get_target()
@@ -539,6 +533,7 @@ def add_evidence(node, value):
     algorithm. We also need to normalize
     all marginal outcomes.
     '''
+    node.value = value
     neighbours = node.neighbours
     for factor_node in neighbours:
         if node.name in get_args(factor_node.func):
@@ -642,7 +637,46 @@ class FactorGraph(object):
                 node.send(message)
             step += 1
 
+    def variable_nodes(self):
+        return [n for n in self.nodes if isinstance(n, VariableNode)]
 
+    def factor_nodes(self):
+        return [n for n in self.nodes if isinstance(n, FactorNode)]
+
+    def get_normalizer(self):
+        for node in self.variable_nodes():
+            if node.value is not None:
+                normalizer = node.marginal(node.value)
+                return normalizer
+        return 1
+        
+    def status(self, omit=[False]):
+        tab = PrettyTable(['Node', 'Value', 'Marginal'])
+        tab.align = 'l'
+        tab.align['Marginal'] = 'r'
+        normalizer = self.get_normalizer()
+        for node in self.variable_nodes():
+            for value in node.domain:
+                m = '%5.3f' % round(node.marginal(value, normalizer), 3)
+                if node.value == value:
+                    tab.add_row([node.name +'*', '*%s' % value, m])
+                elif value is not False:
+                    tab.add_row([node.name, '%s' % value, m])
+        print tab
+
+    def query(self, **kwds):
+        self.reset()
+        for k, v in kwds.items():
+            for node in self.variable_nodes():
+                if node.name== k:
+                    add_evidence(node, v)
+        self.propagate()
+        self.status()
+        
+    def q(self, **kwds):
+        return self.query(**kwds)
+
+        
 
 
 
