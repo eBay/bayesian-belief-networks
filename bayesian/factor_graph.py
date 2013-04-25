@@ -657,10 +657,10 @@ class FactorGraph(object):
         normalizer = self.get_normalizer()
         for node in self.variable_nodes():
             for value in node.domain:
-                m = '%5.3f' % round(node.marginal(value, normalizer), 3)
+                m = '%8.6f' % round(node.marginal(value, normalizer), 6)
                 if node.value == value:
                     tab.add_row([node.name +'*', '*%s' % value, m])
-                elif value is not False:
+                elif value not in omit:
                     tab.add_row([node.name, '%s' % value, m])
         print tab
 
