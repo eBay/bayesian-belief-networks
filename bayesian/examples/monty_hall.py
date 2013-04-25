@@ -26,23 +26,12 @@ and Monty chooses door B, should guest
 switch to C or stay with A?
 
 '''
-
-#domains = dict(
-#    ActualDoor=['A', 'B', 'C'],
-#    GuestDoor=['A', 'B', 'C'],
-#    MontyDoor=['A', 'B', 'C'])
-
-
 def fActualDoor(ActualDoor):
     return 1.0 / 3
-
-#fActualDoor.domains = domains
 
 
 def fGuestDoor(GuestDoor):
     return 1.0 / 3
-
-#fGuestDoor.domains = domains
 
 
 def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
@@ -63,10 +52,8 @@ def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
     # ABC
     return 1
 
-#fMontyDoor.domains = domains
 
 # Build the network
-
 fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
 fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
 fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
@@ -92,38 +79,26 @@ def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
 
 if __name__ == '__main__':
-    graph.propagate()
-    # Initial Marginals without any knowledge...
-    print marg(ActualDoor, 'A')
-    print marg(ActualDoor, 'B')
-    print marg(ActualDoor, 'C')
 
-    # Now we suppose the Guest chooses A
-    # and Monty chooses B. Should we
-    # switch or not? To answer this
-    # we look at the likelyhood for
-    # the actual door given the evidence...
-    graph.reset()
-    add_evidence(GuestDoor, 'A')
-    add_evidence(MontyDoor, 'B')
     graph.propagate()
-    normalizer = GuestDoor.marginal('A')
-    print marg(ActualDoor, 'A', normalizer)
-    print marg(ActualDoor, 'B', normalizer)
-    print marg(ActualDoor, 'C', normalizer)
 
-    # As you will see the likelihood of C is
-    # twice that of A, given the evidence above
-    # so we should switch.
-    graph.reset()
-    add_evidence(MontyDoor, 'B')
-    graph.propagate()
-    normalizer = MontyDoor.marginal('B')
-    print marg(ActualDoor, 'A', normalizer)
-    print marg(ActualDoor, 'B', normalizer)
-    print marg(ActualDoor, 'C', normalizer)
-    print marg(GuestDoor, 'A', normalizer)
-    print marg(GuestDoor, 'B', normalizer)
-    print marg(GuestDoor, 'C', normalizer)
+    # Initial Marginals without any knowledge.
+    # Observe that the likelihood for 
+    # all three doors is 1/3.
+    print 'Initial Marginal Probabilities:'
+    graph.status()
+
+    # Now suppose the guest chooses
+    # door A and Monty chooses door B. 
+    # Should we switch our choice from
+    # A to C or not? 
+    # To answer this we "query" the 
+    # graph with instantiation of the
+    # observed variables as "evidence".
+    # The likelihood for door C has
+    # indeed increased to 2/3 therefore
+    # we should switch to door C.
+    print 'Marginals after knowing Guest chose A and Monty chose B.'
+    graph.q(GuestDoor='A', MontyDoor='B')
 
     
