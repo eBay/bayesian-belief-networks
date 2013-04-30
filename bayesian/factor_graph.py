@@ -323,6 +323,30 @@ def eliminate_var(f, var):
     return eliminated
 
 
+def memoize(f):
+    '''
+    The goal of message passing
+    is to re-use results. This
+    memoise is slightly modified from
+    usual examples in that it caches
+    the values of variables rather than
+    the variables themselves.
+    '''
+    cache = {}
+
+    def memoized(*args):
+        arg_vals = tuple([arg.value for arg in args])
+        if not arg_vals in cache:
+            cache[arg_vals] = f(*args)
+        return cache[arg_vals]
+
+    if hasattr(f, 'domains'):
+        memoized.domains = f.domains
+    if hasattr(f, 'argspec'):
+        memoized.argspec = f.argspec
+    return memoized
+
+
 def make_not_sum_func(product_func, keep_var):
     '''
     Given a function with some set of
@@ -481,7 +505,7 @@ def make_product_func(factors):
     product_func.argspec = args
     product_func.factors = factors
     product_func.domains = domains
-    return product_func
+    return memoize(product_func)
 
 
 def make_unity(argspec):
