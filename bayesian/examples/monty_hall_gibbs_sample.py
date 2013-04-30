@@ -87,6 +87,42 @@ graph = FactorGraph(
      fGuestDoor_node,
      fMontyDoor_node])
 
+def discover_sample_ordering(graph):
+    '''
+    Try to get the order of variable nodes
+    for sampling. This would be easier in 
+    the underlying BBN but lets try on
+    the factor graph.
+    '''
+    iterations = 0
+    ordering = []
+    accounted_for = set()
+    variable_nodes = [n for n in graph.nodes if isinstance(n, VariableNode)]
+    factor_nodes = [n for n in graph.nodes if isinstance(n, FactorNode)]
+    required = len([n for n in graph.nodes if isinstance(n, VariableNode)])
+    # Firstly any leaf factor nodes will
+    # by definition only have one variable
+    # node connection, therefore these
+    # variables can be set first.
+    for node in graph.get_leaves():
+        if isinstance(node, FactorNode):
+            ordering.append(node.neighbours[0].name)
+            accounted_for.add(node.neighbours[0].name)
+
+    # Now for each factor node whose variables
+    # all but one are already in the ordering,
+    # we can add that one variable. This is
+    # actuall
+    import ipdb; ipdb.set_trace()
+    while len(ordering) < required:
+        for node in factor_nodes:
+            args = set(get_args(node.func))
+            new_args = args.difference(accounted_for)
+            if len(new_args) == 1:
+                ordering += list(new_args)
+                accounted_for = set(ordering)
+    return ordering
+
 
 def get_sample():
     sample = []
@@ -183,7 +219,7 @@ if __name__ == '__main__':
     a_count = 0
     total_count = 0
     #import ipdb; ipdb.set_trace()
-    for i in range(0, 10000):
+    for i in range(0, 100):
         sample = get_sample()
         # only use every 100th sample...
         #if i % 100 == 0:
@@ -203,3 +239,4 @@ if __name__ == '__main__':
                     a_count += 1
                     
     print a_count, c_count, total_count, float(c_count) / total_count
+    print discover_sample_ordering(graph)
