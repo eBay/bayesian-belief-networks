@@ -7,7 +7,6 @@ from collections import defaultdict
 from itertools import product as iter_product
 from prettytable import PrettyTable
 
-from bayesian.utils import memoize
 
 class Node(object):
 
