@@ -568,6 +568,45 @@ def add_evidence(node, value):
             factor_node.add_evidence(node, value)
 
 
+def discover_sample_ordering(graph):
+    '''
+    Try to get the order of variable nodes
+    for sampling. This would be easier in 
+    the underlying BBN but lets try on
+    the factor graph.
+    '''
+    iterations = 0
+    ordering = []
+    pmf_ordering = []
+    accounted_for = set()
+    variable_nodes = [n for n in graph.nodes if isinstance(n, VariableNode)]
+    factor_nodes = [n for n in graph.nodes if isinstance(n, FactorNode)]
+    required = len([n for n in graph.nodes if isinstance(n, VariableNode)])
+    # Firstly any leaf factor nodes will
+    # by definition only have one variable
+    # node connection, therefore these
+    # variables can be set first.
+    for node in graph.get_leaves():
+        if isinstance(node, FactorNode):
+            ordering.append(node.neighbours[0].name)
+            accounted_for.add(node.neighbours[0].name)
+            pmf_ordering.append(node.func)
+
+    # Now for each factor node whose variables
+    # all but one are already in the ordering,
+    # we can add that one variable. This is
+    # actuall
+    while len(ordering) < required:
+        for node in factor_nodes:
+            args = set(get_args(node.func))
+            new_args = args.difference(accounted_for)
+            if len(new_args) == 1:
+                ordering += list(new_args)
+                accounted_for = set(ordering)
+                pmf_ordering.append(node.func)
+    return zip(ordering, pmf_ordering)
+
+
 class FactorGraph(object):
 
     def __init__(self, nodes):
@@ -719,6 +758,8 @@ class FactorGraph(object):
     def q(self, **kwds):
         return self.query(**kwds)
 
+    def discover_sample_ordering(self):
+        return discover_sample_ordering(self)
         
 
 
