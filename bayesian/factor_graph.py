@@ -7,6 +7,8 @@ from collections import defaultdict
 from itertools import product as iter_product
 from prettytable import PrettyTable
 
+from bayesian.utils import memoize
+
 class Node(object):
 
     def is_leaf(self):
@@ -317,6 +319,7 @@ def eliminate_var(f, var):
 
     eliminated.argspec = new_spec
     eliminated.domains = f.domains
+    #eliminated.__name__ = f.__name__
     return eliminated
 
 
@@ -333,6 +336,7 @@ def make_not_sum_func(product_func, keep_var):
     for arg in args:
         if arg != keep_var:
             new_func = eliminate_var(new_func, arg)
+            new_func = memoize(new_func)
     return new_func
 
 
