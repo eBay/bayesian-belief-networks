@@ -80,6 +80,7 @@ def marg(x, val, normalizer=1.0):
 
 if __name__ == '__main__':
 
+    graph.verify()
     graph.propagate()
 
     # Initial Marginals without any knowledge.

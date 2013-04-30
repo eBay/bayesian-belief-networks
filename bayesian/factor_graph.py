@@ -629,6 +629,21 @@ class FactorGraph(object):
                 if not hasattr(node.func, 'domains'):
                     print '%s has no domains.' % node
                     return False
+        print 'Checking that all variables are accounted for by at least one function...'
+        variables = set([vn.name for vn in self.nodes
+                         if isinstance(vn, VariableNode)])
+        args = set(reduce(
+                lambda x, y: x + y, [get_args(fn.func) for fn in
+                                     self.nodes if isinstance(fn, FactorNode)]))
+        if not variables.issubset(args):
+            print 'These variables are not used in any factors nodes: '
+            print variables.difference(args)
+            return False
+        print 'Checking that all arguments have corresponding variable nodes...'
+        if not args.issubset(variables):
+            print 'These arguments have missing variables:'
+            print args.difference(variables)
+            return False
         return True
 
     def get_leaves(self):
@@ -679,7 +694,7 @@ class FactorGraph(object):
         return 1
         
     def status(self, omit=[False]):
-        tab = PrettyTable(['Node', 'Value', 'Marginal'])
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
