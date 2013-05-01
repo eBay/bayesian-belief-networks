@@ -631,6 +631,7 @@ def test_verify_graph():
     graph = FactorGraph([x1, x2])
     assert graph.verify() is False
 
+
 def test_set_func_domains_from_variable_domains():
     def fA(x1):
         return 0.5
@@ -651,5 +652,55 @@ def test_set_func_domains_from_variable_domains():
     assert fB_node.func.domains == dict(x2=[True, False])
 
 
+def test_discover_sample_ordering():
 
+    def fActualDoor(ActualDoor):
+        return 1.0 / 3
 
+    def fGuestDoor(GuestDoor):
+        return 1.0 / 3
+
+    def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
+        if ActualDoor.value == GuestDoor.value:
+            if GuestDoor.value == MontyDoor.value:
+                return 0
+            else:
+                return 0.5
+        if GuestDoor.value == MontyDoor.value:
+            return 0
+        if ActualDoor.value == MontyDoor.value:
+            return 0
+        return 1
+
+    # Build the network
+    fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
+    fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
+    fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
+
+    ActualDoor = VariableNode('ActualDoor', ['A', 'B', 'C'])
+    GuestDoor = VariableNode('GuestDoor', ['A', 'B', 'C'])
+    MontyDoor = VariableNode('MontyDoor', ['A', 'B', 'C'])
+
+    connect(fActualDoor_node, ActualDoor)
+    connect(fGuestDoor_node, GuestDoor)
+    connect(fMontyDoor_node, [ActualDoor, GuestDoor, MontyDoor])
+
+    graph = FactorGraph(
+        [ActualDoor,
+         GuestDoor,
+         MontyDoor,
+         fActualDoor_node,
+         fGuestDoor_node,
+         fMontyDoor_node])
+    
+    assert graph.verify() is True
+    ordering = graph.discover_sample_ordering()
+    assert len(ordering) == 3
+    assert ordering[0][0].name == 'ActualDoor'
+    assert ordering[0][1].__name__ == 'fActualDoor'
+    assert ordering[1][0].name == 'GuestDoor'
+    assert ordering[1][1].__name__ == 'fGuestDoor'
+    assert ordering[2][0].name == 'MontyDoor'
+    assert ordering[2][1].__name__ == 'fMontyDoor'
+
+    

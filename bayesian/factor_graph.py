@@ -1,7 +1,8 @@
-'''Implements Sum-Product Algorithm over Factor Graphs'''
+'''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import sys
 import copy
 import inspect
+import random
 
 from collections import defaultdict
 from itertools import product as iter_product
@@ -63,6 +64,11 @@ class Node(object):
         for k, v in needed_to_send.items():
             if v == 0 and not self.name in k.received_messages:
                 return k
+
+    def get_neighbour_by_name(self, name):
+        for node in self.neighbours:
+            if node.name == name:
+                return node
 
 
 class VariableNode(Node):
@@ -587,7 +593,7 @@ def discover_sample_ordering(graph):
     # variables can be set first.
     for node in graph.get_leaves():
         if isinstance(node, FactorNode):
-            ordering.append(node.neighbours[0].name)
+            ordering.append(node.neighbours[0])
             accounted_for.add(node.neighbours[0].name)
             pmf_ordering.append(node.func)
 
@@ -600,10 +606,43 @@ def discover_sample_ordering(graph):
             args = set(get_args(node.func))
             new_args = args.difference(accounted_for)
             if len(new_args) == 1:
-                ordering += list(new_args)
-                accounted_for = set(ordering)
+                arg_name = list(new_args)[0]
+                var_node = node.get_neighbour_by_name(arg_name)
+                ordering.append(var_node)
+                accounted_for.add(var_node.name)
                 pmf_ordering.append(node.func)
     return zip(ordering, pmf_ordering)
+
+
+def get_sample(ordering):
+    '''
+    Given a valid ordering, sample the network.
+    '''
+    sample = []
+    sample_dict = dict()
+    for var, func in ordering:
+        r = random.random()
+        total = 0
+        for val in var.domain:
+            test_var = VariableNode(var.name)
+            test_var.value = val
+            # Now we need to build the
+            # argument list out of any 
+            # variables already in the sample
+            # and this new test value in 
+            # the order required by the function.
+            args = []
+            for arg in get_args(func):
+                if arg == var.name:
+                    args.append(test_var)
+                else:
+                    args.append(sample_dict[arg])
+            total += func(*args)
+            if total > r:
+                sample.append(test_var)
+                sample_dict[var.name] = test_var
+                break
+    return sample
 
 
 class FactorGraph(object):
@@ -760,6 +799,10 @@ class FactorGraph(object):
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
         
+    def get_sample(self):
+        if not hasattr(self, 'sample_ordering'):
+            self.sample_ordering = self.discover_sample_ordering()
+        return get_sample(self.sample_ordering)
 
 
 
