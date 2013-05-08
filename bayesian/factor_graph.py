@@ -791,7 +791,7 @@ class FactorGraph(object):
         return 1
         
     def status(self, omit=[False, 0]):
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
@@ -848,7 +848,7 @@ class FactorGraph(object):
             for var in sample:
                 key = (var.name, var.value)
                 counts[key] += 1
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         deco = [(k, v) for k, v in counts.items()]
