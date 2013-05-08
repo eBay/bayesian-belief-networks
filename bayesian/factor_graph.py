@@ -835,9 +835,12 @@ class FactorGraph(object):
 
     def query_by_sampling(self, **kwds):
         counts = defaultdict(int)
+        valid_samples = 0
         for i in range(0, self.n_samples):
+            print "%s of %s" % (i, self.n_samples)
             try:
                 sample = self.get_sample()
+                valid_samples += 1
             except:
                 print 'Failed to get a valid sample...'
                 print 'continuing...'
@@ -852,7 +855,7 @@ class FactorGraph(object):
         deco.sort()
         for k, v in deco:
             if k[1] is not False:
-                tab.add_row(list(k) + [v / self.n_samples])
+                tab.add_row(list(k) + [v / valid_samples])
         print tab
         
 
