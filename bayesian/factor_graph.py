@@ -1,3 +1,4 @@
+from __future__ import division
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import sys
 import copy
@@ -8,6 +9,7 @@ from collections import defaultdict
 from itertools import product as iter_product
 from prettytable import PrettyTable
 
+DEBUG = True
 
 class Node(object):
 
@@ -18,8 +20,9 @@ class Node(object):
 
     def send(self, message):
         recipient = message.destination
-        #print '%s ---> %s' % (
-        #    self.name, recipient.name), message
+        if DEBUG:
+            print '%s ---> %s' % (
+                self.name, recipient.name), message
         recipient.received_messages[
             self.name] = message
 
@@ -621,6 +624,8 @@ def get_sample(ordering):
     sample = []
     sample_dict = dict()
     for var, func in ordering:
+        #if func.__name__ == 'f_cancelled':
+        #    import ipdb; ipdb.set_trace()
         r = random.random()
         total = 0
         for val in var.domain:
@@ -642,6 +647,15 @@ def get_sample(ordering):
                 sample.append(test_var)
                 sample_dict[var.name] = test_var
                 break
+        if not var.name in sample_dict:
+            print 'Iterated through all values for %s and %s but no go...' % (var.name, func.__name__)
+            # This seems to mean that we have never seen this combination
+            # of variables before, we can either discard it as irrelevant or 
+            # use some type of +1 smoothing???
+            # What if we just randomly select some value for var????
+            # lets try that as it seems the easiest....
+            raise "Invalid Sample"
+            #import ipdb; ipdb.set_trace()
     return sample
 
 
@@ -676,6 +690,12 @@ class FactorGraph(object):
                     else:
                         domains.update({arg:arg_domains[arg]})
                 node.func.domains = domains
+        # NB: Set the mode of inference
+        # if this is wrong for the structure
+        # of the graph then we get wacky results
+        # so its safest to set it to sampling
+        # rather than belief propagation
+        self.inference_method = 'sample'
 
 
     def reset(self):
@@ -770,18 +790,20 @@ class FactorGraph(object):
                 return normalizer
         return 1
         
-    def status(self, omit=[False]):
+    def status(self, omit=[False, 0]):
         tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
         for node in self.variable_nodes():
+            #if node.name == 'undefined':
+            #    import ipdb; ipdb.set_trace()
             for value in node.domain:
-                m = '%8.6f' % round(node.marginal(value, normalizer), 6)
+                m = node.marginal(value, normalizer)
                 if node.value == value:
-                    tab.add_row([node.name +'*', '*%s' % value, m])
-                elif value not in omit:
-                    tab.add_row([node.name, '%s' % value, m])
+                    tab.add_row([node.name +'*', '*%s' % value, '%8.6f' % m])
+                elif value not in omit and m not in omit:
+                    tab.add_row([node.name, '%s' % value, '%8.6f' % m])
         print tab
 
     def query(self, **kwds):
@@ -800,12 +822,39 @@ class FactorGraph(object):
         return discover_sample_ordering(self)
         
     def get_sample(self):
+        '''
+        We need to allow for setting
+        certain observed variables and
+        discarding mismatching
+        samples as we generate them.
+        '''
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
         return get_sample(self.sample_ordering)
 
 
-
+    def query_by_sampling(self, **kwds):
+        counts = defaultdict(int)
+        for i in range(0, self.n_samples):
+            try:
+                sample = self.get_sample()
+            except:
+                print 'Failed to get a valid sample...'
+                print 'continuing...'
+                continue
+            for var in sample:
+                key = (var.name, var.value)
+                counts[key] += 1
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
+        tab.align = 'l'
+        tab.align['Marginal'] = 'r'
+        deco = [(k, v) for k, v in counts.items()]
+        deco.sort()
+        for k, v in deco:
+            if k[1] is not False:
+                tab.add_row(list(k) + [v / self.n_samples])
+        print tab
+        
 
 
 
