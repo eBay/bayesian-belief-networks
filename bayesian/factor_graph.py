@@ -89,7 +89,7 @@ class VariableNode(Node):
         return message
 
     def __repr__(self):
-        return '<VariableNode: %s>' % self.name
+        return '<VariableNode: %s:%s>' % (self.name, self.value)
 
     def marginal(self, val, normalizer=1.0):
         '''
@@ -617,7 +617,7 @@ def discover_sample_ordering(graph):
     return zip(ordering, pmf_ordering)
 
 
-def get_sample(ordering):
+def get_sample(ordering, evidence={}):
     '''
     Given a valid ordering, sample the network.
     '''
@@ -644,8 +644,15 @@ def get_sample(ordering):
                     args.append(sample_dict[arg])
             total += func(*args)
             if total > r:
-                sample.append(test_var)
-                sample_dict[var.name] = test_var
+                # We only want to use this sample
+                # if it corresponds to the evidence value...
+                if var.name in evidence:
+                    if test_var.value == evidence[var.name]:
+                        sample.append(test_var)
+                        sample_dict[var.name] = test_var
+                else:
+                    sample.append(test_var)
+                    sample_dict[var.name] = test_var
                 break
         if not var.name in sample_dict:
             print 'Iterated through all values for %s and %s but no go...' % (var.name, func.__name__)
@@ -821,7 +828,7 @@ class FactorGraph(object):
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
         
-    def get_sample(self):
+    def get_sample(self, evidence={}):
         '''
         We need to allow for setting
         certain observed variables and
@@ -830,16 +837,16 @@ class FactorGraph(object):
         '''
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
-        return get_sample(self.sample_ordering)
+        return get_sample(self.sample_ordering, evidence)
 
 
     def query_by_sampling(self, **kwds):
         counts = defaultdict(int)
         valid_samples = 0
-        for i in range(0, self.n_samples):
-            print "%s of %s" % (i, self.n_samples)
+        while valid_samples < self.n_samples:
+            print "%s of %s" % (valid_samples, self.n_samples)
             try:
-                sample = self.get_sample()
+                sample = self.get_sample(kwds)
                 valid_samples += 1
             except:
                 print 'Failed to get a valid sample...'
@@ -856,6 +863,7 @@ class FactorGraph(object):
         for k, v in deco:
             if k[1] is not False:
                 tab.add_row(list(k) + [v / valid_samples])
+            #tab.add_row(list(k) + [v / valid_samples])
         print tab
         
 
