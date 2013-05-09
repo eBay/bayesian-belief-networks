@@ -1,5 +1,6 @@
 from __future__ import division
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
+import csv
 import sys
 import copy
 import inspect
@@ -7,9 +8,15 @@ import random
 
 from collections import defaultdict
 from itertools import product as iter_product
+
+import sqlite3
 from prettytable import PrettyTable
 
 DEBUG = True
+
+
+class InvalidSampleException(BaseException):
+    pass
 
 class Node(object):
 
@@ -661,14 +668,14 @@ def get_sample(ordering, evidence={}):
             # use some type of +1 smoothing???
             # What if we just randomly select some value for var????
             # lets try that as it seems the easiest....
-            raise "Invalid Sample"
+            raise InvalidSampleException
             #import ipdb; ipdb.set_trace()
     return sample
 
 
 class FactorGraph(object):
 
-    def __init__(self, nodes):
+    def __init__(self, nodes, sample_db_filename=None):
         self.nodes = nodes
         # We need to divine the domains for Factor nodes here...
         # First compile a mapping of factors to variables
@@ -703,6 +710,9 @@ class FactorGraph(object):
         # so its safest to set it to sampling
         # rather than belief propagation
         self.inference_method = 'sample'
+        if sample_db_filename:
+            self.sample_db_filename = sample_db_filename
+            self.sample_db = SampleDB(sample_db_filename)
 
 
     def reset(self):
@@ -823,6 +833,10 @@ class FactorGraph(object):
         self.status()
         
     def q(self, **kwds):
+        if self.inference_method == 'sample_db':
+            return self.query_by_external_samples(**kwds)
+        elif self.inference_method == 'sample':
+            return self.query_by_sampling(**kwds)
         return self.query(**kwds)
 
     def discover_sample_ordering(self):
@@ -838,7 +852,6 @@ class FactorGraph(object):
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
         return get_sample(self.sample_ordering, evidence)
-
 
     def query_by_sampling(self, **kwds):
         counts = defaultdict(int)
@@ -866,8 +879,86 @@ class FactorGraph(object):
             #tab.add_row(list(k) + [v / valid_samples])
         print tab
         
+    def generate_samples(self, n, filename, mode='w'):
+        '''
+        Generate and save samples to a csv filename
+        for later use. 
+        '''
+        valid_samples = 0
+        if not hasattr(self, 'sample_ordering'):
+            self.sample_ordering = self.discover_sample_ordering()
+        with open(filename, mode) as fh:
+            writer = csv.DictWriter(fh, delimiter='|',
+                                    fieldnames=[x[0].name for x in self.sample_ordering])
+            writer.writeheader()
+            while valid_samples < n:
+                try:
+                    sample = self.get_sample()
+                except InvalidSampleException:
+                    continue
+                valid_samples += 1
+                print "%s of %s" % (valid_samples, n)
+                writer.writerow(dict([(x.name, x.value) for x in sample]))
 
 
+                
+    def query_by_external_samples(self, **kwds):
+        counts = defaultdict(int)
+        samples = self.sample_db.get_samples(self.n_samples, **kwds)
+        for sample in samples:
+            for name, val in sample.items():
+                key = (name, val)
+                counts[key] += 1
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
+        tab.align = 'l'
+        tab.align['Marginal'] = 'r'
+        deco = [(k, v) for k, v in counts.items()]
+        deco.sort()
+        for k, v in deco:
+            if k[1] is not False:
+                tab.add_row(list(k) + [v / len(samples)])
+        print tab
+
+
+def dict_factory(cursor, row):
+    d = dict()
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    # Hack for now!!!!
+    d['cancelled'] = d['cancelled'] == 'True'
+    d['oos'] = d['oos'] == 'True'
+    d['fraud'] = d['fraud'] == 'True'
+    d['tax_difference'] = d['tax_difference'] == 'True'
+    d['store_closed'] = d['store_closed'] == 'True'
+    d['out_of_stock'] = d['out_of_stock'] == 'True'
+    d['undefined'] = d['undefined'] == 'True'
+    d['valet_error'] = d['valet_error'] == 'True'
+    d['bad_price'] = d['bad_price'] == 'True'
+    return d
+
+
+class SampleDB(object):
+
+    def __init__(self, filename):
+        self.conn = sqlite3.connect(filename)
+        self.conn.row_factory = dict_factory
+
+    def get_samples(self, n, **kwds):
+        cur = self.conn.cursor()
+        sql = '''
+            SELECT * FROM data
+        '''
+        evidence = []
+        for k, v in kwds.items():
+            evidence.append("%s='%s'" % (k, v))
+        if evidence:
+            sql += '''
+                WHERE %s
+            ''' % ' AND '.join(evidence)
+        sql += ' LIMIT %s' % n
+        cur.execute(sql)
+        return cur.fetchall()
+        
 
 
 
