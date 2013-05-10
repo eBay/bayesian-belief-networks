@@ -703,4 +703,4 @@ def test_discover_sample_ordering():
     assert ordering[2][0].name == 'MontyDoor'
     assert ordering[2][1].__name__ == 'fMontyDoor'
 
-    
+

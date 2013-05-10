@@ -14,6 +14,12 @@ from prettytable import PrettyTable
 
 DEBUG = True
 
+class InvalidGraphException(BaseException):
+    '''
+    Raised if the graph verification
+    method fails.
+    '''
+    pass
 
 class InvalidSampleException(BaseException):
     pass
@@ -729,6 +735,21 @@ class FactorGraph(object):
         Check several properties of the Factor Graph
         that should hold.
         '''
+        # Check that all nodes are either
+        # instances of classes derived from
+        # VariableNode or FactorNode.
+        # It is a very common error to instantiate 
+        # the graph with the factor function
+        # instead of the corresponding factor
+        # node.
+        for node in self.nodes:
+            if not isinstance(node, VariableNode) and \
+                    not isinstance(node, FactorNode):
+                bases = node.__class__.__bases__
+                if not VariableNode in bases and not FactorNode in bases:
+                    print ('Factor Graph does not ' 
+                    'support nodes of type: %s' % node.__class__)
+                    raise InvalidGraphException
         # First check that for each node
         # only connects to nodes of the
         # other type.
