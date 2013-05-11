@@ -14,6 +14,7 @@ from prettytable import PrettyTable
 
 DEBUG = True
 
+
 class InvalidGraphException(BaseException):
     '''
     Raised if the graph verification
@@ -21,8 +22,14 @@ class InvalidGraphException(BaseException):
     '''
     pass
 
+
 class InvalidSampleException(BaseException):
     pass
+
+
+class InvalidInferenceMethod(BaseException):
+    pass
+
 
 class Node(object):
 
@@ -681,7 +688,7 @@ def get_sample(ordering, evidence={}):
 
 class FactorGraph(object):
 
-    def __init__(self, nodes, sample_db_filename=None):
+    def __init__(self, nodes, sample_db_filename=None, n_samples=100):
         self.nodes = nodes
         # We need to divine the domains for Factor nodes here...
         # First compile a mapping of factors to variables
@@ -710,6 +717,7 @@ class FactorGraph(object):
                     else:
                         domains.update({arg:arg_domains[arg]})
                 node.func.domains = domains
+        self.n_samples = n_samples
         # NB: Set the mode of inference
         # if this is wrong for the structure
         # of the graph then we get wacky results
@@ -779,6 +787,13 @@ class FactorGraph(object):
             print 'These arguments have missing variables:'
             print args.difference(variables)
             return False
+        print 'Checking that graph has at least one leaf node...'
+        leaf_nodes = filter(
+            lambda x: x.is_leaf(),
+            self.nodes)
+        if not leaf_nodes:
+            print 'Graph has no leaf nodes.'
+            raise InvalidGraphException
         return True
 
     def get_leaves(self):
@@ -858,7 +873,10 @@ class FactorGraph(object):
             return self.query_by_external_samples(**kwds)
         elif self.inference_method == 'sample':
             return self.query_by_sampling(**kwds)
-        return self.query(**kwds)
+        elif self.inference_method == 'sumproduct':
+            return self.query(**kwds)
+        raise InvalidInferenceMethod
+
 
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
@@ -922,7 +940,6 @@ class FactorGraph(object):
                 writer.writerow(dict([(x.name, x.value) for x in sample]))
 
 
-                
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
         samples = self.sample_db.get_samples(self.n_samples, **kwds)
@@ -939,6 +956,42 @@ class FactorGraph(object):
             if k[1] is not False:
                 tab.add_row(list(k) + [v / len(samples)])
         print tab
+
+
+def build_graph(*args, **kwds):
+    '''
+    Automatically create all the
+    variable and factor nodes
+    using only function definitions.
+    Since its cumbersome to supply
+    the domains for variable nodes 
+    via the factor domains perhaps
+    we should allow a domains dict?
+    '''
+    # Lets start off identifying all the 
+    # variables by introspecting the
+    # functions.
+    variables = set()
+    domains = kwds.get('domains', {})
+    variable_nodes = dict()
+    factor_nodes = []
+    for factor in args:
+        args = get_args(factor)
+        variables.update(args)
+        factor_node = FactorNode(factor.__name__, factor)
+        factor_nodes.append(factor_node)
+    for variable in variables:
+        node = VariableNode(
+            variable,
+            domain=domains.get(variable, [True, False]))
+        variable_nodes[variable] = node
+    # Now we have to connect each factor node
+    # to its variable nodes
+    for factor_node in factor_nodes:
+        args = get_args(factor)
+        connect(factor_node, [variable_nodes[x] for x in args])
+    graph = FactorGraph(variable_nodes.values() + factor_nodes)
+    return graph
 
 
 def dict_factory(cursor, row):
@@ -980,6 +1033,7 @@ class SampleDB(object):
         cur.execute(sql)
         return cur.fetchall()
         
+
 
 
 
