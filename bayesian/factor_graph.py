@@ -976,8 +976,8 @@ def build_graph(*args, **kwds):
     variable_nodes = dict()
     factor_nodes = []
     for factor in args:
-        args = get_args(factor)
-        variables.update(args)
+        factor_args = get_args(factor)
+        variables.update(factor_args)
         factor_node = FactorNode(factor.__name__, factor)
         factor_nodes.append(factor_node)
     for variable in variables:
@@ -987,9 +987,10 @@ def build_graph(*args, **kwds):
         variable_nodes[variable] = node
     # Now we have to connect each factor node
     # to its variable nodes
+    import ipdb; ipdb.set_trace()
     for factor_node in factor_nodes:
-        args = get_args(factor)
-        connect(factor_node, [variable_nodes[x] for x in args])
+        factor_args = get_args(factor_node.func)
+        connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes)
     return graph
 
