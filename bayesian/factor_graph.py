@@ -979,6 +979,7 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor)
         variables.update(factor_args)
         factor_node = FactorNode(factor.__name__, factor)
+        factor_node.func.domains = domains # Bit of a hack for now we should actually exclude variables that are not parameters of this function
         factor_nodes.append(factor_node)
     for variable in variables:
         node = VariableNode(
@@ -987,7 +988,6 @@ def build_graph(*args, **kwds):
         variable_nodes[variable] = node
     # Now we have to connect each factor node
     # to its variable nodes
-    import ipdb; ipdb.set_trace()
     for factor_node in factor_nodes:
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])

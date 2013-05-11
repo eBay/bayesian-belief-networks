@@ -53,36 +53,19 @@ def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
     return 1
 
 
-# Build the network
-fActualDoor_node = FactorNode('fActualDoor', fActualDoor)
-fGuestDoor_node = FactorNode('fGuestDoor', fGuestDoor)
-fMontyDoor_node = FactorNode('fMontyDoor', fMontyDoor)
-
-ActualDoor = VariableNode('ActualDoor', domain=['A', 'B', 'C'])
-GuestDoor = VariableNode('GuestDoor', domain=['A', 'B', 'C'])
-MontyDoor = VariableNode('MontyDoor', domain=['A', 'B', 'C'])
-
-connect(fActualDoor_node, ActualDoor)
-connect(fGuestDoor_node, GuestDoor)
-connect(fMontyDoor_node, [ActualDoor, GuestDoor, MontyDoor])
-
-graph = FactorGraph(
-    [ActualDoor,
-     GuestDoor,
-     MontyDoor,
-     fActualDoor_node,
-     fGuestDoor_node,
-     fMontyDoor_node])
-
-
-def marg(x, val, normalizer=1.0):
-    return round(x.marginal(val, normalizer), 3)
-
 if __name__ == '__main__':
 
+    graph = build_graph(
+        fActualDoor,
+        fGuestDoor,
+        fMontyDoor,
+        domains=dict(
+            ActualDoor=['A', 'B', 'C'],
+            GuestDoor=['A', 'B', 'C'],
+            MontyDoor=['A', 'B', 'C']))
+    graph.inference_method = 'sumproduct'
     graph.verify()
     graph.propagate()
-
     # Initial Marginals without any knowledge.
     # Observe that the likelihood for 
     # all three doors is 1/3.
@@ -101,5 +84,5 @@ if __name__ == '__main__':
     # we should switch to door C.
     print 'Marginals after knowing Guest chose A and Monty chose B.'
     graph.q(GuestDoor='A', MontyDoor='B')
-
+    
     
