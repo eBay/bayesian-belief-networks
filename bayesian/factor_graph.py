@@ -644,8 +644,6 @@ def get_sample(ordering, evidence={}):
     sample = []
     sample_dict = dict()
     for var, func in ordering:
-        #if func.__name__ == 'f_cancelled':
-        #    import ipdb; ipdb.set_trace()
         r = random.random()
         total = 0
         for val in var.domain:
@@ -682,7 +680,6 @@ def get_sample(ordering, evidence={}):
             # What if we just randomly select some value for var????
             # lets try that as it seems the easiest....
             raise InvalidSampleException
-            #import ipdb; ipdb.set_trace()
     return sample
 
 
@@ -771,7 +768,11 @@ class FactorGraph(object):
             if isinstance(node, FactorNode):
                 if not hasattr(node.func, 'domains'):
                     print '%s has no domains.' % node
-                    return False
+                    raise InvalidGraphException 
+                elif not node.func.domains:
+                    # Also check for an empty domain dict!
+                    print '%s has empty domains.' % node
+                    raise InvalidGraphException
         print 'Checking that all variables are accounted for by at least one function...'
         variables = set([vn.name for vn in self.nodes
                          if isinstance(vn, VariableNode)])
@@ -849,8 +850,6 @@ class FactorGraph(object):
         tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
         for node in self.variable_nodes():
-            #if node.name == 'undefined':
-            #    import ipdb; ipdb.set_trace()
             for value in node.domain:
                 m = node.marginal(value, normalizer)
                 if node.value == value:

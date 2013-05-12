@@ -48,6 +48,32 @@ def pytest_funcarg__graph_with_function_as_node(request):
     connect(fA_node, x1)
     graph = FactorGraph([fA, x1])
     return graph
+
+
+def pytest_funcarg__graph_with_empty_func_domains(request):
+
+    def fA(x1):
+        return 0.5
+    
+    fA_node = FactorNode('fA', fA)
+    x1 = VariableNode('x1')
+    connect(fA_node, x1)
+    graph = FactorGraph([fA_node, x1])
+    fA_node.func.domains = {}
+    return graph
+
+
+def pytest_funcarg__graph_with_missing_func_domains(request):
+
+    def fA(x1):
+        return 0.5
+    
+    fA_node = FactorNode('fA', fA)
+    x1 = VariableNode('x1')
+    connect(fA_node, x1)
+    graph = FactorGraph([fA_node, x1])
+    delattr(fA_node.func, 'domains')
+    return graph
     
 
 class TestVerify():
@@ -77,3 +103,19 @@ class TestVerify():
         '''
         with pytest.raises(InvalidGraphException):
             graph_with_function_as_node.verify()
+
+    def test_broken_graph_empty_factor_domains(self, graph_with_empty_func_domains):
+        '''
+        Make sure exception is raised for 
+        broken graph.
+        '''
+        with pytest.raises(InvalidGraphException):
+            graph_with_empty_func_domains.verify()
+
+    def test_broken_graph_missing_factor_domains(self, graph_with_missing_func_domains):
+        '''
+        Make sure exception is raised for 
+        broken graph.
+        '''
+        with pytest.raises(InvalidGraphException):
+            graph_with_missing_func_domains.verify()
