@@ -76,6 +76,37 @@ def pytest_funcarg__graph_with_missing_func_domains(request):
     return graph
     
 
+def pytest_funcarg__graph_with_cycle(request):
+    '''
+    This graph looks like this BBN:
+
+    x1        x2----+  
+    |         |     |
+    +----+----+     |
+         |          |
+         x3         |
+         |          |
+         +-----+----+
+               |
+               x4
+    '''
+
+    def fA(x1):
+        return 0.5
+
+    def fB(x2):
+        return 0.5
+
+    def fC(x1, x2, x3):
+        return 0.5
+
+    def fD(x2, x3, x4):
+        return 0.5
+
+    graph = build_graph(fA, fB, fC, fD)
+    return graph
+
+
 class TestVerify():
 
     def test_verify_variable_node_neighbour_type(self, x1, fA_node):
@@ -119,3 +150,9 @@ class TestVerify():
         '''
         with pytest.raises(InvalidGraphException):
             graph_with_missing_func_domains.verify()
+
+    def test_graph_has_no_cycles(self, simple_valid_graph):
+        assert simple_valid_graph.has_cycles() is False
+
+    def test_graph_has_cycles(self, graph_with_cycle):
+        assert graph_with_cycle.has_cycles() is True

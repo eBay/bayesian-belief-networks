@@ -8,6 +8,7 @@ import random
 
 from collections import defaultdict
 from itertools import product as iter_product
+from Queue import Queue
 
 import sqlite3
 from prettytable import PrettyTable
@@ -725,7 +726,6 @@ class FactorGraph(object):
             self.sample_db_filename = sample_db_filename
             self.sample_db = SampleDB(sample_db_filename)
 
-
     def reset(self):
         '''
         Reset all nodes back to their initial state.
@@ -735,6 +735,55 @@ class FactorGraph(object):
         for node in self.nodes:
             node.reset()
 
+    def has_cycles(self):
+        '''
+        Check if the graph has cycles or not.
+        We will do this by traversing starting
+        from any leaf node and recording
+        both the edges traversed and the nodes
+        discovered. From stackoverflow, if
+        an unexplored edge leads to a
+        previously found node then it has 
+        cycles.
+        '''
+        discovered_nodes = set()
+        traversed_edges = set()
+        q = Queue()
+        for node in self.nodes:
+            if node.is_leaf():
+                start_node = node
+                break
+        q.put(start_node)
+        while not q.empty():
+            current_node = q.get()
+            print "Current Node: ", current_node
+            print "Discovered Nodes before adding Current Node: ", discovered_nodes
+            if current_node.name in discovered_nodes:
+                # We have a cycle!
+                print 'Dequeued node already processed: %s', current_node
+                return True
+            discovered_nodes.add(current_node.name)
+            print "Discovered Nodes after adding Current Node: ", discovered_nodes
+            for neighbour in current_node.neighbours:
+                edge = [current_node.name, neighbour.name]
+                # Since this is undirected and we want
+                # to record the edges we have traversed
+                # we will sort the edge alphabetically
+                edge.sort()
+                edge = tuple(edge)
+                if edge not in traversed_edges:
+                    # This is a new edge...
+                    if neighbour.name in discovered_nodes:
+                        return True
+                # Now place all neighbour nodes on the q
+                # and record this edge as traversed
+                if neighbour.name not in discovered_nodes:
+                    print 'Enqueuing: %s', neighbour
+                    q.put(neighbour)
+                traversed_edges.add(edge)
+        return False
+        
+        
     def verify(self):
         '''
         Check several properties of the Factor Graph
@@ -978,7 +1027,7 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor)
         variables.update(factor_args)
         factor_node = FactorNode(factor.__name__, factor)
-        factor_node.func.domains = domains # Bit of a hack for now we should actually exclude variables that are not parameters of this function
+        #factor_node.func.domains = domains # Bit of a hack for now we should actually exclude variables that are not parameters of this function
         factor_nodes.append(factor_node)
     for variable in variables:
         node = VariableNode(
