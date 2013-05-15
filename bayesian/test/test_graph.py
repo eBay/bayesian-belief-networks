@@ -3,24 +3,25 @@ from bayesian.factor_graph import *
 
 
 def fA(x1):
-    if x1.value == True:
+    if x1.value is True:
         return 0.1
-    elif x1.value == False:
+    elif not x1.value:
         return 0.9
 
 fA.domains = dict(x1=[True, False])
 
+
 def fB(x2):
-    if x2.value == True:
+    if x2.value is True:
         return 0.3
-    elif x2.value == False:
+    elif not x2.value:
         return 0.7
 
 fB.domains = dict(x2=[True, False])
 
 
 def fC(x1, x2, x3):
-    ''' 
+    '''
     This needs to be a joint probability distribution
     over the inputs and the node itself
     '''
@@ -36,13 +37,14 @@ def fC(x1, x2, x3):
     key = ''
     key = key + 't' if x1.value else key + 'f'
     key = key + 't' if x2.value else key + 'f'
-    key = key + 't' if x3.value  else key + 'f'
+    key = key + 't' if x3.value else key + 'f'
     return table[key]
 
 fC.domains = dict(
     x1=[True, False],
     x2=[True, False],
     x3=[True, False])
+
 
 def fD(x3, x4):
     table = dict()
@@ -95,6 +97,7 @@ connect(fC_node, [x1, x2, x3])
 connect(fD_node, [x3, x4])
 connect(fE_node, [x3, x5])
 
+
 def test_connect():
     assert fA_node.neighbours == [x1]
     assert fB_node.neighbours == [x2]
@@ -110,6 +113,7 @@ def test_connect():
 
 graph = FactorGraph([x1, x2, x3, x4, x5,
                      fA_node, fB_node, fC_node, fD_node, fE_node])
+
 
 def test_variable_node_is_leaf():
     assert not x1.is_leaf()
@@ -129,6 +133,7 @@ def test_factor_node_is_leaf():
 
 def test_graph_get_leaves():
     assert graph.get_leaves() == [x4, x5, fA_node, fB_node]
+
 
 # Tests at step 1
 def test_graph_get_step_1_eligible_senders():
@@ -197,6 +202,7 @@ def test_sent_messages():
     sent = fB_node.get_sent_messages()
     assert sent['x2'] == x2.received_messages['fB']
 
+
 # Step 2
 def test_node_get_step_2_target():
     assert x1.get_target() == fC_node
@@ -208,11 +214,13 @@ def test_graph_reset():
     for node in graph.nodes:
         assert node.received_messages == {}
 
+
 def test_propagate():
     graph.reset()
     graph.propagate()
     for node in graph.nodes:
         node.message_report()
+
 
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
@@ -240,8 +248,9 @@ def test_marginals():
     m = marg(x5, False)
     assert m == 0.696
 
+
 def test_add_evidence():
-    ''' 
+    '''
     We will set x5=True, this
     corresponds to variable D in BAI
     '''
@@ -270,7 +279,8 @@ def test_add_evidence():
     assert m == 1.0
     m = marg(x5, False, normalizer)
     assert m == 0.0
-    
+
+
 def test_add_evidence_x2_true():
     '''
     x2 = S in BAI
@@ -299,7 +309,7 @@ def test_add_evidence_x2_true():
     assert m == 0.311
     m = marg(x5, False, normalizer)
     assert m == 0.689
-    
+
 
 def test_add_evidence_x3_true():
     '''
@@ -361,7 +371,8 @@ def test_add_evidence_x2_true_and_x3_true():
     assert m == 0.650
     m = marg(x5, False, normalizer)
     assert m == 0.350
-    
+
+
 def test_add_evidence_x5_true_x2_true():
     graph.reset()
     add_evidence(x5, True)
@@ -388,7 +399,7 @@ def test_add_evidence_x5_true_x2_true():
     assert m == 1.0
     m = marg(x5, False, normalizer)
     assert m == 0.0
-    
+
 
 # Now we are going to test based on the second
 # half of table 2.2 where the prior for prior
@@ -400,9 +411,9 @@ def test_add_evidence_x5_true_x2_true():
 
 def test_marginals_table_22_part_2_x2_prior_change():
     def fB(x2):
-        if x2.value == True:
+        if x2.value is True:
             return 0.5
-        elif x2.value == False:
+        elif not x2.value:
             return 0.5
     fB.domains = dict(x2=[True, False])
 
@@ -425,7 +436,9 @@ def test_marginals_table_22_part_2_x2_prior_change():
     connect(x4, fD_node)
     connect(x5, fE_node)
 
-    graph = FactorGraph([x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node])
+    nodes = [x1, x2, x3, x4, x5, fA_node, fB_node, fC_node, fD_node, fE_node]
+
+    graph = FactorGraph(nodes)
     graph.propagate()
     m = marg(x1, True)
     assert m == 0.1
@@ -447,7 +460,7 @@ def test_marginals_table_22_part_2_x2_prior_change():
     assert m == 0.306
     m = marg(x5, False)
     assert m == 0.694
-    
+
     # Now set D=T (x5=True)
     graph.reset()
     add_evidence(x5, True)
@@ -475,7 +488,6 @@ def test_marginals_table_22_part_2_x2_prior_change():
     m = marg(x5, False, normalizer)
     assert m == 0.0
 
-
     graph.reset()
     add_evidence(x2, True)
     graph.propagate()
@@ -493,7 +505,8 @@ def test_marginals_table_22_part_2_x2_prior_change():
     m = marg(x3, False, normalizer)
     assert m == 0.968
     m = marg(x4, True, normalizer)
-    assert m == 0.222 # Note that in Table 2.2 x4 and x5 marginals are reversed
+    # Note that in Table 2.2 x4 and x5 marginals are reversed:
+    assert m == 0.222
     m = marg(x4, False, normalizer)
     assert m == 0.778
     m = marg(x5, True, normalizer)
@@ -559,7 +572,6 @@ def test_marginals_table_22_part_2_x2_prior_change():
     m = marg(x5, False, normalizer)
     assert m == 0.350
 
-
     graph.reset()
     add_evidence(x5, True)
     add_evidence(x2, True)
@@ -606,9 +618,11 @@ def test_verify_node_neighbour_type():
     assert x2.verify_neighbour_types() is False
     assert x3.verify_neighbour_types() is False
 
+
 def test_verify_graph():
     def fA(x1):
         return 0.5
+
     def fB(x2):
         return 0.5
 
@@ -617,7 +631,6 @@ def test_verify_graph():
 
     x1 = VariableNode('x1')
     x2 = VariableNode('x2')
-
 
     connect(fA_node, x1)
     graph = FactorGraph([fA_node, x1])
@@ -692,7 +705,7 @@ def test_discover_sample_ordering():
          fActualDoor_node,
          fGuestDoor_node,
          fMontyDoor_node])
-    
+
     assert graph.verify() is True
     ordering = graph.discover_sample_ordering()
     assert len(ordering) == 3
@@ -702,5 +715,3 @@ def test_discover_sample_ordering():
     assert ordering[1][1].__name__ == 'fGuestDoor'
     assert ordering[2][0].name == 'MontyDoor'
     assert ordering[2][1].__name__ == 'fMontyDoor'
-
-

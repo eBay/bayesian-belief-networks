@@ -40,8 +40,9 @@ def make_guassian(mean, std_dev):
 
     return guassian
 
+
 def make_guassian_cdf(mean, std_dev):
-    
+
     def guassian_cdf(x):
         t = (x - mean) / std_dev
         if t > 0:
@@ -50,8 +51,9 @@ def make_guassian_cdf(mean, std_dev):
             return 0.5
         else:
             return 1 - std_guassian_cdf(abs(t))
-    
+
     return guassian_cdf
+
 
 def make_log_normal(mean, std_dev, base=math.e):
     '''
@@ -59,7 +61,7 @@ def make_log_normal(mean, std_dev, base=math.e):
     In [13]: t = [5, 5, 5, 5, 6, 10, 10, 20, 50]
 
     In [14]: [math.log(x) for x in t]
-    Out[14]: 
+    Out[14]:
     [1.6094379124341003,
     1.6094379124341003,
     1.6094379124341003,
@@ -72,17 +74,18 @@ def make_log_normal(mean, std_dev, base=math.e):
 
     When constructing the log-normal,
     keep in mind that the mean parameter is the
-    mean of the log of the values. 
-    
+    mean of the log of the values.
+
     '''
     def log_normal(x):
-        
+
         return 1 / (x * (2 * math.pi * std_dev * std_dev) ** 0.5) * \
             base ** (-((math.log(x, base) - mean) ** 2) / (2 * std_dev ** 2))
 
     log_normal.cdf = make_log_normal_cdf(mean, std_dev)
 
     return log_normal
+
 
 def make_log_normal_cdf(mean, std_dev, base=math.e):
 

@@ -1,7 +1,6 @@
 from __future__ import division
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import csv
-import sys
 import copy
 import inspect
 import random
@@ -600,7 +599,7 @@ def add_evidence(node, value):
 def discover_sample_ordering(graph):
     '''
     Try to get the order of variable nodes
-    for sampling. This would be easier in 
+    for sampling. This would be easier in
     the underlying BBN but lets try on
     the factor graph.
     '''
@@ -651,9 +650,9 @@ def get_sample(ordering, evidence={}):
             test_var = VariableNode(var.name)
             test_var.value = val
             # Now we need to build the
-            # argument list out of any 
+            # argument list out of any
             # variables already in the sample
-            # and this new test value in 
+            # and this new test value in
             # the order required by the function.
             args = []
             for arg in get_args(func):
@@ -674,9 +673,10 @@ def get_sample(ordering, evidence={}):
                     sample_dict[var.name] = test_var
                 break
         if not var.name in sample_dict:
-            print 'Iterated through all values for %s and %s but no go...' % (var.name, func.__name__)
+            print 'Iterated through all values for %s and %s but no go...' \
+                % (var.name, func.__name__)
             # This seems to mean that we have never seen this combination
-            # of variables before, we can either discard it as irrelevant or 
+            # of variables before, we can either discard it as irrelevant or
             # use some type of +1 smoothing???
             # What if we just randomly select some value for var????
             # lets try that as it seems the easiest....
@@ -713,7 +713,7 @@ class FactorGraph(object):
                     if not arg in arg_domains:
                         print 'WARNING: missing variable for arg:%s' % arg
                     else:
-                        domains.update({arg:arg_domains[arg]})
+                        domains.update({arg: arg_domains[arg]})
                 node.func.domains = domains
         self.n_samples = n_samples
         # NB: Set the mode of inference
@@ -743,7 +743,7 @@ class FactorGraph(object):
         both the edges traversed and the nodes
         discovered. From stackoverflow, if
         an unexplored edge leads to a
-        previously found node then it has 
+        previously found node then it has
         cycles.
         '''
         discovered_nodes = set()
@@ -757,13 +757,15 @@ class FactorGraph(object):
         while not q.empty():
             current_node = q.get()
             print "Current Node: ", current_node
-            print "Discovered Nodes before adding Current Node: ", discovered_nodes
+            print "Discovered Nodes before adding Current Node: ", \
+                discovered_nodes
             if current_node.name in discovered_nodes:
                 # We have a cycle!
                 print 'Dequeued node already processed: %s', current_node
                 return True
             discovered_nodes.add(current_node.name)
-            print "Discovered Nodes after adding Current Node: ", discovered_nodes
+            print "Discovered Nodes after adding Current Node: ", \
+                discovered_nodes
             for neighbour in current_node.neighbours:
                 edge = [current_node.name, neighbour.name]
                 # Since this is undirected and we want
@@ -782,8 +784,7 @@ class FactorGraph(object):
                     q.put(neighbour)
                 traversed_edges.add(edge)
         return False
-        
-        
+
     def verify(self):
         '''
         Check several properties of the Factor Graph
@@ -792,7 +793,7 @@ class FactorGraph(object):
         # Check that all nodes are either
         # instances of classes derived from
         # VariableNode or FactorNode.
-        # It is a very common error to instantiate 
+        # It is a very common error to instantiate
         # the graph with the factor function
         # instead of the corresponding factor
         # node.
@@ -801,8 +802,8 @@ class FactorGraph(object):
                     not isinstance(node, FactorNode):
                 bases = node.__class__.__bases__
                 if not VariableNode in bases and not FactorNode in bases:
-                    print ('Factor Graph does not ' 
-                    'support nodes of type: %s' % node.__class__)
+                    print ('Factor Graph does not '
+                           'support nodes of type: %s' % node.__class__)
                     raise InvalidGraphException
         # First check that for each node
         # only connects to nodes of the
@@ -817,22 +818,26 @@ class FactorGraph(object):
             if isinstance(node, FactorNode):
                 if not hasattr(node.func, 'domains'):
                     print '%s has no domains.' % node
-                    raise InvalidGraphException 
+                    raise InvalidGraphException
                 elif not node.func.domains:
                     # Also check for an empty domain dict!
                     print '%s has empty domains.' % node
                     raise InvalidGraphException
-        print 'Checking that all variables are accounted for by at least one function...'
+        print 'Checking that all variables are accounted for' + \
+            ' by at least one function...'
         variables = set([vn.name for vn in self.nodes
                          if isinstance(vn, VariableNode)])
-        args = set(reduce(
-                lambda x, y: x + y, [get_args(fn.func) for fn in
-                                     self.nodes if isinstance(fn, FactorNode)]))
+
+        largs = [get_args(fn.func) for fn in
+                 self.nodes if isinstance(fn, FactorNode)]
+
+        args = set(reduce(lambda x, y: x + y, largs))
+
         if not variables.issubset(args):
             print 'These variables are not used in any factors nodes: '
             print variables.difference(args)
             return False
-        print 'Checking that all arguments have corresponding variable nodes...'
+        print 'Checking that all arguments have matching variable nodes...'
         if not args.issubset(variables):
             print 'These arguments have missing variables:'
             print args.difference(variables)
@@ -871,7 +876,8 @@ class FactorGraph(object):
         step = 1
         while True:
             eligible_senders = self.get_eligible_senders()
-            #print 'Step: %s %s nodes can send.' % (step, len(eligible_senders))
+            #print 'Step: %s %s nodes can send.' \
+            # % (step, len(eligible_senders))
             #print [x.name for x in eligible_senders]
             if not eligible_senders:
                 break
@@ -892,7 +898,7 @@ class FactorGraph(object):
                 normalizer = node.marginal(node.value)
                 return normalizer
         return 1
-        
+
     def status(self, omit=[False, 0]):
         tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
         tab.align = 'l'
@@ -902,7 +908,7 @@ class FactorGraph(object):
             for value in node.domain:
                 m = node.marginal(value, normalizer)
                 if node.value == value:
-                    tab.add_row([node.name +'*', '*%s' % value, '%8.6f' % m])
+                    tab.add_row([node.name + '*', '*%s' % value, '%8.6f' % m])
                 elif value not in omit and m not in omit:
                     tab.add_row([node.name, '%s' % value, '%8.6f' % m])
         print tab
@@ -911,11 +917,11 @@ class FactorGraph(object):
         self.reset()
         for k, v in kwds.items():
             for node in self.variable_nodes():
-                if node.name== k:
+                if node.name == k:
                     add_evidence(node, v)
         self.propagate()
         self.status()
-        
+
     def q(self, **kwds):
         if self.inference_method == 'sample_db':
             return self.query_by_external_samples(**kwds)
@@ -925,10 +931,9 @@ class FactorGraph(object):
             return self.query(**kwds)
         raise InvalidInferenceMethod
 
-
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
-        
+
     def get_sample(self, evidence={}):
         '''
         We need to allow for setting
@@ -965,18 +970,19 @@ class FactorGraph(object):
                 tab.add_row(list(k) + [v / valid_samples])
             #tab.add_row(list(k) + [v / valid_samples])
         print tab
-        
+
     def generate_samples(self, n, filename, mode='w'):
         '''
         Generate and save samples to a csv filename
-        for later use. 
+        for later use.
         '''
         valid_samples = 0
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
+        fn = [x[0].name for x in self.sample_ordering]
         with open(filename, mode) as fh:
             writer = csv.DictWriter(fh, delimiter='|',
-                                    fieldnames=[x[0].name for x in self.sample_ordering])
+                                    fieldnames=fn)
             writer.writeheader()
             while valid_samples < n:
                 try:
@@ -986,7 +992,6 @@ class FactorGraph(object):
                 valid_samples += 1
                 print "%s of %s" % (valid_samples, n)
                 writer.writerow(dict([(x.name, x.value) for x in sample]))
-
 
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
@@ -1012,11 +1017,11 @@ def build_graph(*args, **kwds):
     variable and factor nodes
     using only function definitions.
     Since its cumbersome to supply
-    the domains for variable nodes 
+    the domains for variable nodes
     via the factor domains perhaps
     we should allow a domains dict?
     '''
-    # Lets start off identifying all the 
+    # Lets start off identifying all the
     # variables by introspecting the
     # functions.
     variables = set()
@@ -1027,7 +1032,9 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor)
         variables.update(factor_args)
         factor_node = FactorNode(factor.__name__, factor)
-        #factor_node.func.domains = domains # Bit of a hack for now we should actually exclude variables that are not parameters of this function
+        #factor_node.func.domains = domains
+        # Bit of a hack for now we should actually exclude variables that
+        # are not parameters of this function
         factor_nodes.append(factor_node)
     for variable in variables:
         node = VariableNode(
@@ -1081,26 +1088,3 @@ class SampleDB(object):
         sql += ' LIMIT %s' % n
         cur.execute(sql)
         return cur.fetchall()
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
