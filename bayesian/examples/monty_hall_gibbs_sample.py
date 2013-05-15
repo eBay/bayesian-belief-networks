@@ -29,6 +29,7 @@ switch to C or stay with A?
 
 '''
 
+
 def fActualDoor(ActualDoor):
     return 1.0 / 3
 
@@ -89,13 +90,11 @@ graph = FactorGraph(
      fMontyDoor_node])
 
 
-
 def get_sample(ordering):
     '''
     Rewrite to use ordering as a parameter.
     ordering is a list of tuples containing
     the variable to be sampled and the function
-    
     '''
     sample = []
     sample_dict = dict()
@@ -106,9 +105,9 @@ def get_sample(ordering):
             test_var = VariableNode(var.name)
             test_var.value = val
             # Now we need to build the
-            # argument list out of any 
+            # argument list out of any
             # variables already in the sample
-            # and this new test value in 
+            # and this new test value in
             # the order required by the function.
             args = []
             for arg in get_args(func):
@@ -122,7 +121,7 @@ def get_sample(ordering):
                 sample_dict[var.name] = test_var
                 break
     return sample
-    
+
 
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
@@ -173,7 +172,7 @@ if __name__ == '__main__':
     # Now suppose we want to estimate the
     # likelihood of C given that
     # guest has chosen A and Monty has chosen
-    # B. 
+    # B.
     # We will take only those gibbs samples which
     # match the pattern of GuestDoor:A and MontyDoor:B
     # and then look at the percentage of times that
@@ -201,5 +200,5 @@ if __name__ == '__main__':
                     c_count += 1
                 if sample[0].value == 'A':
                     a_count += 1
-                    
+
     print a_count, c_count, total_count, float(c_count) / total_count

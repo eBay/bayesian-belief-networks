@@ -26,6 +26,8 @@ and Monty chooses door B, should guest
 switch to C or stay with A?
 
 '''
+
+
 def fActualDoor(ActualDoor):
     return 1.0 / 3
 
@@ -67,16 +69,16 @@ if __name__ == '__main__':
     graph.verify()
     graph.propagate()
     # Initial Marginals without any knowledge.
-    # Observe that the likelihood for 
+    # Observe that the likelihood for
     # all three doors is 1/3.
     print 'Initial Marginal Probabilities:'
     graph.status()
 
     # Now suppose the guest chooses
-    # door A and Monty chooses door B. 
+    # door A and Monty chooses door B.
     # Should we switch our choice from
-    # A to C or not? 
-    # To answer this we "query" the 
+    # A to C or not?
+    # To answer this we "query" the
     # graph with instantiation of the
     # observed variables as "evidence".
     # The likelihood for door C has
@@ -84,5 +86,3 @@ if __name__ == '__main__':
     # we should switch to door C.
     print 'Marginals after knowing Guest chose A and Monty chose B.'
     graph.q(GuestDoor='A', MontyDoor='B')
-    
-    

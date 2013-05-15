@@ -1,5 +1,4 @@
 '''Example from Wikipedia: http://en.wikipedia.org/wiki/Bayesian_network'''
-import sys
 
 from bayesian.factor_graph import *
 
@@ -50,5 +49,3 @@ f_grass_wet.domains = dict(
     sprinkler=[True, False],
     rain=[True, False],
     grass_wet=[True, False])
-
-

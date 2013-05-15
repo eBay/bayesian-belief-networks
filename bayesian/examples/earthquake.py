@@ -3,18 +3,20 @@ from bayesian.factor_graph import *
 
 
 def fBurglary(B):
-    if B.value == True:
+    if B.value is True:
         return 0.01
     return 0.99
 
 fBurglary.domains = dict(B=[True, False])
 
+
 def fEarthquake(E):
-    if E.value == True:
+    if E.value is True:
         return 0.02
     return 0.98
 
 fEarthquake.domains = dict(E=[True, False])
+
 
 def fAlarm(B, E, A):
     table = dict()
@@ -29,7 +31,7 @@ def fAlarm(B, E, A):
     key = ''
     key = key + 't' if B.value else key + 'f'
     key = key + 't' if E.value else key + 'f'
-    key = key + 't' if A.value  else key + 'f'
+    key = key + 't' if A.value else key + 'f'
     return table[key]
 
 
@@ -37,6 +39,7 @@ fAlarm.domains = dict(
     B=[True, False],
     E=[True, False],
     A=[True, False])
+
 
 def fJohnCalls(A, J):
     table = dict()
@@ -50,6 +53,7 @@ def fJohnCalls(A, J):
     return table[key]
 
 fJohnCalls.domains = dict(A=[True, False], J=[True, False])
+
 
 def fMaryCalls(A, M):
     table = dict()
@@ -92,6 +96,7 @@ graph = FactorGraph(
      fAlarm_node, fJohnCalls_node,
      fMaryCalls_node])
 
+
 def marg(x, val, normalizer=1.0):
     return round(x.marginal(val, normalizer), 3)
 
@@ -103,4 +108,3 @@ if __name__ == '__main__':
     print marg(A, True)
     print marg(J, True)
     print marg(M, True)
-

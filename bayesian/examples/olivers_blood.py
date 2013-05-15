@@ -18,30 +18,24 @@ The prolem is stated as follows:
 
 Implementing this as a factor graph is trivial
 as it has only 2 nodes.
-                                         
 '''
 
+
 def f_oliver(oliver):
-    table=dict()
     if oliver.value is True:
         return 0.01
     else:
         return 2 * 0.6 * 0.01
-    
+
 f_oliver_node = FactorNode('f_oliver', f_oliver)
 oliver = VariableNode('oliver')
 
 connect(f_oliver_node, oliver)
 
-graph = FactorGraph([
-        oliver,
-        f_oliver_node])
+graph = FactorGraph([oliver, f_oliver_node])
 
 graph.verify()
 
 if __name__ == '__main__':
     graph.propagate()
     graph.status(omit=[])
-        
-
-

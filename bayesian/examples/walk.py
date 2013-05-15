@@ -22,6 +22,7 @@ the forecast for rain and on actual rain observed.
 
 '''
 
+
 def little_bool(var):
     return str(var.value).lower()[0]
 
@@ -46,7 +47,7 @@ def f_rain(forecast, rain):
 
 def f_walk(forecast, rain, walk):
     table = dict()
-    table['fff'] = 0.01 
+    table['fff'] = 0.01
     table['fft'] = 0.99
     table['ftf'] = 0.99
     table['ftt'] = 0.01
@@ -75,12 +76,13 @@ connect(f_rain_node, [forecast, rain])
 connect(f_walk_node, [forecast, rain, walk])
 
 graph = FactorGraph([
-            forecast,
-            rain,
-            walk,
-            f_forecast_node,
-            f_rain_node,
-            f_walk_node])
+                    forecast,
+                    rain,
+                    walk,
+                    f_forecast_node,
+                    f_rain_node,
+                    f_walk_node])
+
 
 def tabulate(counts, normalizer):
     table = PrettyTable(['Variable', 'Value', 'p'])
@@ -97,7 +99,7 @@ def tabulate(counts, normalizer):
 if __name__ == '__main__':
     graph.verify()
     print graph.get_sample()
-            
+
     n = 10000
     counts = defaultdict(int)
     for i in range(0, n):
@@ -114,6 +116,3 @@ if __name__ == '__main__':
     pprint(counts)
     print 'Sampled:'
     tabulate(counts, n)
-
-    
-    
