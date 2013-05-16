@@ -716,13 +716,18 @@ class FactorGraph(object):
                         domains.update({arg: arg_domains[arg]})
                 node.func.domains = domains
         self.n_samples = n_samples
-        # NB: Set the mode of inference
-        # if this is wrong for the structure
-        # of the graph then we get wacky results
-        # so its safest to set it to sampling
-        # rather than belief propagation
-        self.inference_method = 'sample'
+        # Now try to set the mode of inference..
+        try:
+            if self.has_cycles():
+                self.inference_method = 'sample'
+            else:
+                self.inference_method = 'sumproduct'
+        except:
+            print 'Failed to determine if graph has cycles, '
+            'setting inference to sample.'
+            self.inference_method = 'sample'
         if sample_db_filename:
+            self.inference_method = 'sample_db'
             self.sample_db_filename = sample_db_filename
             self.sample_db = SampleDB(sample_db_filename)
 
