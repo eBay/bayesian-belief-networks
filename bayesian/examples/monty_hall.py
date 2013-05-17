@@ -28,51 +28,42 @@ switch to C or stay with A?
 '''
 
 
-def fActualDoor(ActualDoor):
+def f_prize_door(prize_door):
     return 1.0 / 3
 
 
-def fGuestDoor(GuestDoor):
+def f_guest_door(guest_door):
     return 1.0 / 3
 
 
-def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
-    # AA
-    if ActualDoor.value == GuestDoor.value:
-        # AAA
-        if GuestDoor.value == MontyDoor.value:
+def f_monty_door(prize_door, guest_door, monty_door):
+    if prize_door.value == guest_door.value:
+        if prize_door.value == monty_door.value:
             return 0
-        # AAB AAC
         else:
             return 0.5
-    # ABB
-    if GuestDoor.value == MontyDoor.value:
+    elif prize_door.value == monty_door.value:
         return 0
-    # ABA
-    if ActualDoor.value == MontyDoor.value:
+    elif guest_door.value == monty_door.value:
         return 0
-    # ABC
     return 1
 
 
 if __name__ == '__main__':
 
     graph = build_graph(
-        fActualDoor,
-        fGuestDoor,
-        fMontyDoor,
+        f_prize_door,
+        f_guest_door,
+        f_monty_door,
         domains=dict(
-            ActualDoor=['A', 'B', 'C'],
-            GuestDoor=['A', 'B', 'C'],
-            MontyDoor=['A', 'B', 'C']))
-    graph.inference_method = 'sumproduct'
-    graph.verify()
-    graph.propagate()
+            prize_door=['A', 'B', 'C'],
+            guest_door=['A', 'B', 'C'],
+            monty_door=['A', 'B', 'C']))
     # Initial Marginals without any knowledge.
     # Observe that the likelihood for
     # all three doors is 1/3.
     print 'Initial Marginal Probabilities:'
-    graph.status()
+    graph.q()
 
     # Now suppose the guest chooses
     # door A and Monty chooses door B.
@@ -85,4 +76,4 @@ if __name__ == '__main__':
     # indeed increased to 2/3 therefore
     # we should switch to door C.
     print 'Marginals after knowing Guest chose A and Monty chose B.'
-    graph.q(GuestDoor='A', MontyDoor='B')
+    graph.q(guest_door='A', monty_door='B')
