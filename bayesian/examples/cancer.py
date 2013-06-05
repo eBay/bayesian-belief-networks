@@ -9,8 +9,6 @@ def fP(P):
     elif P.value == 'low':
         return 0.9
 
-fP.domains = dict(P=['high', 'low'])
-
 
 def fS(S):
     '''Smoker'''
@@ -18,8 +16,6 @@ def fS(S):
         return 0.3
     elif S.value is False:
         return 0.7
-
-fS.domains = dict(S=[True, False])
 
 
 def fC(P, S, C):
@@ -40,9 +36,6 @@ def fC(P, S, C):
     return table[key]
 
 
-fC.domains = dict(P=['high', 'low'], S=[True, False], C=[True, False])
-
-
 def fX(C, X):
     '''X-ray'''
     table = dict()
@@ -54,9 +47,6 @@ def fX(C, X):
     key = key + 't' if C.value else key + 'f'
     key = key + 't' if X.value else key + 'f'
     return table[key]
-
-
-fX.domains = dict(C=[True, False], X=[True, False])
 
 
 def fD(C, D):
@@ -72,43 +62,14 @@ def fD(C, D):
     return table[key]
 
 
-fD.domains = dict(C=[True, False], D=[True, False])
-
-
-# Build the network
-
-fP_node = FactorNode('fP', fP)
-fS_node = FactorNode('fS', fS)
-fC_node = FactorNode('fC', fC)
-fX_node = FactorNode('fX', fX)
-fD_node = FactorNode('fD', fD)
-
-P = VariableNode('P')
-S = VariableNode('S')
-C = VariableNode('C')
-X = VariableNode('X')
-D = VariableNode('D')
-
-connect(fP_node, P)
-connect(fS_node, S)
-connect(fC_node, [P, S, C])
-connect(fX_node, [C, X])
-connect(fD_node, [C, D])
-
-graph = FactorGraph(
-    [P, S, C, X, D,
-     fP_node, fS_node,
-     fC_node, fX_node, fD_node])
-
-
-def marg(x, val, normalizer=1.0):
-    return round(x.marginal(val, normalizer), 3)
-
-
 if __name__ == '__main__':
-    graph.propagate()
-    print marg(P, 'high')
-    print marg(S, True)
-    print marg(C, True)
-    print marg(X, True)
-    print marg(D, True)
+    g = build_graph(
+        fP, fS, fC, fX, fD,
+        domains={
+            'P': ['low', 'high']})
+    g.q()
+    g.q(P='high')
+    g.q(D=True)
+    g.q(S=True)
+    g.q(C=True, S=True)
+    g.q(D=True, S=True)

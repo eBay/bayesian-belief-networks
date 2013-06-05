@@ -51,7 +51,7 @@ def f_monty_door(prize_door, guest_door, monty_door):
 
 if __name__ == '__main__':
 
-    graph = build_graph(
+    g = build_graph(
         f_prize_door,
         f_guest_door,
         f_monty_door,
@@ -63,8 +63,7 @@ if __name__ == '__main__':
     # Observe that the likelihood for
     # all three doors is 1/3.
     print 'Initial Marginal Probabilities:'
-    graph.q()
-
+    g.q()
     # Now suppose the guest chooses
     # door A and Monty chooses door B.
     # Should we switch our choice from
@@ -76,4 +75,4 @@ if __name__ == '__main__':
     # indeed increased to 2/3 therefore
     # we should switch to door C.
     print 'Marginals after knowing Guest chose A and Monty chose B.'
-    graph.q(guest_door='A', monty_door='B')
+    g.q(guest_door='A', monty_door='B')
