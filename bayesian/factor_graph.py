@@ -12,6 +12,8 @@ from Queue import Queue
 import sqlite3
 from prettytable import PrettyTable
 
+from bayesian.persistance import SampleDB
+
 DEBUG = True
 
 
@@ -688,6 +690,7 @@ class FactorGraph(object):
 
     def __init__(self, nodes, sample_db_filename=None, n_samples=100):
         self.nodes = nodes
+        self._inference_method = 'sumproduct'
         # We need to divine the domains for Factor nodes here...
         # First compile a mapping of factors to variables
         # from the arg spec...
@@ -730,6 +733,16 @@ class FactorGraph(object):
             self.inference_method = 'sample_db'
             self.sample_db_filename = sample_db_filename
             self.sample_db = SampleDB(sample_db_filename)
+
+    @property
+    def inference_method(self):
+        print 'In method inference_method(@property)'
+        return self._inference_method
+
+    @inference_method.setter
+    def inference_method(self, value):
+        print 'In method inference_method(@inference_method.setter)'
+        self._inference_method = value
 
     def reset(self):
         '''
@@ -1053,43 +1066,3 @@ def build_graph(*args, **kwds):
         connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes)
     return graph
-
-
-def dict_factory(cursor, row):
-    d = dict()
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    # Hack for now!!!!
-    d['cancelled'] = d['cancelled'] == 'True'
-    d['oos'] = d['oos'] == 'True'
-    d['fraud'] = d['fraud'] == 'True'
-    d['tax_difference'] = d['tax_difference'] == 'True'
-    d['store_closed'] = d['store_closed'] == 'True'
-    d['out_of_stock'] = d['out_of_stock'] == 'True'
-    d['undefined'] = d['undefined'] == 'True'
-    d['valet_error'] = d['valet_error'] == 'True'
-    d['bad_price'] = d['bad_price'] == 'True'
-    return d
-
-
-class SampleDB(object):
-
-    def __init__(self, filename):
-        self.conn = sqlite3.connect(filename)
-        self.conn.row_factory = dict_factory
-
-    def get_samples(self, n, **kwds):
-        cur = self.conn.cursor()
-        sql = '''
-            SELECT * FROM data
-        '''
-        evidence = []
-        for k, v in kwds.items():
-            evidence.append("%s='%s'" % (k, v))
-        if evidence:
-            sql += '''
-                WHERE %s
-            ''' % ' AND '.join(evidence)
-        sql += ' LIMIT %s' % n
-        cur.execute(sql)
-        return cur.fetchall()
