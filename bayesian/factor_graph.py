@@ -688,7 +688,7 @@ def get_sample(ordering, evidence={}):
 
 class FactorGraph(object):
 
-    def __init__(self, nodes, sample_db_filename=None, n_samples=100):
+    def __init__(self, nodes, name=None, n_samples=100):
         self.nodes = nodes
         self._inference_method = 'sumproduct'
         # We need to divine the domains for Factor nodes here...
@@ -729,10 +729,10 @@ class FactorGraph(object):
             print 'Failed to determine if graph has cycles, '
             'setting inference to sample.'
             self.inference_method = 'sample'
-        if sample_db_filename:
-            self.inference_method = 'sample_db'
-            self.sample_db_filename = sample_db_filename
-            self.sample_db = SampleDB(sample_db_filename)
+        #if sample_db_filename:
+        #    self.inference_method = 'sample_db'
+        #    self.sample_db_filename = sample_db_filename
+        #    self.sample_db = SampleDB(sample_db_filename)
 
     @property
     def inference_method(self):
