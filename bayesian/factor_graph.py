@@ -1,5 +1,6 @@
 from __future__ import division
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
+import os
 import csv
 import copy
 import inspect
@@ -718,6 +719,7 @@ class FactorGraph(object):
                     else:
                         domains.update({arg: arg_domains[arg]})
                 node.func.domains = domains
+        self.name = name
         self.n_samples = n_samples
         # Now try to set the mode of inference..
         try:
@@ -743,6 +745,27 @@ class FactorGraph(object):
     def inference_method(self, value):
         print 'In method inference_method(@inference_method.setter)'
         self._inference_method = value
+
+    @property
+    def sample_db_filename(self):
+        '''
+        Get the name of the sqlite sample
+        database for external sample
+        generation and querying.
+        The default location for now
+        will be in the users home
+        directory under ~/.pypgm/data/[name].sqlite
+        where [name] is the name of the
+        model. If the model has
+        not been given an explict name
+        it will be "default".
+
+        '''
+        home = os.path.expanduser('~')
+        return os.path.join(
+            home, '.pypgm',
+            'data',
+            '%s.sqlite' % (self.name or 'default'))
 
     def reset(self):
         '''
@@ -998,6 +1021,7 @@ class FactorGraph(object):
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
         fn = [x[0].name for x in self.sample_ordering]
+        sdb = SampleDB(self.sample_db_filename)
         with open(filename, mode) as fh:
             writer = csv.DictWriter(fh, delimiter='|',
                                     fieldnames=fn)

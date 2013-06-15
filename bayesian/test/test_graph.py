@@ -1,4 +1,7 @@
 import pytest
+
+import os
+
 from bayesian.factor_graph import *
 
 
@@ -715,3 +718,14 @@ def test_discover_sample_ordering():
     assert ordering[1][1].__name__ == 'fGuestDoor'
     assert ordering[2][0].name == 'MontyDoor'
     assert ordering[2][1].__name__ == 'fMontyDoor'
+
+
+def test_sample_db_filename():
+    graph = FactorGraph([], name='model_1')
+    home = os.path.expanduser('~')
+    expected_filename = os.path.join(
+        home,
+        '.pypgm',
+        'data',
+        'model_1.sqlite')
+    assert graph.sample_db_filename == expected_filename
