@@ -745,6 +745,8 @@ class FactorGraph(object):
     def inference_method(self, value):
         print 'In method inference_method(@inference_method.setter)'
         self._inference_method = value
+        if value == 'sample_db':
+            self.sample_db = SampleDB(self.sample_db_filename)
 
     @property
     def sample_db_filename(self):

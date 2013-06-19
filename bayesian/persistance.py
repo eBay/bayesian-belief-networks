@@ -17,7 +17,7 @@ def build_row_factory(conn):
     raise an error.
     '''
     cur = conn.cursor()
-    cur.execute("pragma table_info('samples')")
+    cur.execute("pragma table_info('data')")
     cols = cur.fetchall()
     column_metadata = dict([(col[1], col[2]) for col in cols])
 
@@ -29,6 +29,8 @@ def build_row_factory(conn):
             if column_metadata[col_name] == 'integer':
                 row_dict[col_name] = col_val == 1
             elif column_metadata[col_name] == 'varchar':
+                row_dict[col_name] = col_val
+            elif column_metadata[col_name] == 'text':
                 row_dict[col_name] = col_val
             else:
                 raise UnsupportedTypeException
@@ -48,8 +50,11 @@ class SampleDB(object):
     def get_samples(self, n, **kwds):
         self.commit()
         cur = self.conn.cursor()
+        #sql = '''
+        #    SELECT * FROM samples
+        #'''
         sql = '''
-            SELECT * FROM samples
+            SELECT * FROM data
         '''
         evidence_cols = []
         evidence_vals = []
