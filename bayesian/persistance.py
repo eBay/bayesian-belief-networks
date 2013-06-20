@@ -2,6 +2,7 @@
 import os
 import sqlite3
 
+
 class UnsupportedTypeException(Exception):
     pass
 
@@ -10,11 +11,60 @@ class SampleDBNotFoundException(Exception):
     pass
 
 
+# Python data type to SQLite data type mapping
+P2S_MAPPING = {
+    bool: 'integer', str: 'varchar'}
+
+
+def domains_to_metadata(domains):
+    '''Construct a metadata dict
+    out of the domains dict.
+    The domains dict has the following
+    form:
+    keys: variable names from a factor graph
+    vals: list of possible values the variable can have
+    The metadata dict has the following form:
+    keys: (same as above)
+    vals: A string representing the sqlite data type
+    (i.e 'integer' for bool and 'varchar' for str)'''
+    metadata = dict()
+    for k, v in domains.items():
+        # Assume that all values in the domain
+        # are of the same type. TODO: verify this!
+        try:
+            metadata[k.name] = P2S_MAPPING[type(v[0])]
+        except KeyError:
+            print k, v
+            raise UnsupportedTypeException
+    return metadata
+
+
 def ensure_data_dir_exists(filename):
     data_dir = os.path.dirname(filename)
     if not os.path.exists(data_dir):
         # Create the data directory...
         os.makedirs(data_dir)
+
+
+def initialize_sample_db(conn, metadata):
+    '''Create a new SQLite sample database
+    with the appropriate column names.
+    metadata should be a dict of column
+    names with a type. Currently if
+    the Variable is a boolean variable
+    we map it to integers 1 and 0.
+    All other variables are considered
+    to be categorical and are mapped
+    to varchar'''
+    type_specs = []
+    for column, sqlite_type in metadata.items():
+        type_specs.append((column, sqlite_type))
+    SQL = '''
+        CREATE TABLE samples (%s);
+    ''' % ','.join(['%s %s' % (col, type_) for col, type_ in type_specs])
+    cur = conn.cursor()
+    print SQL
+    cur.execute(SQL)
 
 
 def build_row_factory(conn):
@@ -51,11 +101,13 @@ def build_row_factory(conn):
     return row_factor
 
 
-
 class SampleDB(object):
 
-    def __init__(self, filename):
+    def __init__(self, filename, domains, initialize=False):
         self.conn = sqlite3.connect(filename)
+        if initialize:
+            metadata = domains_to_metadata(domains)
+            initialize_sample_db(self.conn, metadata)
         self.conn.row_factory = build_row_factory(self.conn)
         self.insert_count = 0
 
@@ -93,7 +145,6 @@ class SampleDB(object):
         The sqlite3 module automatically
         converts booleans to integers.
         '''
-        import ipdb; ipdb.set_trace()
         keys, vals = zip(*sample.items())
         sql = '''
             INSERT INTO SAMPLES

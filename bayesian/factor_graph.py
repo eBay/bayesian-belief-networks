@@ -724,8 +724,14 @@ class FactorGraph(object):
         # Now try to set the mode of inference..
         try:
             if self.has_cycles():
+                # Currently only sampling
+                # is supported for cyclic graphs
                 self.inference_method = 'sample'
             else:
+                # The sumproduct method will
+                # give exact likelihoods but
+                # only of the graph contains
+                # no cycles.
                 self.inference_method = 'sumproduct'
         except:
             print 'Failed to determine if graph has cycles, '
@@ -750,7 +756,20 @@ class FactorGraph(object):
         self._inference_method = value
         if value == 'sample_db':
             ensure_data_dir_exists(self.sample_db_filename)
-            self.sample_db = SampleDB(self.sample_db_filename)
+            sample_ordering = self.discover_sample_ordering()
+            domains = dict([(var, var.domain) for var, _ in sample_ordering])
+            if not os.path.isfile(self.sample_db_filename):
+                # This is a new file so we need to
+                # initialize the db...
+                self.sample_db = SampleDB(
+                    self.sample_db_filename,
+                    domains,
+                    initialize=True)
+            else:
+                self.sample_db = SampleDB(
+                    self.sample_db_filename,
+                    domains,
+                    initialize=False)
 
     @property
     def sample_db_filename(self):
@@ -1095,4 +1114,5 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes)
+    print domains
     return graph
