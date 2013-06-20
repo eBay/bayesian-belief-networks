@@ -19,7 +19,6 @@ from bayesian.exceptions import *
 DEBUG = True
 
 
-
 class Node(object):
 
     def is_leaf(self):
@@ -730,16 +729,13 @@ class FactorGraph(object):
 
     @property
     def inference_method(self):
-        print 'In method inference_method(@property)'
         return self._inference_method
 
     @inference_method.setter
     def inference_method(self, value):
-        print 'In method inference_method(@inference_method.setter)'
         # If the value is being set to 'sample_db'
         # we need to make sure that the sqlite file
         # exists.
-        self._inference_method = value
         if value == 'sample_db':
             ensure_data_dir_exists(self.sample_db_filename)
             sample_ordering = self.discover_sample_ordering()
@@ -756,6 +752,7 @@ class FactorGraph(object):
                     self.sample_db_filename,
                     domains,
                     initialize=False)
+        self._inference_method = value
 
     @property
     def sample_db_filename(self):
