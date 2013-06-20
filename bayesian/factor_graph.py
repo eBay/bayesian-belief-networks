@@ -13,7 +13,7 @@ from Queue import Queue
 import sqlite3
 from prettytable import PrettyTable
 
-from bayesian.persistance import SampleDB
+from bayesian.persistance import SampleDB, ensure_data_dir_exists
 
 DEBUG = True
 
@@ -744,8 +744,12 @@ class FactorGraph(object):
     @inference_method.setter
     def inference_method(self, value):
         print 'In method inference_method(@inference_method.setter)'
+        # If the value is being set to 'sample_db'
+        # we need to make sure that the sqlite file
+        # exists.
         self._inference_method = value
         if value == 'sample_db':
+            ensure_data_dir_exists(self.sample_db_filename)
             self.sample_db = SampleDB(self.sample_db_filename)
 
     @property

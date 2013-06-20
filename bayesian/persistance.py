@@ -1,8 +1,20 @@
 '''Handle Persistance of Pre-generated Samples'''
+import os
 import sqlite3
 
 class UnsupportedTypeException(Exception):
     pass
+
+
+class SampleDBNotFoundException(Exception):
+    pass
+
+
+def ensure_data_dir_exists(filename):
+    data_dir = os.path.dirname(filename)
+    if not os.path.exists(data_dir):
+        # Create the data directory...
+        os.makedirs(data_dir)
 
 
 def build_row_factory(conn):
