@@ -14,24 +14,10 @@ import sqlite3
 from prettytable import PrettyTable
 
 from bayesian.persistance import SampleDB, ensure_data_dir_exists
+from bayesian.exceptions import *
 
 DEBUG = True
 
-
-class InvalidGraphException(BaseException):
-    '''
-    Raised if the graph verification
-    method fails.
-    '''
-    pass
-
-
-class InvalidSampleException(BaseException):
-    pass
-
-
-class InvalidInferenceMethod(BaseException):
-    pass
 
 
 class Node(object):
@@ -1052,23 +1038,19 @@ class FactorGraph(object):
             sample = self.get_sample()
             sdb.save_sample([(v.name, v.value) for v in sample])
             valid_samples += 1
-        sdb.conn.commit()
-        #with open(filename, mode) as fh:
-        #    writer = csv.DictWriter(fh, delimiter='|',
-        #                            fieldnames=fn)
-        #    writer.writeheader()
-        #    while valid_samples < n:
-        #        try:
-        #            sample = self.get_sample()
-        #        except InvalidSampleException:
-        #            continue
-        #        valid_samples += 1
-        #        print "%s of %s" % (valid_samples, n)
-        #        writer.writerow(dict([(x.name, x.value) for x in sample]))
+        sdb.commit()
 
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
         samples = self.sample_db.get_samples(self.n_samples, **kwds)
+        if len(samples) < self.n_samples:
+            raise InsufficientSamplesException(
+                'There are less samples in the sampling '
+                'database than are required by this graph. '
+                'Either generate more samples '
+                '(graph.generate_samples(N) or '
+                'decrease the number of samples '
+                'required for querying (graph.n_samples). ')
         for sample in samples:
             for name, val in sample.items():
                 key = (name, val)

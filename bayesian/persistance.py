@@ -11,6 +11,8 @@ class SampleDBNotFoundException(Exception):
     pass
 
 
+COMMIT_THRESHOLD = 1000
+
 # Python data type to SQLite data type mapping
 P2S_MAPPING = {
     bool: 'integer', str: 'varchar'}
@@ -79,7 +81,7 @@ def build_row_factory(conn):
     raise an error.
     '''
     cur = conn.cursor()
-    cur.execute("pragma table_info('data')")
+    cur.execute("pragma table_info('samples')")
     cols = cur.fetchall()
     column_metadata = dict([(col[1], col[2]) for col in cols])
 
@@ -112,14 +114,10 @@ class SampleDB(object):
         self.insert_count = 0
 
     def get_samples(self, n, **kwds):
-        self.commit()
         cur = self.conn.cursor()
         sql = '''
             SELECT * FROM samples
         '''
-        #sql = '''
-        #    SELECT * FROM data
-        #'''
         evidence_cols = []
         evidence_vals = []
         for k, v in kwds.items():
@@ -160,14 +158,14 @@ class SampleDB(object):
         cur = self.conn.cursor()
         cur.execute(sql, vals)
         self.insert_count += 1
-        self.commit()
+        if self.insert_count >= COMMIT_THRESHOLD:
+            self.commit()
 
     def commit(self):
-        if self.insert_count >= 1000:
-            print 'Committing....'
-            try:
-                self.conn.commit()
-                self.insert_count == 0
-            except:
-                print 'Commit to db file failed...'
-                raise
+        print 'Committing....'
+        try:
+            self.conn.commit()
+            self.insert_count = 1
+        except:
+            print 'Commit to db file failed...'
+            raise
