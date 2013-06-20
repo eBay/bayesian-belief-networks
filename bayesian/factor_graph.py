@@ -1037,28 +1037,34 @@ class FactorGraph(object):
             #tab.add_row(list(k) + [v / valid_samples])
         print tab
 
-    def generate_samples(self, n, filename, mode='w'):
+    def generate_samples(self, n):
         '''
-        Generate and save samples to a csv filename
-        for later use.
+        Generate and save samples to
+        the SQLite sample db for this
+        model.
         '''
         valid_samples = 0
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
         fn = [x[0].name for x in self.sample_ordering]
-        sdb = SampleDB(self.sample_db_filename)
-        with open(filename, mode) as fh:
-            writer = csv.DictWriter(fh, delimiter='|',
-                                    fieldnames=fn)
-            writer.writeheader()
-            while valid_samples < n:
-                try:
-                    sample = self.get_sample()
-                except InvalidSampleException:
-                    continue
-                valid_samples += 1
-                print "%s of %s" % (valid_samples, n)
-                writer.writerow(dict([(x.name, x.value) for x in sample]))
+        sdb = self.sample_db
+        while valid_samples < n:
+            sample = self.get_sample()
+            sdb.save_sample([(v.name, v.value) for v in sample])
+            valid_samples += 1
+        sdb.conn.commit()
+        #with open(filename, mode) as fh:
+        #    writer = csv.DictWriter(fh, delimiter='|',
+        #                            fieldnames=fn)
+        #    writer.writeheader()
+        #    while valid_samples < n:
+        #        try:
+        #            sample = self.get_sample()
+        #        except InvalidSampleException:
+        #            continue
+        #        valid_samples += 1
+        #        print "%s of %s" % (valid_samples, n)
+        #        writer.writerow(dict([(x.name, x.value) for x in sample]))
 
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
@@ -1093,6 +1099,7 @@ def build_graph(*args, **kwds):
     # functions.
     variables = set()
     domains = kwds.get('domains', {})
+    name = kwds.get('name')
     variable_nodes = dict()
     factor_nodes = []
     for factor in args:
@@ -1113,6 +1120,6 @@ def build_graph(*args, **kwds):
     for factor_node in factor_nodes:
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])
-    graph = FactorGraph(variable_nodes.values() + factor_nodes)
+    graph = FactorGraph(variable_nodes.values() + factor_nodes, name=name)
     print domains
     return graph

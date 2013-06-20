@@ -114,12 +114,12 @@ class SampleDB(object):
     def get_samples(self, n, **kwds):
         self.commit()
         cur = self.conn.cursor()
-        #sql = '''
-        #    SELECT * FROM samples
-        #'''
         sql = '''
-            SELECT * FROM data
+            SELECT * FROM samples
         '''
+        #sql = '''
+        #    SELECT * FROM data
+        #'''
         evidence_cols = []
         evidence_vals = []
         for k, v in kwds.items():
@@ -139,13 +139,16 @@ class SampleDB(object):
 
     def save_sample(self, sample):
         '''
-        Given a dict representing
+        Given a list of tuples
+        (col, val) representing
         a sample save it to the sqlite db
         with default type mapping.
         The sqlite3 module automatically
         converts booleans to integers.
         '''
-        keys, vals = zip(*sample.items())
+        #keys, vals = zip(*sample.items())
+        keys = [x[0] for x in sample]
+        vals = [x[1] for x in sample]
         sql = '''
             INSERT INTO SAMPLES
             (%(columns)s)
