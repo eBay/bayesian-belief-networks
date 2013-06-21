@@ -1032,7 +1032,13 @@ class FactorGraph(object):
         fn = [x[0].name for x in self.sample_ordering]
         sdb = self.sample_db
         while valid_samples < n:
-            sample = self.get_sample()
+            try:
+                sample = self.get_sample()
+            except InvalidSampleException:
+                # TODO: Need to figure
+                # out why we get invalid
+                # samples.
+                continue
             sdb.save_sample([(v.name, v.value) for v in sample])
             valid_samples += 1
         sdb.commit()

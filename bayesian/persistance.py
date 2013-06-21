@@ -14,8 +14,22 @@ class SampleDBNotFoundException(Exception):
 COMMIT_THRESHOLD = 1000
 
 # Python data type to SQLite data type mapping
+# NOTE: Technically SQLite does not support
+# boolean types, they are internally stored
+# as 0 and 1, however you can still issue
+# a create statement with a type of 'bool'.
+# We will use this to distinguish between
+# boolean and integer data types.
 P2S_MAPPING = {
-    bool: 'integer', str: 'varchar'}
+    bool: 'bool',
+    str: 'varchar',
+    int: 'integer'}
+
+
+S2P_MAPPING = {
+    'bool': bool,
+    'varchar': unicode,
+    'integer': int}
 
 
 def domains_to_metadata(domains):
@@ -85,31 +99,31 @@ def build_row_factory(conn):
     cols = cur.fetchall()
     column_metadata = dict([(col[1], col[2]) for col in cols])
 
-    def row_factor(cursor, row):
+    def row_factory(cursor, row):
         row_dict = dict()
         for idx, desc in enumerate(cursor.description):
             col_name = desc[0]
             col_val = row[idx]
-            if column_metadata[col_name] == 'integer':
-                row_dict[col_name] = col_val == 1
-            elif column_metadata[col_name] == 'varchar':
-                row_dict[col_name] = col_val
-            elif column_metadata[col_name] == 'text':
-                row_dict[col_name] = col_val
-            else:
-                raise UnsupportedTypeException
+            try:
+                row_dict[col_name] = \
+                    S2P_MAPPING[column_metadata[col_name]](col_val)
+            except KeyError:
+                raise UnsupportedTypeException(
+                    'A column in the SQLite samples '
+                    'database has an unsupported type. '
+                    'Supported types are %s. ' % str(S2P_MAPPING.keys()))
         return row_dict
 
-    return row_factor
+    return row_factory
 
 
 class SampleDB(object):
 
     def __init__(self, filename, domains, initialize=False):
         self.conn = sqlite3.connect(filename)
+        self.metadata = domains_to_metadata(domains)
         if initialize:
-            metadata = domains_to_metadata(domains)
-            initialize_sample_db(self.conn, metadata)
+            initialize_sample_db(self.conn, self.metadata)
         self.conn.row_factory = build_row_factory(self.conn)
         self.insert_count = 0
 
