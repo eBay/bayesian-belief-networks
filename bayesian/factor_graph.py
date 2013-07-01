@@ -211,7 +211,9 @@ class FactorNode(Node):
     def reset(self):
         self.received_messages = {}
         if self.cached_functions:
-            self.pop_evidence()
+            self.func = self.cached_functions[-1]
+            self.cached_functions = []
+            #self.pop_evidence()
 
     def pop_evidence(self):
         self.func = self.cached_functions.pop()
@@ -829,7 +831,7 @@ class FactorGraph(object):
                 # Now place all neighbour nodes on the q
                 # and record this edge as traversed
                 if neighbour.name not in discovered_nodes:
-                    print 'Enqueuing: %s', neighbour
+                    print 'Enqueuing: %s' % neighbour
                     q.put(neighbour)
                 traversed_edges.add(edge)
         return False
@@ -953,14 +955,17 @@ class FactorGraph(object):
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
+        retval = dict()
         for node in self.variable_nodes():
             for value in node.domain:
                 m = node.marginal(value, normalizer)
+                retval[(node.name, value)] = m
                 if node.value == value:
                     tab.add_row([node.name + '*', '*%s' % value, '%8.6f' % m])
                 elif value not in omit and m not in omit:
                     tab.add_row([node.name, '%s' % value, '%8.6f' % m])
-        print tab
+        #print tab
+        return retval
 
     def query(self, **kwds):
         self.reset()
@@ -969,7 +974,7 @@ class FactorGraph(object):
                 if node.name == k:
                     add_evidence(node, v)
         self.propagate()
-        self.status()
+        return self.status()
 
     def q(self, **kwds):
         if self.inference_method == 'sample_db':
@@ -1046,7 +1051,7 @@ class FactorGraph(object):
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
         samples = self.sample_db.get_samples(self.n_samples, **kwds)
-        if len(samples) < self.n_samples:
+        if len(samples) < self.n_samples and self.enforce_minimum_samples:
             raise InsufficientSamplesException(
                 'There are less samples in the sampling '
                 'database than are required by this graph. '
@@ -1063,10 +1068,13 @@ class FactorGraph(object):
         tab.align['Marginal'] = 'r'
         deco = [(k, v) for k, v in counts.items()]
         deco.sort()
+        retval = {}
         for k, v in deco:
+            retval[k] = (v / len(samples))
             if k[1] is not False:
                 tab.add_row(list(k) + [v / len(samples)])
-        print tab
+        #print tab
+        return retval
 
 
 def build_graph(*args, **kwds):
@@ -1106,5 +1114,5 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes, name=name)
-    print domains
+    #print domains
     return graph
