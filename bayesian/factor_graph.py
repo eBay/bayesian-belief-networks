@@ -213,10 +213,6 @@ class FactorNode(Node):
         if self.cached_functions:
             self.func = self.cached_functions[-1]
             self.cached_functions = []
-            #self.pop_evidence()
-
-    def pop_evidence(self):
-        self.func = self.cached_functions.pop()
 
 
 class Message(object):
