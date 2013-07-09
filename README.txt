@@ -21,3 +21,8 @@ To run the tests in a development environment:
 
 $ PYTHONPATH=. py.test
 
+
+Resources:
+http://www.fil.ion.ucl.ac.uk/spm/course/slides10-vancouver/08_Bayes.pdf
+http://www.ee.columbia.edu/~vittorio/Lecture12.pdf
+http://www.csse.monash.edu.au/bai/book/BAI_Chapter2.pdf
