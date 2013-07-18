@@ -16,8 +16,9 @@ from prettytable import PrettyTable
 from bayesian.persistance import SampleDB, ensure_data_dir_exists
 from bayesian.exceptions import *
 
-DEBUG = True
-
+DEBUG = False
+GREEN = '\033[92m'
+NORMAL = '\033[0m'
 
 class Node(object):
 
@@ -947,23 +948,15 @@ class FactorGraph(object):
         return 1
 
     def status(self, omit=[False, 0]):
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
-        tab.align = 'l'
-        tab.align['Marginal'] = 'r'
         normalizer = self.get_normalizer()
         retval = dict()
         for node in self.variable_nodes():
             for value in node.domain:
                 m = node.marginal(value, normalizer)
                 retval[(node.name, value)] = m
-                if node.value == value:
-                    tab.add_row([node.name + '*', '*%s' % value, '%8.6f' % m])
-                elif value not in omit and m not in omit:
-                    tab.add_row([node.name, '%s' % value, '%8.6f' % m])
-        #print tab
         return retval
 
-    def query(self, **kwds):
+    def query_by_propagation(self, **kwds):
         self.reset()
         for k, v in kwds.items():
             for node in self.variable_nodes():
@@ -972,14 +965,35 @@ class FactorGraph(object):
         self.propagate()
         return self.status()
 
-    def q(self, **kwds):
+    def query(self, **kwds):
         if self.inference_method == 'sample_db':
             return self.query_by_external_samples(**kwds)
         elif self.inference_method == 'sample':
             return self.query_by_sampling(**kwds)
         elif self.inference_method == 'sumproduct':
-            return self.query(**kwds)
+            return self.query_by_propagation(**kwds)
         raise InvalidInferenceMethod
+
+    def q(self, **kwds):
+        '''Wrapper around query
+
+        This method formats the query
+        result in a nice human readable format
+        for interactive use.
+        '''
+        result = self.query(**kwds)
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
+        tab.align = 'l'
+        tab.align['Marginal'] = 'r'
+        tab.float_format = '%8.6f'
+        for (node, value), prob in result.items():
+            if kwds.get(node, '') == value:
+                tab.add_row(['%s%s*%s' % (GREEN, node, NORMAL),
+                             '%s%s*%s' % (GREEN, value, NORMAL),
+                             '%8.6f' % prob])
+            else:
+                tab.add_row([node, value, '%8.6f' % prob])
+        print tab
 
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
