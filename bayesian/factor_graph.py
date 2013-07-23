@@ -982,13 +982,13 @@ class FactorGraph(object):
         for interactive use.
         '''
         result = self.query(**kwds)
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         tab.float_format = '%8.6f'
         for (node, value), prob in result.items():
             if kwds.get(node, '') == value:
-                tab.add_row(['%s%s*%s' % (GREEN, node, NORMAL),
+                tab.add_row(['%s*' % node,
                              '%s%s*%s' % (GREEN, value, NORMAL),
                              '%8.6f' % prob])
             else:
