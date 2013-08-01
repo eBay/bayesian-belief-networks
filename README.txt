@@ -4,7 +4,7 @@ Sum-Product Algorithm on Factor Graphs.
 Todo:
 
 1) Change requirement for PMFs to use .value
-2) Make the storage and retrieval of pre-generated 
+2) Make the storage and retrieval of pre-generated
    samples from SQLite files transparent
 3) Rename VariableNode to DiscreteVariableNode
 4) Add GuassianVariableNode for continuous variables
@@ -26,3 +26,4 @@ Resources:
 http://www.fil.ion.ucl.ac.uk/spm/course/slides10-vancouver/08_Bayes.pdf
 http://www.ee.columbia.edu/~vittorio/Lecture12.pdf
 http://www.csse.monash.edu.au/bai/book/BAI_Chapter2.pdf
+http://www.comm.utoronto.ca/frank/papers/KFL01.pdf
