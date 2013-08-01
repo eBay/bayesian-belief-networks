@@ -804,16 +804,19 @@ class FactorGraph(object):
         q.put(start_node)
         while not q.empty():
             current_node = q.get()
-            print "Current Node: ", current_node
-            print "Discovered Nodes before adding Current Node: ", \
-                discovered_nodes
+            if DEBUG:
+                print "Current Node: ", current_node
+                print "Discovered Nodes before adding Current Node: ", \
+                    discovered_nodes
             if current_node.name in discovered_nodes:
                 # We have a cycle!
-                print 'Dequeued node already processed: %s', current_node
+                if DEBUG:
+                    print 'Dequeued node already processed: %s', current_node
                 return True
             discovered_nodes.add(current_node.name)
-            print "Discovered Nodes after adding Current Node: ", \
-                discovered_nodes
+            if DEBUG:
+                print "Discovered Nodes after adding Current Node: ", \
+                    discovered_nodes
             for neighbour in current_node.neighbours:
                 edge = [current_node.name, neighbour.name]
                 # Since this is undirected and we want
@@ -828,7 +831,8 @@ class FactorGraph(object):
                 # Now place all neighbour nodes on the q
                 # and record this edge as traversed
                 if neighbour.name not in discovered_nodes:
-                    print 'Enqueuing: %s' % neighbour
+                    if DEBUG:
+                        print 'Enqueuing: %s' % neighbour
                     q.put(neighbour)
                 traversed_edges.add(edge)
         return False
