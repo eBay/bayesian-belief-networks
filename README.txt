@@ -27,3 +27,5 @@ http://www.fil.ion.ucl.ac.uk/spm/course/slides10-vancouver/08_Bayes.pdf
 http://www.ee.columbia.edu/~vittorio/Lecture12.pdf
 http://www.csse.monash.edu.au/bai/book/BAI_Chapter2.pdf
 http://www.comm.utoronto.ca/frank/papers/KFL01.pdf
+http://www.snn.ru.nl/~bertk/ (Many real-world examples listed)
+http://www.cs.ubc.ca/~murphyk/Bayes/Charniak_91.pdf
