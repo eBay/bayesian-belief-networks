@@ -59,9 +59,12 @@ think about the events occuring during this game.
 (While it is not strictly necessary to think of
 the events in chronological order, it helps to
 illustrate this example.)
-Firstly, before the guest arrives presumable, the
-prize is hidden behind one of the doors. Lets
-model this with a random variable we will call
+Firstly, before the guest arrives presumably, the
+prize is hidden behind one of the doors. In the
+model we will calls these doors 'A', 'B' and 'C'.
+(The choice of names is arbitrary providing they
+are uniqe). Lets model this choice of a prize door
+with a random variable we will call
 'PrizeDoor'. Clearly this variable can take
 on one of three values, 'A', 'B', or 'C'.
 Now the guest picks a door, lets introduce
