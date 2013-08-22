@@ -1099,13 +1099,13 @@ class FactorGraph(object):
         if format != 'graphviz':
             raise 'Unsupported Export Format.'
         fh.write('graph G {\n')
-        fh.write('  graph [ dpi = 300 bgcolor="transparent" ];\n')
+        fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
         for node in self.nodes:
             if isinstance(node, FactorNode):
-                fh.write('  %s [ shape="rectangle"];\n' % node.name)
+                fh.write('  %s [ shape="rectangle" color="red"];\n' % node.name)
             else:
-                fh.write('  %s [ shape="ellipse"];\n' % node.name)
+                fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
         for node in self.nodes:
             for neighbour in node.neighbours:
                 edge = [node.name, neighbour.name]
