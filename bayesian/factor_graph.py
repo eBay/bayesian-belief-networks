@@ -1109,6 +1109,13 @@ def build_graph(*args, **kwds):
     name = kwds.get('name')
     variable_nodes = dict()
     factor_nodes = []
+    if isinstance(args[0], list):
+        # Assume the functions were all
+        # passed in a list in the first
+        # argument. This makes it possible
+        # to build very large graphs with
+        # more than 255 functions.
+        args = args[0]
     for factor in args:
         factor_args = get_args(factor)
         variables.update(factor_args)

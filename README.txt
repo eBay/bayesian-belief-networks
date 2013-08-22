@@ -9,6 +9,9 @@ Todo:
 3) Rename VariableNode to DiscreteVariableNode
 4) Add GuassianVariableNode for continuous variables
 5) Deprecate "status" method in favour of q
+6) Allow build_graph to take a single parameter
+   being a list of functions so as to overcome
+   the 255 argument limit in Python
 
 Unit Tests:
 
