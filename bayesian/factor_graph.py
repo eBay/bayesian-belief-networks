@@ -2,6 +2,7 @@ from __future__ import division
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import os
 import csv
+import sys
 import copy
 import inspect
 import random
@@ -1087,8 +1088,32 @@ class FactorGraph(object):
             retval[k] = (v / len(samples))
             if k[1] is not False:
                 tab.add_row(list(k) + [v / len(samples)])
-        #print tab
         return retval
+
+    def export(self, filename=None, format='graphviz'):
+        '''Export the graph in GraphViz dot language.'''
+        if filename:
+            fh = open(filename, 'w')
+        else:
+            fh = sys.stdout
+        if format != 'graphviz':
+            raise 'Unsupported Export Format.'
+        fh.write('graph G {\n')
+        fh.write('  graph [ dpi = 300 bgcolor="transparent" ];\n')
+        edges = set()
+        for node in self.nodes:
+            if isinstance(node, FactorNode):
+                fh.write('  %s [ shape="rectangle"];\n' % node.name)
+            else:
+                fh.write('  %s [ shape="ellipse"];\n' % node.name)
+        for node in self.nodes:
+            for neighbour in node.neighbours:
+                edge = [node.name, neighbour.name]
+                edge = tuple(sorted(edge))
+                edges.add(edge)
+        for source, target in edges:
+            fh.write('  %s -- %s;\n' % (source, target))
+        fh.write('}\n')
 
 
 def build_graph(*args, **kwds):
