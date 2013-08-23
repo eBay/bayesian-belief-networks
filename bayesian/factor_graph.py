@@ -1029,16 +1029,10 @@ class FactorGraph(object):
             for var in sample:
                 key = (var.name, var.value)
                 counts[key] += 1
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
-        tab.align = 'l'
-        tab.align['Marginal'] = 'r'
-        deco = [(k, v) for k, v in counts.items()]
-        deco.sort()
-        for k, v in deco:
-            if k[1] is not False:
-                tab.add_row(list(k) + [v / valid_samples])
-            #tab.add_row(list(k) + [v / valid_samples])
-        print tab
+        # Now normalize
+        normalized = dict(
+            [(k, v / valid_samples) for k, v in counts.items()])
+        return normalized
 
     def generate_samples(self, n):
         '''
@@ -1078,17 +1072,10 @@ class FactorGraph(object):
             for name, val in sample.items():
                 key = (name, val)
                 counts[key] += 1
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Marginal')
-        tab.align = 'l'
-        tab.align['Marginal'] = 'r'
-        deco = [(k, v) for k, v in counts.items()]
-        deco.sort()
-        retval = {}
-        for k, v in deco:
-            retval[k] = (v / len(samples))
-            if k[1] is not False:
-                tab.add_row(list(k) + [v / len(samples)])
-        return retval
+        normalized = dict(
+            [(k, v / valid_samples) for k, v in counts.items()])
+        return normalized
+
 
     def export(self, filename=None, format='graphviz'):
         '''Export the graph in GraphViz dot language.'''
