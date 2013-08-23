@@ -24,3 +24,7 @@ class InsufficientSamplesException(Exception):
     pre-generated samples than the
     graphs n_samples attribute.'''
     pass
+
+
+class NoSamplesInDB(Warning):
+    pass

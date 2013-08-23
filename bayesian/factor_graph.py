@@ -722,10 +722,7 @@ class FactorGraph(object):
             print 'Failed to determine if graph has cycles, '
             'setting inference to sample.'
             self.inference_method = 'sample'
-        #if sample_db_filename:
-        #    self.inference_method = 'sample_db'
-        #    self.sample_db_filename = sample_db_filename
-        #    self.sample_db = SampleDB(sample_db_filename)
+        self.enforce_minimum_samples = False
 
     @property
     def inference_method(self):
@@ -1060,6 +1057,10 @@ class FactorGraph(object):
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
         samples = self.sample_db.get_samples(self.n_samples, **kwds)
+        if len(samples) == 0:
+            raise NoSamplesInDB(
+                'There are no samples in the database. '
+                'Generate some with graph.generate_samples(N).')
         if len(samples) < self.n_samples and self.enforce_minimum_samples:
             raise InsufficientSamplesException(
                 'There are less samples in the sampling '
@@ -1073,7 +1074,7 @@ class FactorGraph(object):
                 key = (name, val)
                 counts[key] += 1
         normalized = dict(
-            [(k, v / valid_samples) for k, v in counts.items()])
+            [(k, v / len(samples)) for k, v in counts.items()])
         return normalized
 
 

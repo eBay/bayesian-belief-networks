@@ -23,6 +23,7 @@ COMMIT_THRESHOLD = 1000
 P2S_MAPPING = {
     bool: 'bool',
     str: 'varchar',
+    unicode: 'varchar',
     int: 'integer'}
 
 
