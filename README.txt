@@ -22,7 +22,7 @@ $ pip install pytest
 
 To run the tests in a development environment:
 
-$ PYTHONPATH=. py.test
+$ PYTHONPATH=. py.test bayesian/test
 
 
 Resources:
@@ -32,3 +32,4 @@ http://www.csse.monash.edu.au/bai/book/BAI_Chapter2.pdf
 http://www.comm.utoronto.ca/frank/papers/KFL01.pdf
 http://www.snn.ru.nl/~bertk/ (Many real-world examples listed)
 http://www.cs.ubc.ca/~murphyk/Bayes/Charniak_91.pdf
+http://www.sciencedirect.com/science/article/pii/S0888613X96000692

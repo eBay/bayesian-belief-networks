@@ -321,7 +321,6 @@ def eliminate_var(f, var):
     def eliminated(*args):
         template = arg_spec[:]
         total = 0
-        summation_vals = [True, False]
         call_args = template[:]
         for arg in args:
             arg_pos = template.index(arg.name)
