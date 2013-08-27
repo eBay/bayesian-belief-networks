@@ -98,6 +98,19 @@ class BBN(Graph):
         #    unmarried = set
 
 
+def connect(a, b):
+    '''
+    Make an edge between two nodes
+    or between a source and several
+    neighbours.
+    '''
+    if not isinstance(b, list):
+        b = [b]
+    for b_ in b:
+        a.neighbours.append(b_)
+        b_.neighbours.append(a)
+
+
 def build_bbn(*args, **kwds):
     '''Builds a BBN Graph from
     a list of functions and domains'''
@@ -105,7 +118,7 @@ def build_bbn(*args, **kwds):
     domains = kwds.get('domains', {})
     name = kwds.get('name')
     variable_nodes = dict()
-    factor_nodes = []
+    factor_nodes = dict()
     if isinstance(args[0], list):
         # Assume the functions were all
         # passed in a list in the first
@@ -117,6 +130,13 @@ def build_bbn(*args, **kwds):
         factor_args = get_args(factor)
         variables.update(factor_args)
         bbn_node = Node(factor.__name__, factor)
-        factor_nodes.append(bbn_node)
+        factor_nodes[factor.__name__] = bbn_node
+    # Now lets create the connections
+    # To do this we need to find the
+    # factor node representing the variables
+    # in a child factors argument and connect
+    # it to the child node
+    for factor_name, factor_node in factor_nodes.items():
+        for
     bbn = BBN(factor_nodes, name=name)
     return bbn
