@@ -16,6 +16,7 @@ from prettytable import PrettyTable
 
 from bayesian.persistance import SampleDB, ensure_data_dir_exists
 from bayesian.exceptions import *
+from bayesian.utils import get_args
 
 DEBUG = False
 GREEN = '\033[92m'
@@ -459,22 +460,6 @@ def make_variable_node_message(node, target_node):
     message = VariableMessage(
         node, target_node, factors, product_func)
     return message
-
-
-def get_args(func):
-    '''
-    Return the names of the arguments
-    of a function as a list of strings.
-    This is so that we can omit certain
-    variables when we marginalize.
-    Note that functions created by
-    make_product_func do not return
-    an argspec, so we add a argspec
-    attribute at creation time.
-    '''
-    if hasattr(func, 'argspec'):
-        return func.argspec
-    return inspect.getargspec(func).args
 
 
 def make_product_func(factors):

@@ -121,6 +121,28 @@ class TestBBN():
 '''
         assert sprinkler_graph.get_graphviz_source() == gv_src
 
+
+
+    def test_get_original_factors(self, huang_darwiche_nodes):
+        original_factors = get_original_factors(
+            huang_darwiche_nodes)
+        assert original_factors['a'] == huang_darwiche_nodes[0]
+        assert original_factors['b'] == huang_darwiche_nodes[1]
+        assert original_factors['c'] == huang_darwiche_nodes[2]
+        assert original_factors['d'] == huang_darwiche_nodes[3]
+        assert original_factors['e'] == huang_darwiche_nodes[4]
+        assert original_factors['f'] == huang_darwiche_nodes[5]
+        assert original_factors['g'] == huang_darwiche_nodes[6]
+        assert original_factors['h'] == huang_darwiche_nodes[7]
+
     def test_build_graph(self, huang_darwiche_nodes):
         bbn = build_bbn(huang_darwiche_nodes)
-        bbn.export()
+        nodes = dict([(node.name, node) for node in bbn.nodes])
+        assert nodes['f_a'].parents == []
+        assert nodes['f_b'].parents == [nodes['f_a']]
+        assert nodes['f_c'].parents == [nodes['f_a']]
+        assert nodes['f_d'].parents == [nodes['f_b']]
+        assert nodes['f_e'].parents == [nodes['f_c']]
+        assert nodes['f_f'].parents == [nodes['f_d'], nodes['f_e']]
+        assert nodes['f_g'].parents == [nodes['f_c']]
+        assert nodes['f_h'].parents == [nodes['f_e'], nodes['f_g']]

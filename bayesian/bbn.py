@@ -1,7 +1,9 @@
 from __future__ import division
 '''Data Structures to represent a BBN as a DAG.'''
+import sys
 
 from StringIO import StringIO
+from bayesian.utils import get_args
 
 class Node(object):
 
@@ -17,8 +19,14 @@ class Node(object):
 class BBNNode(Node):
 
     def __init__(self, factor):
-        super(BBNNode, self).__init__()
+        super(BBNNode, self).__init__(factor.__name__)
         self.func = factor
+        self.argspec = get_args(factor)
+
+    def __repr__(self):
+        return '<BBNNode %s (%s)>' % (
+            self.name,
+            self.argspec)
 
 
 class UndirectedNode(object):
@@ -98,17 +106,39 @@ class BBN(Graph):
         #    unmarried = set
 
 
-def connect(a, b):
+def connect(parent, child):
     '''
-    Make an edge between two nodes
-    or between a source and several
-    neighbours.
+    Make an edge between a parent
+    node and a child node.
+    a - parent
+    b - child
     '''
-    if not isinstance(b, list):
-        b = [b]
-    for b_ in b:
-        a.neighbours.append(b_)
-        b_.neighbours.append(a)
+    parent.children.append(child)
+    child.parents.append(parent)
+
+
+def get_original_factors(factors):
+    '''
+    For a set of factors, we want to
+    get a mapping of the variables to
+    the factor which first introduces the
+    variable to the set.
+    To do this without enforcing a special
+    naming convention such as 'f_' for factors,
+    or a special ordering, such as the last
+    argument is always the new variable,
+    we will have to discover the 'original'
+    factor that introduces the variable
+    iteratively.
+    '''
+    original_factors = dict()
+    while len(original_factors) < len(factors):
+        for factor in factors:
+            args = get_args(factor)
+            unaccounted_args = [a for a in args if a not in original_factors]
+            if len(unaccounted_args) == 1:
+                original_factors[unaccounted_args[0]] = factor
+    return original_factors
 
 
 def build_bbn(*args, **kwds):
@@ -126,17 +156,29 @@ def build_bbn(*args, **kwds):
         # to build very large graphs with
         # more than 255 functions.
         args = args[0]
+
+
     for factor in args:
         factor_args = get_args(factor)
         variables.update(factor_args)
-        bbn_node = Node(factor.__name__, factor)
+        bbn_node = BBNNode(factor)
         factor_nodes[factor.__name__] = bbn_node
+
     # Now lets create the connections
     # To do this we need to find the
     # factor node representing the variables
     # in a child factors argument and connect
     # it to the child node
-    for factor_name, factor_node in factor_nodes.items():
-        for
-    bbn = BBN(factor_nodes, name=name)
+
+    # Note that calling original_factors
+    # here can break build_bbn if the
+    # factors do not correctly represent
+    # a BBN.
+    original_factors = get_original_factors(factor_nodes.values())
+    for factor_node in factor_nodes.values():
+        factor_args = get_args(factor_node)
+        parents = [original_factors[arg] for arg in factor_args if original_factors[arg] != factor_node]
+        for parent in parents:
+            connect(parent, factor_node)
+    bbn = BBN(factor_nodes.values(), name=name)
     return bbn
