@@ -295,6 +295,8 @@ def triangulate(gm, priority_func=priority_func):
         cluster = [v] + v.neighbours
         for node_a, node_b in combinations(cluster, 2):
             if node_a not in node_b.neighbours:
+                print 'Adding edhe from %s to %s' % (
+                    node_a.name, node_b.name)
                 node_b.neighbours.append(node_a)
                 node_a.neighbours.append(node_b)
                 # Now also add this new arc to gm...
@@ -326,4 +328,5 @@ def build_join_tree(dag):
     # not already parents called the 'moralized' graph.
     gm = make_moralized_copy(gu, dag)
 
-    # Now lets get the
+    # Now we triangulate the moralized graph...
+    elimination_ordering = triangulate(gm)

@@ -293,3 +293,36 @@ class TestBBN():
             nodes['f_c'], nodes['f_h'], nodes['f_e']])
         assert set(nodes['f_h'].neighbours) == set([
             nodes['f_e'], nodes['f_g']])
+
+
+    def test_triangulate(self, huang_darwiche_moralized):
+        # Now lets see what happens if
+        # we dont enforce the tie-breakers...
+        # It seems the triangulated graph is
+        # different adding edges from d to c
+        # and b to c
+        # Will be interesting to see whether
+        # inference will still be correct.
+        elimination_ordering = triangulate(
+            huang_darwiche_moralized)
+        nodes = dict([(node.name, node) for node in \
+                      huang_darwiche_moralized.nodes])
+        assert set(nodes['f_a'].neighbours) == set([
+            nodes['f_b'], nodes['f_c']])
+        assert set(nodes['f_b'].neighbours) == set([
+            nodes['f_a'], nodes['f_d'], nodes['f_c']])
+        assert set(nodes['f_c'].neighbours) == set([
+            nodes['f_a'], nodes['f_e'], nodes['f_g'],
+            nodes['f_b'], nodes['f_d']])
+        assert set(nodes['f_d'].neighbours) == set([
+            nodes['f_b'], nodes['f_f'], nodes['f_e'],
+            nodes['f_c']])
+        assert set(nodes['f_e'].neighbours) == set([
+            nodes['f_c'], nodes['f_f'], nodes['f_h'],
+            nodes['f_d'], nodes['f_g']])
+        assert set(nodes['f_f'].neighbours) == set([
+            nodes['f_d'], nodes['f_e']])
+        assert set(nodes['f_g'].neighbours) == set([
+            nodes['f_c'], nodes['f_h'], nodes['f_e']])
+        assert set(nodes['f_h'].neighbours) == set([
+            nodes['f_e'], nodes['f_g']])
