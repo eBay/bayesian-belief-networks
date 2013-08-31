@@ -259,8 +259,24 @@ class TestBBN():
             if node.name == 'f_e':
                 return [introduced_arcs, 5]
             return [introduced_arcs, 10]
-        elimination_ordering = triangulate(
+        cliques, elimination_ordering = triangulate(
             huang_darwiche_moralized, priority_func_override)
+        nodes = dict([(node.name, node) for node in \
+                      huang_darwiche_moralized.nodes])
+        assert len(cliques) == 6
+        assert cliques[0] == set(
+            [nodes['f_e'], nodes['f_g'], nodes['f_h']])
+        assert cliques[1] == set(
+            [nodes['f_c'], nodes['f_e'], nodes['f_g']])
+        assert cliques[2] == set(
+            [nodes['f_d'], nodes['f_e'], nodes['f_f']])
+        assert cliques[3] == set(
+            [nodes['f_a'], nodes['f_c'], nodes['f_e']])
+        assert cliques[4] == set(
+            [nodes['f_a'], nodes['f_b'], nodes['f_d']])
+        assert cliques[5] == set(
+            [nodes['f_a'], nodes['f_d'], nodes['f_e']])
+
         assert elimination_ordering == [
             'f_h',
             'f_g',
@@ -295,7 +311,7 @@ class TestBBN():
             nodes['f_e'], nodes['f_g']])
 
 
-    def test_triangulate(self, huang_darwiche_moralized):
+    def test_triangulate_no_tie_break(self, huang_darwiche_moralized):
         # Now lets see what happens if
         # we dont enforce the tie-breakers...
         # It seems the triangulated graph is

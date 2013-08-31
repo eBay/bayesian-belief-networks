@@ -263,8 +263,20 @@ def construct_priority_queue(nodes, priority_func=priority_func):
     return pq
 
 
+def record_cliques(cliques, cluster):
+    '''We only want to save the cluster
+    if it is not a subset of any clique
+    already saved.
+    Argument cluster must be a set'''
+    if any([cluster.issubset(c) for c in cliques]):
+        return
+    cliques.append(cluster)
+
+
 def triangulate(gm, priority_func=priority_func):
-    '''Triangulate the moralized Graph. (in Place!)'''
+    '''Triangulate the moralized Graph. (in Place)
+    and return the cliques of the triangulated
+    graph as well as the elimination ordering.'''
 
     # First we will make a copy of gm...
     gm_ = copy.deepcopy(gm)
@@ -281,6 +293,7 @@ def triangulate(gm, priority_func=priority_func):
     # what is meant by the "number of values of V"
     gmnodes = dict([(node.name, node) for node in gm.nodes])
     elimination_ordering = []
+    cliques = []
     while True:
         gm_nodes = dict([(node.name, node) for node in gm_.nodes])
         if not gm_nodes:
@@ -304,6 +317,8 @@ def triangulate(gm, priority_func=priority_func):
                     gmnodes[node_a.name])
                 gmnodes[node_a.name].neighbours.append(
                     gmnodes[node_b.name])
+        gmcluster = set([gmnodes[c.name] for c in cluster])
+        record_cliques(cliques, gmcluster)
         # Now we need to remove v from gm_...
         # This means we also have to remove it from all
         # of its neighbours that reference it...
@@ -311,7 +326,7 @@ def triangulate(gm, priority_func=priority_func):
             neighbour.neighbours.remove(v)
         gm_.nodes.remove(v)
         elimination_ordering.append(v.name)
-    return elimination_ordering
+    return cliques, elimination_ordering
 
 
 
