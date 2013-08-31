@@ -1,8 +1,12 @@
 from __future__ import division
 '''Data Structures to represent a BBN as a DAG.'''
 import sys
+import copy
+import heapq
 
 from StringIO import StringIO
+from itertools import combinations
+
 from bayesian.utils import get_args
 
 class Node(object):
@@ -182,3 +186,144 @@ def build_bbn(*args, **kwds):
             connect(parent, factor_node)
     bbn = BBN(factor_nodes.values(), name=name)
     return bbn
+
+
+def make_undirected_copy(dag):
+    '''Returns an exact copy of the dag
+    except that direction of edges are dropped.'''
+    nodes = dict()
+    for node in dag.nodes:
+        undirected_node = UndirectedNode(
+            name = node.name)
+        undirected_node.func = node.func
+        undirected_node.argspec = node.argspec
+        nodes[node.name] = undirected_node
+    # Now we need to traverse the original
+    # nodes once more and add any parents
+    # or children as neighbours.
+    for node in dag.nodes:
+        for parent in node.parents:
+            nodes[node.name].neighbours.append(
+                nodes[parent.name])
+            nodes[parent.name].neighbours.append(
+                nodes[node.name])
+
+    g = UndirectedGraph(nodes.values())
+    return g
+
+
+def make_moralized_copy(gu, dag):
+    '''gu is an undirected graph being
+    a copy of dag.'''
+    gm = copy.deepcopy(gu)
+    gm_nodes = dict(
+        [(node.name, node) for node in gm.nodes])
+    for node in dag.nodes:
+        for parent_1, parent_2 in combinations(
+                node.parents, 2):
+            if gm_nodes[parent_1.name] not in \
+               gm_nodes[parent_2.name].neighbours:
+                gm_nodes[parent_2.name].neighbours.append(
+                    gm_nodes[parent_1.name])
+            if gm_nodes[parent_2.name] not in \
+               gm_nodes[parent_1.name].neighbours:
+                gm_nodes[parent_1.name].neighbours.append(
+                    gm_nodes[parent_2.name])
+    return gm
+
+
+def priority_func(node):
+    '''Specify the rules for computing
+    priority of a node. See Harwiche and Wang pg 12.
+    '''
+    # We need to calculate the number of edges
+    # that would be added.
+    # For each node, we need to connect all
+    # of the nodes in itself and its neighbours
+    # (the "cluster") which are not already
+    # connected. This will be the primary
+    # key value in the heap.
+    # We need to fix the secondary key, right
+    # now its just 2 (because mostly the variables
+    # will be discrete binary)
+    introduced_arcs = 0
+    cluster = [node] + node.neighbours
+    for node_a, node_b in combinations(cluster, 2):
+        if node_a not in node_b.neighbours:
+            assert node_b not in node_a.neighbours
+            introduced_arcs += 1
+    return [introduced_arcs, 2] # TODO: Fix this to look at domains
+
+
+def construct_priority_queue(nodes, priority_func=priority_func):
+    pq = []
+    for node_name, node in nodes.iteritems():
+        entry = priority_func(node) + [node.name]
+        heapq.heappush(pq, entry)
+    return pq
+
+
+def triangulate(gm, priority_func=priority_func):
+    '''Triangulate the moralized Graph. (in Place!)'''
+
+    # First we will make a copy of gm...
+    gm_ = copy.deepcopy(gm)
+
+    # Now we will construct a priority q using
+    # the standard library heapq module.
+    # See docs for example of priority q tie
+    # breaking. We will use a 3 element list
+    # with entries as follows:
+    #   - Number of edges added if V were selected
+    #   - Weight of V (or cluster)
+    #   - Pointer to node in gm_
+    # Note that its unclear from Huang and Darwiche
+    # what is meant by the "number of values of V"
+    gmnodes = dict([(node.name, node) for node in gm.nodes])
+    elimination_ordering = []
+    while True:
+        gm_nodes = dict([(node.name, node) for node in gm_.nodes])
+        if not gm_nodes:
+            break
+        pq = construct_priority_queue(gm_nodes, priority_func)
+        # Now we select the first node in
+        # the priority q and any arcs that
+        # should be added in order to fully connect
+        # the cluster should be added to both
+        # gm and gm_
+        v = gm_nodes[pq[0][2]]
+        cluster = [v] + v.neighbours
+        for node_a, node_b in combinations(cluster, 2):
+            if node_a not in node_b.neighbours:
+                node_b.neighbours.append(node_a)
+                node_a.neighbours.append(node_b)
+                # Now also add this new arc to gm...
+                gmnodes[node_b.name].neighbours.append(
+                    gmnodes[node_a.name])
+                gmnodes[node_a.name].neighbours.append(
+                    gmnodes[node_b.name])
+        # Now we need to remove v from gm_...
+        # This means we also have to remove it from all
+        # of its neighbours that reference it...
+        for neighbour in v.neighbours:
+            neighbour.neighbours.remove(v)
+        gm_.nodes.remove(v)
+        elimination_ordering.append(v.name)
+    return elimination_ordering
+
+
+
+
+
+def build_join_tree(dag):
+
+    # First we will create an undirected copy
+    # of the dag
+    gu = make_undirected_copy(dag)
+
+    # Now we create a copy of the undirected graph
+    # and connect all pairs of parents that are
+    # not already parents called the 'moralized' graph.
+    gm = make_moralized_copy(gu, dag)
+
+    # Now lets get the

@@ -104,6 +104,22 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             f_e, f_f, f_g, f_h]
 
 
+def pytest_funcarg__huang_darwiche_dag(request):
+
+    nodes = pytest_funcarg__huang_darwiche_nodes(request)
+    return build_bbn(nodes)
+
+
+def pytest_funcarg__huang_darwiche_moralized(request):
+
+    dag = pytest_funcarg__huang_darwiche_dag(request)
+    gu = make_undirected_copy(dag)
+    gm = make_moralized_copy(gu, dag)
+
+    return gm
+
+
+
 class TestBBN():
 
     def test_get_graphviz_source(self, sprinkler_graph):
@@ -146,3 +162,134 @@ class TestBBN():
         assert nodes['f_f'].parents == [nodes['f_d'], nodes['f_e']]
         assert nodes['f_g'].parents == [nodes['f_c']]
         assert nodes['f_h'].parents == [nodes['f_e'], nodes['f_g']]
+
+    def test_make_undirecred_copy(self, huang_darwiche_dag):
+        ug = make_undirected_copy(huang_darwiche_dag)
+        nodes = dict([(node.name, node) for node in ug.nodes])
+        assert set(nodes['f_a'].neighbours) == set([
+            nodes['f_b'], nodes['f_c']])
+        assert set(nodes['f_b'].neighbours) == set([
+            nodes['f_a'], nodes['f_d']])
+        assert set(nodes['f_c'].neighbours) == set([
+            nodes['f_a'], nodes['f_e'], nodes['f_g']])
+        assert set(nodes['f_d'].neighbours) == set([
+            nodes['f_b'], nodes['f_f']])
+        assert set(nodes['f_e'].neighbours) == set([
+            nodes['f_c'], nodes['f_f'], nodes['f_h']])
+        assert set(nodes['f_f'].neighbours) == set([
+            nodes['f_d'], nodes['f_e']])
+        assert set(nodes['f_g'].neighbours) == set([
+            nodes['f_c'], nodes['f_h']])
+        assert set(nodes['f_h'].neighbours) == set([
+            nodes['f_e'], nodes['f_g']])
+
+    def test_make_moralized_copy(self, huang_darwiche_dag):
+        gu = make_undirected_copy(huang_darwiche_dag)
+        gm = make_moralized_copy(gu, huang_darwiche_dag)
+        nodes = dict([(node.name, node) for node in gm.nodes])
+        assert set(nodes['f_a'].neighbours) == set([
+            nodes['f_b'], nodes['f_c']])
+        assert set(nodes['f_b'].neighbours) == set([
+            nodes['f_a'], nodes['f_d']])
+        assert set(nodes['f_c'].neighbours) == set([
+            nodes['f_a'], nodes['f_e'], nodes['f_g']])
+        assert set(nodes['f_d'].neighbours) == set([
+            nodes['f_b'], nodes['f_f'], nodes['f_e']])
+        assert set(nodes['f_e'].neighbours) == set([
+            nodes['f_c'], nodes['f_f'], nodes['f_h'],
+            nodes['f_d'], nodes['f_g']])
+        assert set(nodes['f_f'].neighbours) == set([
+            nodes['f_d'], nodes['f_e']])
+        assert set(nodes['f_g'].neighbours) == set([
+            nodes['f_c'], nodes['f_h'], nodes['f_e']])
+        assert set(nodes['f_h'].neighbours) == set([
+            nodes['f_e'], nodes['f_g']])
+
+    def test_construct_priority_queue(self, huang_darwiche_moralized):
+        nodes = dict(
+            [(node.name, node) for node in \
+             huang_darwiche_moralized.nodes])
+        pq = construct_priority_queue(nodes, priority_func)
+        assert pq == [[0, 2, 'f_f'], [0, 2, 'f_h'], [1, 2, 'f_b'], [1, 2, 'f_a'], [1, 2, 'f_g'], [2, 2, 'f_d'], [2, 2, 'f_c'], [7, 2, 'f_e']]
+
+        # Note that for this test we want to ensure
+        # the same elimination ordering as on page 13
+        # of Darwiche and Wang. The first two entries
+        # in the priority queue are actually a tie
+        # so we will manually manipulate them here
+        # by specifying an alternative priority func:
+        def priority_func_override(node):
+            introduced_arcs = 0
+            cluster = [node] + node.neighbours
+            for node_a, node_b in combinations(cluster, 2):
+                if node_a not in node_b.neighbours:
+                    assert node_b not in node_a.neighbours
+                    introduced_arcs += 1
+            if node.name == 'f_h':
+                return [introduced_arcs, 0] # Force f_h tie breaker
+            return [introduced_arcs, 2]
+        pq = construct_priority_queue(
+            nodes,
+            priority_func_override)
+        assert pq[0] == [0, 0, 'f_h']
+
+    def test_triangulate(self, huang_darwiche_moralized):
+
+        # Because of ties in the priority q we will
+        # override the priority function here to
+        # insert tie breakers to ensure the same
+        # elimination ordering as Darwich Huang.
+        def priority_func_override(node):
+            introduced_arcs = 0
+            cluster = [node] + node.neighbours
+            for node_a, node_b in combinations(cluster, 2):
+                if node_a not in node_b.neighbours:
+                    assert node_b not in node_a.neighbours
+                    introduced_arcs += 1
+            if node.name == 'f_h':
+                return [introduced_arcs, 0] # Force f_h tie breaker
+            if node.name == 'f_g':
+                return [introduced_arcs, 1] # Force f_g tie breaker
+            if node.name == 'f_c':
+                return [introduced_arcs, 2] # Force f_c tie breaker
+            if node.name == 'f_b':
+                return [introduced_arcs, 3]
+            if node.name == 'f_d':
+                return [introduced_arcs, 4]
+            if node.name == 'f_e':
+                return [introduced_arcs, 5]
+            return [introduced_arcs, 10]
+        elimination_ordering = triangulate(
+            huang_darwiche_moralized, priority_func_override)
+        assert elimination_ordering == [
+            'f_h',
+            'f_g',
+            'f_f',
+            'f_c',
+            'f_b',
+            'f_d',
+            'f_e',
+            'f_a']
+        # Now lets ensure the triangulated graph is
+        # the same as Darwiche Huang fig. 2 pg. 13
+        nodes = dict([(node.name, node) for node in \
+                      huang_darwiche_moralized.nodes])
+        assert set(nodes['f_a'].neighbours) == set([
+            nodes['f_b'], nodes['f_c'],
+            nodes['f_d'], nodes['f_e']])
+        assert set(nodes['f_b'].neighbours) == set([
+            nodes['f_a'], nodes['f_d']])
+        assert set(nodes['f_c'].neighbours) == set([
+            nodes['f_a'], nodes['f_e'], nodes['f_g']])
+        assert set(nodes['f_d'].neighbours) == set([
+            nodes['f_b'], nodes['f_f'], nodes['f_e'],
+            nodes['f_a']])
+        assert set(nodes['f_e'].neighbours) == set([
+            nodes['f_c'], nodes['f_f'], nodes['f_h'],
+            nodes['f_d'], nodes['f_g'], nodes['f_a']])
+        assert set(nodes['f_f'].neighbours) == set([
+            nodes['f_d'], nodes['f_e']])
+        assert set(nodes['f_g'].neighbours) == set([
+            nodes['f_c'], nodes['f_h'], nodes['f_e']])
+        assert set(nodes['f_h'].neighbours) == set([
+            nodes['f_e'], nodes['f_g']])
