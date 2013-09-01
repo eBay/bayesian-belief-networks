@@ -344,4 +344,29 @@ class TestBBN():
             nodes['f_e'], nodes['f_g']])
 
     def test_build_join_tree(self, huang_darwiche_dag):
-        jt = build_join_tree(huang_darwiche_dag)
+        def priority_func_override(node):
+            introduced_arcs = 0
+            cluster = [node] + node.neighbours
+            for node_a, node_b in combinations(cluster, 2):
+                if node_a not in node_b.neighbours:
+                    assert node_b not in node_a.neighbours
+                    introduced_arcs += 1
+            if node.name == 'f_h':
+                return [introduced_arcs, 0] # Force f_h tie breaker
+            if node.name == 'f_g':
+                return [introduced_arcs, 1] # Force f_g tie breaker
+            if node.name == 'f_c':
+                return [introduced_arcs, 2] # Force f_c tie breaker
+            if node.name == 'f_b':
+                return [introduced_arcs, 3]
+            if node.name == 'f_d':
+                return [introduced_arcs, 4]
+            if node.name == 'f_e':
+                return [introduced_arcs, 5]
+            return [introduced_arcs, 10]
+
+        jt = build_join_tree(huang_darwiche_dag, priority_func_override)
+        for node in jt.sepset_nodes:
+            assert set([n.clique for n in node.neighbours]) == \
+                set([node.sepset.X, node.sepset.Y])
+        # Need additional tests here...

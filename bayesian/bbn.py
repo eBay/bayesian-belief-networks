@@ -166,8 +166,8 @@ class Clique(object):
         self.nodes = cluster
 
     def __repr__(self):
-        return 'Clique_%s' % (
-            ''.join([n.name[2:].upper() for n in self.nodes]))
+        vars = sorted([n.name[2:].upper() for n in self.nodes])
+        return 'Clique_%s' % ''.join(vars)
 
 class SepSet(object):
 
@@ -182,15 +182,18 @@ class SepSet(object):
     def mass(self):
         return len(self.label)
 
-
     @property
     def cost(self):
         '''Since cost is used as a tie-breaker
         and is an optimization for inference time
-        we will punt on it for now.
-        (Dont early optimize!)
+        we will punt on it for now. Instead we
+        will just use the assumption that all
+        variables in X and Y are binary and thus
+        use a weight of 2.
+        TODO: come back to this and compute
+        actual weights
         '''
-        return 666
+        return 2 ** len(self.X.nodes) + 2 ** len(self.Y.nodes)
 
     def insertable(self, forest):
         '''A sepset can only be inserted
@@ -232,7 +235,7 @@ class SepSet(object):
                   [n.clique for n in t.clique_nodes]][0]
 
         # Now create and insert a sepset node into the Xtree
-        ss_node = JoinTreeSepSetNode(self, self.__repr__())
+        ss_node = JoinTreeSepSetNode(self, self)
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -493,7 +496,7 @@ def triangulate(gm, priority_func=priority_func):
 
 
 
-def build_join_tree(dag):
+def build_join_tree(dag, clique_priority_func=priority_func):
 
     # First we will create an undirected copy
     # of the dag
@@ -505,7 +508,7 @@ def build_join_tree(dag):
     gm = make_moralized_copy(gu, dag)
 
     # Now we triangulate the moralized graph...
-    cliques, elimination_ordering = triangulate(gm)
+    cliques, elimination_ordering = triangulate(gm, clique_priority_func)
 
     # Now we initialize the forest and sepsets
     # Its unclear from Darwiche Huang whether we
@@ -537,12 +540,11 @@ def build_join_tree(dag):
         if X.nodes.intersection(Y.nodes):
             S.add(SepSet(X, Y))
     sepsets_inserted = 0
-
     while sepsets_inserted < (len(cliques) - 1):
-        deco = [(s, s.mass, -1 * s.cost) for s in S]
-        deco.sort(reverse=True, key=lambda x: x[1:])
+        # Adding in name to make this sort deterministic
+        deco = [(s, -1 * s.mass, s.cost, s.__repr__()) for s in S]
+        deco.sort(key=lambda x: x[1:])
         candidate_sepset = deco[0][0]
-        print candidate_sepset
         if candidate_sepset.insertable(forest):
             # Insert into forest and remove the sepset
             candidate_sepset.insert(forest)
@@ -551,6 +553,4 @@ def build_join_tree(dag):
 
     assert len(forest) == 1
     jt = list(forest)[0]
-    jt.export()
-    import pytest; pytest.set_trace()
     return jt
