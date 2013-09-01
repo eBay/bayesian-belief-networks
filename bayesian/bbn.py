@@ -44,6 +44,14 @@ class UndirectedNode(object):
         return '<Node %s>' % self.name
 
 
+class JoinTreeCliqueNode(UndirectedNode):
+
+    def __init__(self, clique):
+        super(JoinTreeCliqueNode, self).__init__(
+            clique.__repr__)
+        self.clique = clique
+
+
 class Graph(object):
 
     def export(self, filename=None, format='graphviz'):
@@ -103,11 +111,37 @@ class BBN(Graph):
         fh.write('}\n')
         return fh.getvalue()
 
-    def moralize(self):
-        '''Marry the unmarried parents'''
-        pass
-        #for node in self.nodes:
-        #    unmarried = set
+# Seems like we may need a 'Clique' class.
+
+class Clique(object):
+
+    def __init__(self, cluster):
+        self.nodes = cluster
+
+
+class SepSet(object):
+
+    def __init__(self, X, Y):
+        '''X and Y are cliques represented as sets.'''
+        self.cliques = [X, Y]
+        self.label = X.nodes.intersection(Y.nodes)
+
+    @property
+    def mass(self):
+        return len(self.label)
+
+
+    @property
+    def cost(self):
+        '''Since cost is used as a tie-breaker
+        and is an optimization for inference time
+        we will punt on it for now.
+        (Dont early optimize!)
+        '''
+        return 666
+
+    def __repr__(self):
+        return '<SepSet: %s>' % ''.join([x.name for x in list(self.label)])
 
 
 def connect(parent, child):
@@ -268,9 +302,9 @@ def record_cliques(cliques, cluster):
     if it is not a subset of any clique
     already saved.
     Argument cluster must be a set'''
-    if any([cluster.issubset(c) for c in cliques]):
+    if any([cluster.issubset(c.nodes) for c in cliques]):
         return
-    cliques.append(cluster)
+    cliques.append(Clique(cluster))
 
 
 def triangulate(gm, priority_func=priority_func):
@@ -344,4 +378,37 @@ def build_join_tree(dag):
     gm = make_moralized_copy(gu, dag)
 
     # Now we triangulate the moralized graph...
-    elimination_ordering = triangulate(gm)
+    cliques, elimination_ordering = triangulate(gm)
+
+    # Now we initialize the forest and sepsets
+    # Its unclear from Darwiche Huang whether we
+    # track a sepset for each tree or whether its
+    # a global list????
+    # We will implement the Join Tree as an undirected
+    # graph for now...
+
+    # First initialize a set of graphs where
+    # each graph initially consists of just one
+    # node for the clique.
+    forest = set()
+    for clique in cliques:
+
+
+
+    # Initialize the SepSets
+    S = set() # track the sepsets
+    for X, Y in combinations(cliques, 2):
+        if X.nodes.intersection(Y.nodes):
+            S.add(SepSet(X, Y))
+    sepsets_inserted = 0
+
+
+    while sepsets_inserted < (len(cliques) - 1):
+        deco = [(s, s.mass, -1 * s.cost) for s in S]
+        deco.sort(reverse=True, key=lambda x: x[1:])
+        print deco[0]
+        import pytest; pytest.set_trace()
+        S.remove(deco[0][0])
+        sepsets_inserted += 1
+
+    return join_tree

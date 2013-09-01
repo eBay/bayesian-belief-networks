@@ -264,17 +264,17 @@ class TestBBN():
         nodes = dict([(node.name, node) for node in \
                       huang_darwiche_moralized.nodes])
         assert len(cliques) == 6
-        assert cliques[0] == set(
+        assert cliques[0].nodes == set(
             [nodes['f_e'], nodes['f_g'], nodes['f_h']])
-        assert cliques[1] == set(
+        assert cliques[1].nodes == set(
             [nodes['f_c'], nodes['f_e'], nodes['f_g']])
-        assert cliques[2] == set(
+        assert cliques[2].nodes == set(
             [nodes['f_d'], nodes['f_e'], nodes['f_f']])
-        assert cliques[3] == set(
+        assert cliques[3].nodes == set(
             [nodes['f_a'], nodes['f_c'], nodes['f_e']])
-        assert cliques[4] == set(
+        assert cliques[4].nodes == set(
             [nodes['f_a'], nodes['f_b'], nodes['f_d']])
-        assert cliques[5] == set(
+        assert cliques[5].nodes == set(
             [nodes['f_a'], nodes['f_d'], nodes['f_e']])
 
         assert elimination_ordering == [
@@ -319,8 +319,6 @@ class TestBBN():
         # and b to c
         # Will be interesting to see whether
         # inference will still be correct.
-        elimination_ordering = triangulate(
-            huang_darwiche_moralized)
         nodes = dict([(node.name, node) for node in \
                       huang_darwiche_moralized.nodes])
         assert set(nodes['f_a'].neighbours) == set([
@@ -342,3 +340,6 @@ class TestBBN():
             nodes['f_c'], nodes['f_h'], nodes['f_e']])
         assert set(nodes['f_h'].neighbours) == set([
             nodes['f_e'], nodes['f_g']])
+
+    def test_build_join_tree(self, huang_darwiche_dag):
+        jt = build_join_tree(huang_darwiche_dag)
