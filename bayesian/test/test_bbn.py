@@ -319,6 +319,8 @@ class TestBBN():
         # and b to c
         # Will be interesting to see whether
         # inference will still be correct.
+        cliques, elimination_ordering = triangulate(
+            huang_darwiche_moralized)
         nodes = dict([(node.name, node) for node in \
                       huang_darwiche_moralized.nodes])
         assert set(nodes['f_a'].neighbours) == set([
