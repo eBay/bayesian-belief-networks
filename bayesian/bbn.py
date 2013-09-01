@@ -41,15 +41,19 @@ class UndirectedNode(object):
 
 
     def __repr__(self):
-        return '<Node %s>' % self.name
+        return '<UndirectedNode %s>' % self.name
 
 
 class JoinTreeCliqueNode(UndirectedNode):
 
     def __init__(self, clique):
         super(JoinTreeCliqueNode, self).__init__(
-            clique.__repr__)
+            clique.__repr__())
         self.clique = clique
+
+    def __repr__(self):
+        return '<JoinTreeCliqueNode: %s>' % self.clique
+
 
 
 class Graph(object):
@@ -89,7 +93,6 @@ class UndirectedGraph(object):
         return fh.getvalue()
 
 
-
 class BBN(Graph):
     '''A Directed Acyclic Graph'''
 
@@ -111,19 +114,39 @@ class BBN(Graph):
         fh.write('}\n')
         return fh.getvalue()
 
-# Seems like we may need a 'Clique' class.
+
+class JoinTree(UndirectedGraph):
+
+    def __init__(self, nodes, name=None):
+        super(JoinTree, self).__init__(
+            nodes, name)
+
+    @property
+    def sepset_nodes(self):
+        return [n for n in self.nodes if isinstance(n, JoinTreeSepSetNode)]
+
+    @property
+    def clique_nodes(self):
+        return [n for n in self.nodes if isinstance(n, JoinTreeCliqueNode)]
+
+
 
 class Clique(object):
 
     def __init__(self, cluster):
         self.nodes = cluster
 
+    def __repr__(self):
+        return '<Clique %s>' % (
+            ','.join([n.name for n in self.nodes]))
 
 class SepSet(object):
 
     def __init__(self, X, Y):
         '''X and Y are cliques represented as sets.'''
-        self.cliques = [X, Y]
+        #self.cliques = [X, Y]
+        self.X = X
+        self.Y = Y
         self.label = X.nodes.intersection(Y.nodes)
 
     @property
@@ -140,8 +163,83 @@ class SepSet(object):
         '''
         return 666
 
+    def insertable(self, forest):
+        '''A sepset can only be inserted
+        into the JT if the cliques it
+        separates are NOT already on
+        the same tree.
+        NOTE: For efficiency we should
+        add an index that indexes cliques
+        into the trees in the forest.'''
+        X_trees = [t for t in forest if self.X in \
+                   [n.clique for n in t.clique_nodes]]
+        Y_trees = [t for t in forest if self.Y in \
+                   [n.clique for n in t.clique_nodes]]
+        assert len(X_trees) == 1
+        assert len(Y_trees) == 1
+        if X_trees[0] is not Y_trees[0]:
+            return True
+        return False
+
+    def insert(self, forest):
+        '''Inserting this sepset into
+        a forest, providing the two
+        cliques are in different trees,
+        means that effectively we are
+        collapsing the two trees into
+        one. We will explicitely perform
+        this collapse by adding the
+        sepset node into the tree
+        and adding edges between itself
+        and its clique node neighbours.
+        Finally we must remove the
+        second tree from the forest
+        as it is now joined to the
+        first.
+        '''
+        X_tree = [t for t in forest if self.X in \
+                  [n.clique for n in t.clique_nodes]][0]
+        Y_tree = [t for t in forest if self.Y in \
+                  [n.clique for n in t.clique_nodes]][0]
+
+        # Now create and insert a sepset node into the Xtree
+        ss_node = JoinTreeSepSetNode(self, self.__repr__())
+        X_tree.nodes.append(ss_node)
+
+        # And connect them
+        self.X.node.neighbours.append(ss_node)
+        ss_node.neighbours.append(self.X.node)
+
+        # Now lets keep the X_tree and drop the Y_tree
+        # this means we need to copy all the nodes
+        # in the Y_tree that are not already in the X_tree
+        for node in Y_tree.nodes:
+            if node in X_tree.nodes:
+                continue
+            X_tree.nodes.append(node)
+
+        # Now connect the sepset node to the
+        # Y_node (now residing in the X_tree)
+        self.Y.node.neighbours.append(ss_node)
+        ss_node.neighbours.append(self.Y.node)
+
+        # And finally we must remove the Y_tree from
+        # the forest...
+        forest.remove(Y_tree)
+
+
     def __repr__(self):
-        return '<SepSet: %s>' % ''.join([x.name for x in list(self.label)])
+        return '<SepSet: %s>' % ','.join([x.name for x in list(self.label)])
+
+
+class JoinTreeSepSetNode(UndirectedNode):
+
+    def __init__(self, name, sepset):
+        super(JoinTreeSepSetNode, self).__init__(name)
+        self.sepset = sepset
+
+    def __repr__(self):
+        return '<JoinTreeSepSetNode: %s>' % self.sepset
 
 
 def connect(parent, child):
@@ -389,11 +487,20 @@ def build_join_tree(dag):
 
     # First initialize a set of graphs where
     # each graph initially consists of just one
-    # node for the clique.
+    # node for the clique. As these graphs get
+    # populated with sepsets connecting them
+    # they should collapse into a single tree.
     forest = set()
     for clique in cliques:
-
-
+        jt_node = JoinTreeCliqueNode(clique)
+        # Track a reference from the clique
+        # itself to the node, this will be
+        # handy later... (alternately we
+        # could just collapse clique and clique
+        # node into one class...
+        clique.node = jt_node
+        tree = JoinTree([jt_node])
+        forest.add(tree)
 
     # Initialize the SepSets
     S = set() # track the sepsets
@@ -402,13 +509,18 @@ def build_join_tree(dag):
             S.add(SepSet(X, Y))
     sepsets_inserted = 0
 
-
     while sepsets_inserted < (len(cliques) - 1):
         deco = [(s, s.mass, -1 * s.cost) for s in S]
         deco.sort(reverse=True, key=lambda x: x[1:])
-        print deco[0]
-        import pytest; pytest.set_trace()
-        S.remove(deco[0][0])
-        sepsets_inserted += 1
+        candidate_sepset = deco[0][0]
+        print candidate_sepset
+        if candidate_sepset.insertable(forest):
+            # Insert into forest and remove the sepset
+            candidate_sepset.insert(forest)
+            S.remove(candidate_sepset)
+            sepsets_inserted += 1
 
-    return join_tree
+    import pytest; pytest.set_trace()
+    assert len(forest) == 1
+
+    return list(forest)[0]
