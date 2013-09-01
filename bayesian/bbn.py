@@ -93,6 +93,17 @@ class UndirectedGraph(object):
         return fh.getvalue()
 
 
+    def export(self, filename=None, format='graphviz'):
+        '''Export the graph in GraphViz dot language.'''
+        if format != 'graphviz':
+            raise 'Unsupported Export Format.'
+        if filename:
+            fh = open(filename, 'w')
+        else:
+            fh = sys.stdout
+        fh.write(self.get_graphviz_source())
+
+
 class BBN(Graph):
     '''A Directed Acyclic Graph'''
 
@@ -129,6 +140,24 @@ class JoinTree(UndirectedGraph):
     def clique_nodes(self):
         return [n for n in self.nodes if isinstance(n, JoinTreeCliqueNode)]
 
+    def get_graphviz_source(self):
+        fh = StringIO()
+        fh.write('graph G {\n')
+        fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
+        edges = set()
+        for node in self.nodes:
+            if isinstance(node, JoinTreeSepSetNode):
+                fh.write('  %s [ shape="box" color="blue"];\n' % node.name)
+            else:
+                fh.write('  %s [ shape="ellipse" color="red"];\n' % node.name)
+            for neighbour in node.neighbours:
+                edge = [node.name, neighbour.name]
+                edges.add(tuple(sorted(edge)))
+        for source, target in edges:
+            fh.write('  %s -- %s;\n' % (source, target))
+        fh.write('}\n')
+        return fh.getvalue()
+
 
 
 class Clique(object):
@@ -137,8 +166,8 @@ class Clique(object):
         self.nodes = cluster
 
     def __repr__(self):
-        return '<Clique %s>' % (
-            ','.join([n.name for n in self.nodes]))
+        return 'Clique_%s' % (
+            ''.join([n.name[2:].upper() for n in self.nodes]))
 
 class SepSet(object):
 
@@ -229,7 +258,7 @@ class SepSet(object):
 
 
     def __repr__(self):
-        return '<SepSet: %s>' % ','.join([x.name for x in list(self.label)])
+        return 'SepSet_%s' % ''.join([x.name[2:].upper() for x in list(self.label)])
 
 
 class JoinTreeSepSetNode(UndirectedNode):
@@ -520,7 +549,8 @@ def build_join_tree(dag):
             S.remove(candidate_sepset)
             sepsets_inserted += 1
 
-    import pytest; pytest.set_trace()
     assert len(forest) == 1
-
-    return list(forest)[0]
+    jt = list(forest)[0]
+    jt.export()
+    import pytest; pytest.set_trace()
+    return jt
