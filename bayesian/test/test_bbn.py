@@ -406,7 +406,6 @@ class TestBBN():
             cliques['Clique_ACE']: [bbn_nodes['f_c'], bbn_nodes['f_e']],
             cliques['Clique_ABD']: [
                 bbn_nodes['f_a'], bbn_nodes['f_b'],  bbn_nodes['f_d']]}
-        pytest.set_trace()
         huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
         for node in huang_darwiche_jt.sepset_nodes:
             assert node.potential == 1
@@ -419,7 +418,7 @@ class TestBBN():
         # seem to be *including* the prior for
         # A in multiplying the potentials
         def r(x):
-            return round(x, 2)
+            return round(x, 3)
 
         tt = cliques['Clique_ACE'].potential_tt
         assert r(tt[('a', True), ('c', True), ('e', True)]) == 0.21
@@ -433,20 +432,14 @@ class TestBBN():
 
 
         tt = cliques['Clique_ABD'].potential_tt
-        assert tt[('a', True), ('b', True), ('d', True)] == 0.225
-        assert tt[('a', True), ('b', True), ('d', False)] == 0.025
-        assert tt[('a', True), ('b', False), ('d', True)] == 0.125
-        assert tt[('a', True), ('b', False), ('d', False)] == 0.125
-        assert tt[('a', False), ('b', True), ('d', True)] == 0.180
-        assert tt[('a', False), ('b', True), ('d', False)] == 0.020
-        assert tt[('a', False), ('b', False), ('d', True)] == 0.150
-        assert tt[('a', False), ('b', False), ('d', False)] == 0.150
-
-
-
-
-
-
+        assert r(tt[('a', True), ('b', True), ('d', True)]) == 0.225
+        assert r(tt[('a', True), ('b', True), ('d', False)]) == 0.025
+        assert r(tt[('a', True), ('b', False), ('d', True)]) == 0.125
+        assert r(tt[('a', True), ('b', False), ('d', False)]) == 0.125
+        assert r(tt[('a', False), ('b', True), ('d', True)]) == 0.180
+        assert r(tt[('a', False), ('b', True), ('d', False)]) == 0.020
+        assert r(tt[('a', False), ('b', False), ('d', True)]) == 0.150
+        assert r(tt[('a', False), ('b', False), ('d', False)]) == 0.150
 
 
     def test_jtclique_node_variable_names(self, huang_darwiche_jt):
