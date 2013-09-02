@@ -1,3 +1,4 @@
+from __future__ import division
 import pytest
 
 import os
@@ -118,6 +119,31 @@ def pytest_funcarg__huang_darwiche_moralized(request):
 
     return gm
 
+
+def pytest_funcarg__huang_darwiche_jt(request):
+    def priority_func_override(node):
+        introduced_arcs = 0
+        cluster = [node] + node.neighbours
+        for node_a, node_b in combinations(cluster, 2):
+            if node_a not in node_b.neighbours:
+                assert node_b not in node_a.neighbours
+                introduced_arcs += 1
+        if node.name == 'f_h':
+            return [introduced_arcs, 0] # Force f_h tie breaker
+        if node.name == 'f_g':
+            return [introduced_arcs, 1] # Force f_g tie breaker
+        if node.name == 'f_c':
+            return [introduced_arcs, 2] # Force f_c tie breaker
+        if node.name == 'f_b':
+            return [introduced_arcs, 3]
+        if node.name == 'f_d':
+            return [introduced_arcs, 4]
+        if node.name == 'f_e':
+            return [introduced_arcs, 5]
+        return [introduced_arcs, 10]
+    dag = pytest_funcarg__huang_darwiche_dag(request)
+    jt = build_join_tree(dag, priority_func_override)
+    return jt
 
 
 class TestBBN():
@@ -370,3 +396,66 @@ class TestBBN():
             assert set([n.clique for n in node.neighbours]) == \
                 set([node.sepset.X, node.sepset.Y])
         # Need additional tests here...
+
+    def test_initialize_potentials(self, huang_darwiche_jt, huang_darwiche_dag):
+        # Seems like there can be multiple assignments so
+        # for this test we will set the assignments explicitely
+        cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
+        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+        assignments = {
+            cliques['Clique_ACE']: [bbn_nodes['f_c'], bbn_nodes['f_e']],
+            cliques['Clique_ABD']: [
+                bbn_nodes['f_a'], bbn_nodes['f_b'],  bbn_nodes['f_d']]}
+        pytest.set_trace()
+        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
+        for node in huang_darwiche_jt.sepset_nodes:
+            assert node.potential == 1
+
+        # Note that in H&D there are two places that show
+        # initial potentials, one is for ABD and AD
+        # and the second is for ACE and CE
+        # We should test both here
+        # On the first one, for ABD they
+        # seem to be *including* the prior for
+        # A in multiplying the potentials
+        def r(x):
+            return round(x, 2)
+
+        tt = cliques['Clique_ACE'].potential_tt
+        assert r(tt[('a', True), ('c', True), ('e', True)]) == 0.21
+        assert r(tt[('a', True), ('c', True), ('e', False)]) == 0.49
+        assert r(tt[('a', True), ('c', False), ('e', True)]) == 0.18
+        assert r(tt[('a', True), ('c', False), ('e', False)]) == 0.12
+        assert r(tt[('a', False), ('c', True), ('e', True)]) == 0.06
+        assert r(tt[('a', False), ('c', True), ('e', False)]) == 0.14
+        assert r(tt[('a', False), ('c', False), ('e', True)]) == 0.48
+        assert r(tt[('a', False), ('c', False), ('e', False)]) == 0.32
+
+
+        tt = cliques['Clique_ABD'].potential_tt
+        assert tt[('a', True), ('b', True), ('d', True)] == 0.225
+        assert tt[('a', True), ('b', True), ('d', False)] == 0.025
+        assert tt[('a', True), ('b', False), ('d', True)] == 0.125
+        assert tt[('a', True), ('b', False), ('d', False)] == 0.125
+        assert tt[('a', False), ('b', True), ('d', True)] == 0.180
+        assert tt[('a', False), ('b', True), ('d', False)] == 0.020
+        assert tt[('a', False), ('b', False), ('d', True)] == 0.150
+        assert tt[('a', False), ('b', False), ('d', False)] == 0.150
+
+
+
+
+
+
+
+
+    def test_jtclique_node_variable_names(self, huang_darwiche_jt):
+        for node in huang_darwiche_jt.clique_nodes:
+            if 'ADE' in node.name:
+                assert node.variable_names == set(['a', 'd', 'e'])
+
+    def test_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
+        assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
+        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+        jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
+        assert [bbn_nodes['f_e'], bbn_nodes['f_c']] == assignments[jt_cliques['Clique_ACE']]

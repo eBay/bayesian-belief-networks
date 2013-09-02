@@ -5,9 +5,10 @@ import copy
 import heapq
 
 from StringIO import StringIO
-from itertools import combinations
+from itertools import combinations, product
+from collections import defaultdict
 
-from bayesian.utils import get_args
+from bayesian.utils import get_args, named_base_type_factory
 
 class Node(object):
 
@@ -50,6 +51,15 @@ class JoinTreeCliqueNode(UndirectedNode):
         super(JoinTreeCliqueNode, self).__init__(
             clique.__repr__())
         self.clique = clique
+
+    @property
+    def variable_names(self):
+        '''Return the set of variable names
+        that this clique represents'''
+        var_names = []
+        for node in self.clique.nodes:
+            var_names.append(node.name[2:])
+        return set(var_names)
 
     def __repr__(self):
         return '<JoinTreeCliqueNode: %s>' % self.clique
@@ -107,8 +117,9 @@ class UndirectedGraph(object):
 class BBN(Graph):
     '''A Directed Acyclic Graph'''
 
-    def __init__(self, nodes, name=None):
+    def __init__(self, nodes, name=None, domains={}):
         self.nodes = nodes
+        self.domains = domains
 
     def get_graphviz_source(self):
         fh = StringIO()
@@ -157,6 +168,98 @@ class JoinTree(UndirectedGraph):
             fh.write('  %s -- %s;\n' % (source, target))
         fh.write('}\n')
         return fh.getvalue()
+
+    def initialize_potentials(self, assignments, bbn):
+
+        # Step 1, assign 1 to each cluster and sepset
+        for node in self.sepset_nodes:
+            node.potential = 1
+
+        # Step 2 for each v assign it a parent cluster...
+
+        # now for each assignment we want to
+        # generate a truth-table from the
+        # values of the bbn truth-tables that are
+        # assigned to the clusters...
+
+        for clique, bbn_nodes in assignments.iteritems():
+            tt = dict()
+            vals = []
+            variables = list(clique.variable_names)
+            for variable in variables:
+                domain = bbn.domains.get(variable, [True, False])
+                vals.append(list(product(variable, domain)))
+            permutations = product(*vals)
+            for permutation in permutations:
+                argvals = dict(permutation)
+                potential = 1
+                for bbn_node in bbn_nodes:
+                    arg_list = []
+                    for arg_name in get_args(bbn_node.func):
+                        arg = Binding(
+                            arg_name,
+                            argvals[arg_name])
+                        arg_list.append(arg)
+                    potential *= bbn_node.func(*arg_list)
+                tt[permutation] = potential
+            clique.potential_tt = tt
+
+
+
+
+    def assign_clusters(self, bbn):
+        # This is unclear why in the example A does not
+        # get assigned the parent ACE
+        # Perhaps its because A doesnt have a conditional
+        # probability table (ie it has no parents in the BBN)
+        # An alternate way to think of step 2 could then
+        # be for each *CPT* assign it to a cluster and then
+        # build the potential truth table from that.
+        # We will proceed this way and see what transpires
+        # since we have the factor graph version with sampling
+        # of the Huang Darwiche BBN we can compare the
+        # marginals.
+
+        assignments_by_family = dict()
+        assignments_by_clique = defaultdict(list)
+        assigned = set()
+        for node in bbn.nodes:
+            args = get_args(node.func)
+            if len(args) == 1:
+                # If the func has only 1 arg
+                # it means that it does not
+                # specify a conditional probability
+                # This is where H&D is a bit vague
+                # but it seems to imply that we
+                # do not assign it to any
+                # clique
+                continue
+            # Now we need to find a cluster that
+            # is a superset of the Family(v)
+            # Family(v) is defined by D&H to
+            # be the union of v and parents(v)
+            family = set(args)
+            # At this point we need to know which *variable*
+            # a BBN node represents. Up to now we have
+            # not *explicitely* specified this, however
+            # we have been following some conventions
+            # so we could just use this convention for
+            # now. Need to come back to this to
+            # perhaps establish the variable at
+            # build bbn time...
+            containing_cliques = [clique_node for clique_node in
+                                  self.clique_nodes if
+                                  clique_node.variable_names.issuperset(family)]
+            assert len(containing_cliques) >= 1
+            for clique in containing_cliques:
+                if node in assigned:
+                    # Make sure we assign all original
+                    # PMFs only once each
+                    continue
+                assignments_by_clique[clique].append(node)
+                assigned.add(node)
+            assignments_by_family[tuple(family)] = containing_cliques
+        return assignments_by_clique
 
 
 
@@ -272,6 +375,12 @@ class JoinTreeSepSetNode(UndirectedNode):
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset
+
+class Binding(object):
+
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
 
 
 def connect(parent, child):

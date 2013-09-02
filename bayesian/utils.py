@@ -24,3 +24,13 @@ def make_key(*args):
     for a in args:
         key += str(a.value).lower()[0]
     return key
+
+
+def named_base_type_factory(v, l):
+    '''Note this does not work
+    for bool since bool is not
+    subclassable'''
+    return type(
+        'labeled_{}'.format(type(v).__name__),
+        (type(v), ),
+        {'label': l, 'value': v})(v)
