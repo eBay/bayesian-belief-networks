@@ -457,4 +457,7 @@ class TestBBN():
 
     def test_propagate(self, huang_darwiche_jt):
         pytest.set_trace()
-        huang_darwiche_jt.propagate()
+        jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
+
+        huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
+        assert True == False # Come back and fill in real tests here!

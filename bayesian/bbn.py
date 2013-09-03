@@ -45,41 +45,6 @@ class UndirectedNode(object):
         return '<UndirectedNode %s>' % self.name
 
 
-class JoinTreeCliqueNode(UndirectedNode):
-
-    def __init__(self, clique):
-        super(JoinTreeCliqueNode, self).__init__(
-            clique.__repr__())
-        self.clique = clique
-
-    @property
-    def variable_names(self):
-        '''Return the set of variable names
-        that this clique represents'''
-        var_names = []
-        for node in self.clique.nodes:
-            var_names.append(node.name[2:])
-        return set(var_names)
-
-    @property
-    def neighbouring_cliques(self):
-        '''Return the neighbouring cliques
-        this is used during the propagation algorithm.
-
-        '''
-        neighbours = set()
-        for sepset_node in self.neighbours:
-            # All *immediate* neighbours will
-            # be sepset nodes, its the neighbours of
-            # these sepsets that form the nodes
-            # clique neighbours (excluding itself)
-            for clique_node in sepset_node.neighbours:
-                if clique_node is not self:
-                    neighbours.add(clique_node)
-        return neighbours
-
-    def __repr__(self):
-        return '<JoinTreeCliqueNode: %s>' % self.clique
 
 
 
@@ -325,6 +290,69 @@ class Clique(object):
     def __repr__(self):
         vars = sorted([n.name[2:].upper() for n in self.nodes])
         return 'Clique_%s' % ''.join(vars)
+
+
+class JoinTreeCliqueNode(UndirectedNode):
+
+    def __init__(self, clique):
+        super(JoinTreeCliqueNode, self).__init__(
+            clique.__repr__())
+        self.clique = clique
+
+    @property
+    def variable_names(self):
+        '''Return the set of variable names
+        that this clique represents'''
+        var_names = []
+        for node in self.clique.nodes:
+            var_names.append(node.name[2:])
+        return set(var_names)
+
+    @property
+    def neighbouring_cliques(self):
+        '''Return the neighbouring cliques
+        this is used during the propagation algorithm.
+
+        '''
+        neighbours = set()
+        for sepset_node in self.neighbours:
+            # All *immediate* neighbours will
+            # be sepset nodes, its the neighbours of
+            # these sepsets that form the nodes
+            # clique neighbours (excluding itself)
+            for clique_node in sepset_node.neighbours:
+                if clique_node is not self:
+                    neighbours.add(clique_node)
+        return neighbours
+
+    def pass_message(self, target):
+        '''Pass a message from this node to the
+        recipient node during propagation.
+
+        NB: It may turnout at this point that
+        after initializing the potential
+        Truth table on the JT we could quite
+        simply construct a factor graph
+        from the JT and use the factor
+        graph sum product propagation.
+        In theory this should be the same
+        and since the semantics are already
+        worked out it would be easier.'''
+
+        # Step 1: Assign a new table to the
+        # sepset between the source and target
+        # saving the old table.
+        # (first we need to determine the sepset)
+        sepset_node = list(self.neighbours.intersection(
+            target.neighbours))[0]
+        sepset_node.potential_tt_old = copy.deepcopy(
+            sepset_node.potential_tt)
+        sepset_node.potential_tt = self.marginalize(
+            sepset_node.nodes)
+
+    def __repr__(self):
+        return '<JoinTreeCliqueNode: %s>' % self.clique
+
 
 class SepSet(object):
 
