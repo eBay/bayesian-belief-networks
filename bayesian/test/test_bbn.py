@@ -432,6 +432,8 @@ class TestBBN():
 
 
         tt = cliques['Clique_ABD'].potential_tt
+        # NOTE: This may actually be after propagation, its
+        # not clear from H&D
         assert r(tt[('a', True), ('b', True), ('d', True)]) == 0.225
         assert r(tt[('a', True), ('b', True), ('d', False)]) == 0.025
         assert r(tt[('a', True), ('b', False), ('d', True)]) == 0.125
@@ -440,7 +442,6 @@ class TestBBN():
         assert r(tt[('a', False), ('b', True), ('d', False)]) == 0.020
         assert r(tt[('a', False), ('b', False), ('d', True)]) == 0.150
         assert r(tt[('a', False), ('b', False), ('d', False)]) == 0.150
-
 
     def test_jtclique_node_variable_names(self, huang_darwiche_jt):
         for node in huang_darwiche_jt.clique_nodes:
@@ -452,3 +453,8 @@ class TestBBN():
         bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
         jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
         assert [bbn_nodes['f_e'], bbn_nodes['f_c']] == assignments[jt_cliques['Clique_ACE']]
+
+
+    def test_propagate(self, huang_darwiche_jt):
+        pytest.set_trace()
+        huang_darwiche_jt.propagate()

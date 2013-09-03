@@ -61,6 +61,23 @@ class JoinTreeCliqueNode(UndirectedNode):
             var_names.append(node.name[2:])
         return set(var_names)
 
+    @property
+    def neighbouring_cliques(self):
+        '''Return the neighbouring cliques
+        this is used during the propagation algorithm.
+
+        '''
+        neighbours = set()
+        for sepset_node in self.neighbours:
+            # All *immediate* neighbours will
+            # be sepset nodes, its the neighbours of
+            # these sepsets that form the nodes
+            # clique neighbours (excluding itself)
+            for clique_node in sepset_node.neighbours:
+                if clique_node is not self:
+                    neighbours.add(clique_node)
+        return neighbours
+
     def __repr__(self):
         return '<JoinTreeCliqueNode: %s>' % self.clique
 
@@ -204,12 +221,9 @@ class JoinTree(UndirectedGraph):
                 tt[permutation] = potential
             clique.potential_tt = tt
 
-
-
-
     def assign_clusters(self, bbn):
-        # This is unclear why in the example A does not
-        # get assigned the parent ACE
+        # This is unclear why in the H&D example A does not
+        # get assigned the parent ACE.
         # Perhaps its because A doesnt have a conditional
         # probability table (ie it has no parents in the BBN)
         # An alternate way to think of step 2 could then
@@ -261,6 +275,46 @@ class JoinTree(UndirectedGraph):
             assignments_by_family[tuple(family)] = containing_cliques
         return assignments_by_clique
 
+    def propagate(self, starting_clique=None):
+        '''Refer to H&D pg. 20'''
+
+        # Step 1 is to choose an arbitrary clique cluster
+        # as starting cluster
+        if starting_clique is None:
+            starting_clique = self.clique_nodes[0]
+
+        # Step 2: Unmark all clusters, call collect_evidence(X)
+        for node in self.clique_nodes:
+            node.marked = False
+        self.collect_evidence(sender=starting_clique)
+
+        # Step 3: Unmark all clusters, call distribute_evidence(X)
+        for node in self.clique_nodes:
+            self.marked = False
+        self.distribute_evidence(starting_clique)
+
+    def collect_evidence(self, sender=None, receiver=None):
+
+        # Step 1, Mark X
+
+        sender.marked = True
+
+        # Step 2, call collect_evidence on Xs unmarked
+        # neighbouring clusters.
+        for neighbouring_clique in sender.neighbouring_cliques:
+            if not neighbouring_clique.marked:
+                self.collect_evidence(
+                    sender=neighbouring_clique,
+                    receiver=sender)
+        # Step 3, pass message from sender to receiver
+        if receiver is not None:
+            print 'm from %s ----> %s' % (
+                sender, receiver)
+
+
+
+    def distribute_evidence(self, clique_node):
+        pass
 
 
 class Clique(object):
