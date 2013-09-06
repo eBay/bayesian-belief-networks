@@ -255,13 +255,13 @@ class JoinTree(UndirectedGraph):
 
         # Step 3: Unmark all clusters, call distribute_evidence(X)
         for node in self.clique_nodes:
-            self.marked = False
+            node.marked = False
+        import pytest; pytest.set_trace()
         self.distribute_evidence(starting_clique)
 
     def collect_evidence(self, sender=None, receiver=None):
 
         # Step 1, Mark X
-
         sender.marked = True
 
         # Step 2, call collect_evidence on Xs unmarked
@@ -273,13 +273,28 @@ class JoinTree(UndirectedGraph):
                     receiver=sender)
         # Step 3, pass message from sender to receiver
         if receiver is not None:
-            print 'm from %s ----> %s' % (
+            print 'Coll. message from %s ----> %s' % (
                 sender, receiver)
 
 
+    def distribute_evidence(self, sender=None, receiver=None):
 
-    def distribute_evidence(self, clique_node):
-        pass
+        # Step 1, Mark X
+        sender.marked = True
+
+        # Step 2, pass a messagee from X to each of its
+        # unmarked neighbouring clusters
+        for neighbouring_clique in sender.neighbouring_cliques:
+            if not neighbouring_clique.marked:
+                print 'Dist. message from %s ---> %s' % (
+                    sender, neighbouring_clique)
+
+        # Step 3, call distribute_evidence on Xs unmarked neighbours
+        for neighbouring_clique in sender.neighbouring_cliques:
+            if not neighbouring_clique.marked:
+                self.distribute_evidence(
+                    sender=neighbouring_clique,
+                    receiver=sender)
 
 
 class Clique(object):

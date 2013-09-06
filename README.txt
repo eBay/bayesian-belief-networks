@@ -40,3 +40,4 @@ Junction Tree Algorithm:
 http://www.inf.ed.ac.uk/teaching/courses/pmr/docs/jta_ex.pdf
 http://ttic.uchicago.edu/~altun/Teaching/CS359/junc_tree.pdf
 http://eniac.cs.qc.cuny.edu/andrew/gcml/lecture10.pdf
+http://leo.ugr.es/pgm2012/proceedings/eproceedings/evers_a_framework.pdf

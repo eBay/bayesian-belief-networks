@@ -448,7 +448,7 @@ class TestBBN():
             if 'ADE' in node.name:
                 assert node.variable_names == set(['a', 'd', 'e'])
 
-    def test_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
+    def te1st_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
         bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
         jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
@@ -456,7 +456,6 @@ class TestBBN():
 
 
     def test_propagate(self, huang_darwiche_jt):
-        pytest.set_trace()
         jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
 
         huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
