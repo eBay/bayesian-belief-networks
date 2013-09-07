@@ -45,9 +45,6 @@ class UndirectedNode(object):
         return '<UndirectedNode %s>' % self.name
 
 
-
-
-
 class Graph(object):
 
     def export(self, filename=None, format='graphviz'):
@@ -61,13 +58,11 @@ class Graph(object):
         fh.write(self.get_graphviz_source())
 
 
-
 class UndirectedGraph(object):
 
     def __init__(self, nodes, name=None):
         self.nodes = nodes
         self.name = name
-
 
     def get_graphviz_source(self):
         fh = StringIO()
@@ -83,7 +78,6 @@ class UndirectedGraph(object):
             fh.write('  %s -- %s;\n' % (source, target))
         fh.write('}\n')
         return fh.getvalue()
-
 
     def export(self, filename=None, format='graphviz'):
         '''Export the graph in GraphViz dot language.'''
@@ -152,10 +146,28 @@ class JoinTree(UndirectedGraph):
         return fh.getvalue()
 
     def initialize_potentials(self, assignments, bbn):
-
         # Step 1, assign 1 to each cluster and sepset
-        for node in self.sepset_nodes:
-            node.potential = 1
+        for node in self.nodes:
+            # Does this mean that each entry
+            # in the potential_tt should be 1?
+            # This is unclear but it means that
+            # initially it wont be normalized.
+            tt = dict()
+            vals = []
+            variables = list(node.variable_names)
+            # Lets sort the variables here so that
+            # the variable names in the keys in
+            # the tt are always sorted.
+            variables.sort()
+            for variable in variables:
+                domain = bbn.domains.get(variable, [True, False])
+                vals.append(list(product(variable, domain)))
+            permutations = product(*vals)
+            for permutation in permutations:
+                tt[permutation] = 1
+            print >> sys.stderr, 'Assigning potential_tt to node: %s with id %s ' % (node, id(node))
+            node.potential_tt = tt
+
 
         # Step 2 for each v assign it a parent cluster...
 
@@ -168,6 +180,7 @@ class JoinTree(UndirectedGraph):
             tt = dict()
             vals = []
             variables = list(clique.variable_names)
+            variables.sort()
             for variable in variables:
                 domain = bbn.domains.get(variable, [True, False])
                 vals.append(list(product(variable, domain)))
@@ -211,8 +224,17 @@ class JoinTree(UndirectedGraph):
                 # This is where H&D is a bit vague
                 # but it seems to imply that we
                 # do not assign it to any
-                # clique
-                continue
+                # clique.
+                # Revising this for now as I dont
+                # think its correct, I think
+                # all CPTs need to be assigned
+                # once and once only. The example
+                # in H&D just happens to be a clique
+                # that f_a could have been assigned
+                # to but wasnt presumably because
+                # it got assigned somewhere else.
+                pass
+                #continue
             # Now we need to find a cluster that
             # is a superset of the Family(v)
             # Family(v) is defined by D&H to
@@ -228,7 +250,8 @@ class JoinTree(UndirectedGraph):
             # build bbn time...
             containing_cliques = [clique_node for clique_node in
                                   self.clique_nodes if
-                                  clique_node.variable_names.issuperset(family)]
+                                  (set(clique_node.variable_names).
+                                   issuperset(family))]
             assert len(containing_cliques) >= 1
             for clique in containing_cliques:
                 if node in assigned:
@@ -256,7 +279,7 @@ class JoinTree(UndirectedGraph):
         # Step 3: Unmark all clusters, call distribute_evidence(X)
         for node in self.clique_nodes:
             node.marked = False
-        import pytest; pytest.set_trace()
+
         self.distribute_evidence(starting_clique)
 
     def collect_evidence(self, sender=None, receiver=None):
@@ -275,6 +298,7 @@ class JoinTree(UndirectedGraph):
         if receiver is not None:
             print 'Coll. message from %s ----> %s' % (
                 sender, receiver)
+            sender.pass_message(receiver)
 
 
     def distribute_evidence(self, sender=None, receiver=None):
@@ -288,6 +312,7 @@ class JoinTree(UndirectedGraph):
             if not neighbouring_clique.marked:
                 print 'Dist. message from %s ---> %s' % (
                     sender, neighbouring_clique)
+                sender.pass_message(neighbouring_clique)
 
         # Step 3, call distribute_evidence on Xs unmarked neighbours
         for neighbouring_clique in sender.neighbouring_cliques:
@@ -295,6 +320,44 @@ class JoinTree(UndirectedGraph):
                 self.distribute_evidence(
                     sender=neighbouring_clique,
                     receiver=sender)
+
+    def marginal(self, bbn_node):
+        '''Remember that the original
+        variables that we are interested in
+        are actually in the bbn. However
+        when we constructed the JT we did
+        it out of the moralized graph.
+        This means the cliques refer to
+        the nodes in the moralized graph
+        and not the nodes in the BBN.
+        For efficiency we should come back
+        to this and add some pointers
+        or an index.
+        '''
+
+        # First we will find the JT nodes that
+        # contain the bbn_node ie all the nodes
+        # that are either cliques or sepsets
+        # that contain the bbn_node
+        # Note that for efficiency we
+        # should probably have an index
+        # cached in the bbn and/or the jt.
+        containing_nodes = []
+
+        for node in self.clique_nodes:
+            if bbn_node.name in [n.name for n in node.clique.nodes]:
+                containing_nodes.append(node)
+                # In theory it doesnt matter which one we
+                # use so we could bale out after we
+                # find the first one
+
+        clique_node = containing_nodes[0]
+        tt = defaultdict(float)
+        for k, v in clique_node.potential_tt.items():
+            entry = transform(k, clique_node.variable_names, [bbn_node.name[2:]])
+            tt[entry] += v
+        return tt
+
 
 
 class Clique(object):
@@ -305,6 +368,27 @@ class Clique(object):
     def __repr__(self):
         vars = sorted([n.name[2:].upper() for n in self.nodes])
         return 'Clique_%s' % ''.join(vars)
+
+
+def transform(x, X, R):
+    '''Transform a Potential Truth Table
+    Entry into a different variable space.
+    For example if we have the
+    entry [True, True, False] representing
+    values of variable [A, B, C] in X
+    and we want to transform into
+    R which has variables [C, A] we
+    will return the entry [False, True].
+    Here X represents the argument list
+    for the clique set X and R represents
+    the argument list for the sepset.
+    This implies that R is always a subset
+    of X'''
+    entry = []
+    for r in R:
+        pos = X.index(r)
+        entry.append(x[pos])
+    return tuple(entry)
 
 
 class JoinTreeCliqueNode(UndirectedNode):
@@ -321,7 +405,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         var_names = []
         for node in self.clique.nodes:
             var_names.append(node.name[2:])
-        return set(var_names)
+        return sorted(var_names)
 
     @property
     def neighbouring_cliques(self):
@@ -354,16 +438,70 @@ class JoinTreeCliqueNode(UndirectedNode):
         and since the semantics are already
         worked out it would be easier.'''
 
-        # Step 1: Assign a new table to the
-        # sepset between the source and target
-        # saving the old table.
-        # (first we need to determine the sepset)
-        sepset_node = list(self.neighbours.intersection(
+        # Find the sepset node between the
+        # source and target nodes.
+        sepset_node = list(set(self.neighbours).intersection(
             target.neighbours))[0]
+
+        # Step 1: projection
+        self.project(sepset_node)
+
+        # Step 2 absorbtion
+        self.absorb(sepset_node, target)
+
+    def project(self, sepset_node):
+        '''See page 20 of PPTC.
+        We assign a new potential tt to
+        the sepset which consists of the
+        potential of the source node
+        with all variables not in R marginalized.
+        '''
+        assert sepset_node in self.neighbours
+        # First we make a copy of the
+        # old potential tt
         sepset_node.potential_tt_old = copy.deepcopy(
             sepset_node.potential_tt)
-        sepset_node.potential_tt = self.marginalize(
-            sepset_node.nodes)
+
+        # Now we assign a new potential tt
+        # to the sepset by marginalizing
+        # out the variables from X that are not
+        # in the sepset
+        tt = defaultdict(float)
+        for k, v in self.potential_tt.items():
+            entry = transform(k, self.variable_names,
+                              sepset_node.variable_names)
+            tt[entry] += v
+        sepset_node.potential_tt = tt
+
+
+    def absorb(self, sepset, target):
+        # Assign a new potential tt to
+        # Y (the target)
+        tt = dict()
+
+        for k, v in target.potential_tt.items():
+            # For each entry we multiply by
+            # sepsets new value and divide
+            # by sepsets old value...
+            # Note that nowhere in H&D is
+            # division on potentials defined.
+            # However in Barber page 12
+            # an equation implies that
+            # the the division is equivalent
+            # to the original assignment.
+            # For now we will assume entry-wise
+            # division which seems logical.
+            entry = transform(k, target.variable_names,
+                              sepset.variable_names)
+            try:
+                tt[k] = target.potential_tt[k] * sepset.potential_tt[entry] / \
+                        sepset.potential_tt_old[entry]
+            except:
+                import pytest; pytest.set_trace()
+                print k
+        target.potential_tt = tt
+
+
 
     def __repr__(self):
         return '<JoinTreeCliqueNode: %s>' % self.clique
@@ -373,10 +511,9 @@ class SepSet(object):
 
     def __init__(self, X, Y):
         '''X and Y are cliques represented as sets.'''
-        #self.cliques = [X, Y]
         self.X = X
         self.Y = Y
-        self.label = X.nodes.intersection(Y.nodes)
+        self.label = list(X.nodes.intersection(Y.nodes))
 
     @property
     def mass(self):
@@ -436,6 +573,8 @@ class SepSet(object):
 
         # Now create and insert a sepset node into the Xtree
         ss_node = JoinTreeSepSetNode(self, self)
+        print >> sys.stderr, 'Created new ss_node: %s id %s' % (
+            ss_node, id(ss_node))
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -469,6 +608,25 @@ class JoinTreeSepSetNode(UndirectedNode):
     def __init__(self, name, sepset):
         super(JoinTreeSepSetNode, self).__init__(name)
         self.sepset = sepset
+
+    @property
+    def variable_names(self):
+        '''Return the set of variable names
+        that this sepset represents'''
+        var_names = []
+        # TODO: we are assuming here
+        # that X and Y are each separate
+        # variables from the BBN which means
+        # we are assuming that the sepsets
+        # always contain only 2 nodes.
+        # Need to check whether this is
+        # the case
+        # NB!!!! we are taking a shortcut here
+        # for now we definitely need to go
+        # back and add the concept of
+        # introduced variable or represented variabl
+        # instead of inferring it from the factor name!
+        return sorted([x.name[2:] for x in self.sepset.label])
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset

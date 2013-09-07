@@ -6,6 +6,11 @@ import os
 from bayesian.bbn import *
 from bayesian.utils import make_key
 
+
+def r3(x):
+    return round(x, 3)
+
+
 def pytest_funcarg__sprinkler_graph(request):
     '''The Sprinkler Example as a BBN
     to be used in tests.
@@ -408,7 +413,8 @@ class TestBBN():
                 bbn_nodes['f_a'], bbn_nodes['f_b'],  bbn_nodes['f_d']]}
         huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
         for node in huang_darwiche_jt.sepset_nodes:
-            assert node.potential == 1
+            for v in node.potential_tt.values():
+                assert v == 1
 
         # Note that in H&D there are two places that show
         # initial potentials, one is for ABD and AD
@@ -446,17 +452,34 @@ class TestBBN():
     def test_jtclique_node_variable_names(self, huang_darwiche_jt):
         for node in huang_darwiche_jt.clique_nodes:
             if 'ADE' in node.name:
-                assert node.variable_names == set(['a', 'd', 'e'])
+                assert set(node.variable_names) == set(['a', 'd', 'e'])
 
-    def te1st_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
+    def test_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
-        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
         jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
         assert [bbn_nodes['f_e'], bbn_nodes['f_c']] == assignments[jt_cliques['Clique_ACE']]
 
 
-    def test_propagate(self, huang_darwiche_jt):
+    def test_propagate(self, huang_darwiche_jt, huang_darwiche_dag):
         jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
+        assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
+        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
 
         huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
         assert True == False # Come back and fill in real tests here!
+
+    def test_marginal(self,  huang_darwiche_jt, huang_darwiche_dag):
+        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+        assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
+        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
+        huang_darwiche_jt.propagate()
+
+        # These test values come directly from
+        # pg. 22 of H & D
+        p_A = huang_darwiche_jt.marginal(bbn_nodes['f_a'])
+        assert r3(p_A[(('a', True), )]) == 0.5
+        assert r3(p_A[(('a', False), )]) == 0.5
+
+        p_D = huang_darwiche_jt.marginal(bbn_nodes['f_d'])
+        assert r3(p_D[(('d', True), )]) == 0.68
+        assert r3(p_D[(('d', False), )]) == 0.32
