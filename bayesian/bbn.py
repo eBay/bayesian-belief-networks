@@ -8,6 +8,8 @@ from StringIO import StringIO
 from itertools import combinations, product
 from collections import defaultdict
 
+from prettytable import PrettyTable
+
 from bayesian.utils import get_args, named_base_type_factory
 
 class Node(object):
@@ -112,6 +114,44 @@ class BBN(Graph):
         fh.write('}\n')
         return fh.getvalue()
 
+    def build_join_tree(self):
+        jt = build_join_tree(self)
+        return jt
+
+    def query(self, **kwds):
+        jt = self.build_join_tree()
+        assignments = jt.assign_clusters(self)
+        jt.initialize_potentials(assignments, self)
+        jt.propagate()
+        marginals = dict()
+        for node in self.nodes:
+            for k, v in jt.marginal(node).items():
+                # For a single node the
+                # key for the marginal tt always
+                # has just one argument so we
+                # will unpack it here
+
+                marginals[k[0]] = v
+        return marginals
+
+    def q(self, **kwds):
+        '''Interactive user friendly wrapper
+        around query()
+        '''
+        result = self.query(**kwds)
+        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
+        tab.align = 'l'
+        tab.align['Marginal'] = 'r'
+        tab.float_format = '%8.6f'
+        for (node, value), prob in result.items():
+            if kwds.get(node, '') == value:
+                tab.add_row(['%s*' % node,
+                             '%s%s*%s' % (GREEN, value, NORMAL),
+                             '%8.6f' % prob])
+            else:
+                tab.add_row([node, value, '%8.6f' % prob])
+        print tab
+
 
 class JoinTree(UndirectedGraph):
 
@@ -161,11 +201,10 @@ class JoinTree(UndirectedGraph):
             variables.sort()
             for variable in variables:
                 domain = bbn.domains.get(variable, [True, False])
-                vals.append(list(product(variable, domain)))
+                vals.append(list(product([variable], domain)))
             permutations = product(*vals)
             for permutation in permutations:
                 tt[permutation] = 1
-            print >> sys.stderr, 'Assigning potential_tt to node: %s with id %s ' % (node, id(node))
             node.potential_tt = tt
 
 
@@ -183,7 +222,7 @@ class JoinTree(UndirectedGraph):
             variables.sort()
             for variable in variables:
                 domain = bbn.domains.get(variable, [True, False])
-                vals.append(list(product(variable, domain)))
+                vals.append(list(product([variable], domain)))
             permutations = product(*vals)
             for permutation in permutations:
                 argvals = dict(permutation)
@@ -296,8 +335,8 @@ class JoinTree(UndirectedGraph):
                     receiver=sender)
         # Step 3, pass message from sender to receiver
         if receiver is not None:
-            print 'Coll. message from %s ----> %s' % (
-                sender, receiver)
+            #print 'Coll. message from %s ----> %s' % (
+            #    sender, receiver)
             sender.pass_message(receiver)
 
 
@@ -310,8 +349,8 @@ class JoinTree(UndirectedGraph):
         # unmarked neighbouring clusters
         for neighbouring_clique in sender.neighbouring_cliques:
             if not neighbouring_clique.marked:
-                print 'Dist. message from %s ---> %s' % (
-                    sender, neighbouring_clique)
+                #print 'Dist. message from %s ---> %s' % (
+                #    sender, neighbouring_clique)
                 sender.pass_message(neighbouring_clique)
 
         # Step 3, call distribute_evidence on Xs unmarked neighbours
@@ -356,6 +395,7 @@ class JoinTree(UndirectedGraph):
         for k, v in clique_node.potential_tt.items():
             entry = transform(k, clique_node.variable_names, [bbn_node.name[2:]])
             tt[entry] += v
+        # TODO: It will be safer to copy the defaultdict to a regular dict
         return tt
 
 
@@ -493,12 +533,8 @@ class JoinTreeCliqueNode(UndirectedNode):
             # division which seems logical.
             entry = transform(k, target.variable_names,
                               sepset.variable_names)
-            try:
-                tt[k] = target.potential_tt[k] * sepset.potential_tt[entry] / \
-                        sepset.potential_tt_old[entry]
-            except:
-                import pytest; pytest.set_trace()
-                print k
+            tt[k] = target.potential_tt[k] * sepset.potential_tt[entry] / \
+                    sepset.potential_tt_old[entry]
         target.potential_tt = tt
 
 
@@ -573,8 +609,8 @@ class SepSet(object):
 
         # Now create and insert a sepset node into the Xtree
         ss_node = JoinTreeSepSetNode(self, self)
-        print >> sys.stderr, 'Created new ss_node: %s id %s' % (
-            ss_node, id(ss_node))
+        #print >> sys.stderr, 'Created new ss_node: %s id %s' % (
+        #    ss_node, id(ss_node))
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -713,6 +749,7 @@ def build_bbn(*args, **kwds):
         for parent in parents:
             connect(parent, factor_node)
     bbn = BBN(factor_nodes.values(), name=name)
+    bbn.domains = domains
     return bbn
 
 
@@ -836,8 +873,8 @@ def triangulate(gm, priority_func=priority_func):
         cluster = [v] + v.neighbours
         for node_a, node_b in combinations(cluster, 2):
             if node_a not in node_b.neighbours:
-                print 'Adding edhe from %s to %s' % (
-                    node_a.name, node_b.name)
+                #print 'Adding edhe from %s to %s' % (
+                #    node_a.name, node_b.name)
                 node_b.neighbours.append(node_a)
                 node_a.neighbours.append(node_b)
                 # Now also add this new arc to gm...
