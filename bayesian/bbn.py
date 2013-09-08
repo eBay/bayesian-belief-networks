@@ -446,7 +446,7 @@ class JoinTree(UndirectedGraph):
             entry = transform(
                 k,
                 clique_node.variable_names,
-                bbn_node.variable_name)
+                [bbn_node.variable_name]) # XXXXXX
             tt[entry] += v
 
         # Now if this node was evidenced we need to normalize

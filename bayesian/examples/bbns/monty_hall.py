@@ -74,5 +74,5 @@ if __name__ == '__main__':
     # The likelihood for door C has
     # indeed increased to 2/3 therefore
     # we should switch to door C.
-    print 'Marginals after knowing Guest chose A and Monty chose B.'
-    g.q(guest_door='A', monty_door='B')
+    #print 'Marginals after knowing Guest chose A and Monty chose B.'
+    #g.q(guest_door='A', monty_door='B')
