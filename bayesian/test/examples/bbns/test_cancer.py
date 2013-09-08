@@ -40,21 +40,22 @@ class TestCancerGraph():
 
     def test_D_True(self, cancer_graph):
         '''Column 3 of upper half of table'''
-        import pytest; pytest.set_trace()
         result = cancer_graph.query(D=True)
-        assert round(result[('P', 'high')], 3) == 0.102
-        assert round(result[('P', 'low')], 3) == 0.898
-        assert round(result[('S', True)], 3) == 0.307
-        assert round(result[('S', False)], 3) == 0.693
-        assert round(result[('C', True)], 3) == 0.025
-        assert round(result[('C', False)], 3) == 0.975
-        assert round(result[('X', True)], 3) == 0.217
-        assert round(result[('X', False)], 3) == 0.783
-        assert round(result[('D', True)], 3) == 1
-        assert round(result[('D', False)], 3) == 0
+        import pytest; pytest.set_trace()
+        assert close_enough(result[('P', 'high')], 0.102)
+        assert close_enough(result[('P', 'low')], 0.898)
+        assert close_enough(result[('S', True)], 0.307)
+        assert close_enough(result[('S', False)], 0.693)
+        assert close_enough(result[('C', True)], 0.025)
+        assert close_enough(result[('C', False)], 0.975)
+        assert close_enough(result[('X', True)], 0.217)
+        assert close_enough(result[('X', False)], 0.783)
+        assert close_enough(result[('D', True)], 1)
+        assert close_enough(result[('D', False)], 0)
 
     def test_S_True(self, cancer_graph):
         '''Column 4 of upper half of table'''
+        import pytest; pytest.set_trace()
         result = cancer_graph.query(S=True)
         assert round(result[('P', 'high')], 3) == 0.1
         assert round(result[('P', 'low')], 3) == 0.9

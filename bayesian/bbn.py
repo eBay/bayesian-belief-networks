@@ -136,17 +136,28 @@ class BBN(Graph):
     def query(self, **kwds):
         jt = self.build_join_tree()
         assignments = jt.assign_clusters(self)
-        jt.initialize_potentials(assignments, self)
+        jt.initialize_potentials(assignments, self, kwds)
         jt.propagate()
         marginals = dict()
+        normalizers = defaultdict(float)
+
         for node in self.nodes:
             for k, v in jt.marginal(node).items():
                 # For a single node the
                 # key for the marginal tt always
                 # has just one argument so we
                 # will unpack it here
-
                 marginals[k[0]] = v
+                # If we had any evidence then we
+                # need to normalize all the variables
+                # not evidenced.
+                if kwds:
+                    normalizers[k[0][0]] += v
+
+        if kwds:
+            for k, v in marginals.iteritems():
+                marginals[k] /= normalizers[k[0]]
+
         return marginals
 
     def q(self, **kwds):
@@ -218,12 +229,17 @@ class JoinTree(UndirectedGraph):
                 tt[permutation] = 1
             node.potential_tt = tt
 
-        # now for each assignment we want to
+        # Step 2: Note that in H&D the assignments are
+        # done as part of step 2 however we have
+        # seperated the assignment algorithm out and
+        # done these prior to step 1.
+        # Now for each assignment we want to
         # generate a truth-table from the
         # values of the bbn truth-tables that are
         # assigned to the clusters...
 
         for clique, bbn_nodes in assignments.iteritems():
+
             tt = dict()
             vals = []
             variables = list(clique.variable_names)
@@ -236,6 +252,7 @@ class JoinTree(UndirectedGraph):
                 argvals = dict(permutation)
                 potential = 1
                 for bbn_node in bbn_nodes:
+                    bbn_node.clique = clique
                     # We could handle evidence here
                     # by altering the potential_tt.
                     # This is slightly different to
@@ -251,18 +268,37 @@ class JoinTree(UndirectedGraph):
                 tt[permutation] = potential
             clique.potential_tt = tt
 
+        if not evidence:
+            # We dont need to deal with likelihoods
+            # if we dont have any evidence.
+            return
+
+        # Step 2b: Set each liklihood element ^V(v) to 1
+        likelihoods = self.initial_likelihoods(assignments, bbn)
+        for clique, bbn_nodes in assignments.iteritems():
+            for node in bbn_nodes:
+                if node.variable_name in evidence:
+                    for k, v in clique.potential_tt.items():
+                        # Encode the evidence in
+                        # the clique potential...
+                        for variable, value in k:
+                            if (variable == node.variable_name):
+                                if value != evidence[variable]:
+                                    clique.potential_tt[k] = 0
+
+
+    def initial_likelihoods(self, assignments, bbn):
+        # TODO: Since this is the same every time we should probably
+        # cache it.
+        l = defaultdict(dict)
+        for clique, bbn_nodes in assignments.iteritems():
+            for node in bbn_nodes:
+                for value in bbn.domains.get(node.variable_name, [True, False]):
+                    l[(node.variable_name, value)] = 1
+        return l
+
+
     def assign_clusters(self, bbn):
-        # This is unclear why in the H&D example A does not
-        # get assigned the parent ACE.
-        # Perhaps its because A doesnt have a conditional
-        # probability table (ie it has no parents in the BBN)
-        # An alternate way to think of step 2 could then
-        # be for each *CPT* assign it to a cluster and then
-        # build the potential truth table from that.
-        # We will proceed this way and see what transpires
-        # since we have the factor graph version with sampling
-        # of the Huang Darwiche BBN we can compare the
-        # marginals.
         assignments_by_family = dict()
         assignments_by_clique = defaultdict(list)
         assigned = set()
@@ -400,6 +436,8 @@ class JoinTree(UndirectedGraph):
                 # In theory it doesnt matter which one we
                 # use so we could bale out after we
                 # find the first one
+                # TODO: With some better indexing we could
+                # avoid searching for this node every time...
 
         clique_node = containing_nodes[0]
         tt = defaultdict(float)
@@ -409,6 +447,9 @@ class JoinTree(UndirectedGraph):
                 clique_node.variable_names,
                 bbn_node.variable_name)
             tt[entry] += v
+
+        # Now if this node was evidenced we need to normalize
+        # over the values...
         # TODO: It will be safer to copy the defaultdict to a regular dict
         return tt
 
@@ -417,6 +458,7 @@ class Clique(object):
 
     def __init__(self, cluster):
         self.nodes = cluster
+
 
     def __repr__(self):
         vars = sorted([n.variable_name for n in self.nodes])
@@ -450,6 +492,15 @@ class JoinTreeCliqueNode(UndirectedNode):
         super(JoinTreeCliqueNode, self).__init__(
             clique.__repr__())
         self.clique = clique
+        # Now we create a pointer to
+        # this clique node as the "parent" clique
+        # node of each node in the cluster.
+        #for node in self.clique.nodes:
+        #    node.parent_clique = self
+        # This is not quite correct, the
+        # parent cluster as defined by H&D
+        # is *a* cluster than is a superset
+        # of Family(v)
 
     @property
     def variable_names(self):
