@@ -98,7 +98,21 @@ class BBN(Graph):
 
     def __init__(self, nodes_dict, name=None, domains={}):
         self.nodes = nodes_dict.values()
+        self.vars_to_nodes = nodes_dict
         self.domains = domains
+        # For each node we want
+        # to explicitly record which
+        # variable it 'introduced'.
+        # Note that we cannot record
+        # this duing Node instantiation
+        # becuase at that point we do
+        # not yet know *which* of the
+        # variables in the argument
+        # list is the one being modeled
+        # by the function. (Unless there
+        # is only one argument)
+        for variable_name, node in nodes_dict.items():
+            node.variable_name = variable_name
 
     def get_graphviz_source(self):
         fh = StringIO()
@@ -186,16 +200,12 @@ class JoinTree(UndirectedGraph):
         fh.write('}\n')
         return fh.getvalue()
 
-    def initialize_potentials(self, assignments, bbn):
+    def initialize_potentials(self, assignments, bbn, evidence={}):
         # Step 1, assign 1 to each cluster and sepset
         for node in self.nodes:
-            # Does this mean that each entry
-            # in the potential_tt should be 1?
-            # This is unclear but it means that
-            # initially it wont be normalized.
             tt = dict()
             vals = []
-            variables = list(node.variable_names)
+            variables = node.variable_names
             # Lets sort the variables here so that
             # the variable names in the keys in
             # the tt are always sorted.
@@ -207,8 +217,6 @@ class JoinTree(UndirectedGraph):
             for permutation in permutations:
                 tt[permutation] = 1
             node.potential_tt = tt
-
-        # Step 2 for each v assign it a parent cluster...
 
         # now for each assignment we want to
         # generate a truth-table from the
@@ -228,6 +236,11 @@ class JoinTree(UndirectedGraph):
                 argvals = dict(permutation)
                 potential = 1
                 for bbn_node in bbn_nodes:
+                    # We could handle evidence here
+                    # by altering the potential_tt.
+                    # This is slightly different to
+                    # the way that H&D do it.
+
                     arg_list = []
                     for arg_name in get_args(bbn_node.func):
                         arg = Binding(
@@ -250,7 +263,6 @@ class JoinTree(UndirectedGraph):
         # since we have the factor graph version with sampling
         # of the Huang Darwiche BBN we can compare the
         # marginals.
-
         assignments_by_family = dict()
         assignments_by_clique = defaultdict(list)
         assigned = set()
@@ -395,7 +407,7 @@ class JoinTree(UndirectedGraph):
             entry = transform(
                 k,
                 clique_node.variable_names,
-                [bbn_node.name[2:]])
+                bbn_node.variable_name)
             tt[entry] += v
         # TODO: It will be safer to copy the defaultdict to a regular dict
         return tt
@@ -407,8 +419,8 @@ class Clique(object):
         self.nodes = cluster
 
     def __repr__(self):
-        vars = sorted([n.name[2:].upper() for n in self.nodes])
-        return 'Clique_%s' % ''.join(vars)
+        vars = sorted([n.variable_name for n in self.nodes])
+        return 'Clique_%s' % ''.join([v.upper() for v in vars])
 
 
 def transform(x, X, R):
@@ -445,7 +457,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         that this clique represents'''
         var_names = []
         for node in self.clique.nodes:
-            var_names.append(node.name[2:])
+            var_names.append(node.variable_name)
         return sorted(var_names)
 
     @property
@@ -634,7 +646,8 @@ class SepSet(object):
 
     def __repr__(self):
         return 'SepSet_%s' % ''.join(
-            [x.name[2:].upper() for x in list(self.label)])
+            #[x.name[2:].upper() for x in list(self.label)])
+            [x.variable_name.upper() for x in list(self.label)])
 
 
 class JoinTreeSepSetNode(UndirectedNode):
@@ -647,20 +660,14 @@ class JoinTreeSepSetNode(UndirectedNode):
     def variable_names(self):
         '''Return the set of variable names
         that this sepset represents'''
-        var_names = []
         # TODO: we are assuming here
         # that X and Y are each separate
         # variables from the BBN which means
         # we are assuming that the sepsets
         # always contain only 2 nodes.
         # Need to check whether this is
-        # the case
-        # NB!!!! we are taking a shortcut here
-        # for now we definitely need to go
-        # back and add the concept of
-        # introduced variable or represented variabl
-        # instead of inferring it from the factor name!
-        return sorted([x.name[2:] for x in self.sepset.label])
+        # the case.
+        return sorted([x.variable_name for x in self.sepset.label])
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset
@@ -722,7 +729,9 @@ def build_bbn(*args, **kwds):
         # passed in a list in the first
         # argument. This makes it possible
         # to build very large graphs with
-        # more than 255 functions.
+        # more than 255 functions, since
+        # Python functions are limited to
+        # 255 arguments.
         args = args[0]
 
     for factor in args:
@@ -735,7 +744,7 @@ def build_bbn(*args, **kwds):
     # To do this we need to find the
     # factor node representing the variables
     # in a child factors argument and connect
-    # it to the child node
+    # it to the child node.
 
     # Note that calling original_factors
     # here can break build_bbn if the
@@ -763,6 +772,7 @@ def make_undirected_copy(dag):
             name=node.name)
         undirected_node.func = node.func
         undirected_node.argspec = node.argspec
+        undirected_node.variable_name = node.variable_name
         nodes[node.name] = undirected_node
     # Now we need to traverse the original
     # nodes once more and add any parents
