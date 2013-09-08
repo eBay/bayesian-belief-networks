@@ -137,6 +137,7 @@ class BBN(Graph):
         jt = self.build_join_tree()
         assignments = jt.assign_clusters(self)
         jt.initialize_potentials(assignments, self, kwds)
+
         jt.propagate()
         marginals = dict()
         normalizers = defaultdict(float)
@@ -596,8 +597,11 @@ class JoinTreeCliqueNode(UndirectedNode):
             # division which seems logical.
             entry = transform(k, target.variable_names,
                               sepset.variable_names)
-            tt[k] = target.potential_tt[k] * (sepset.potential_tt[entry] /
-                                              sepset.potential_tt_old[entry])
+            if target.potential_tt[k] == 0:
+                tt[k] = 0
+            else:
+                tt[k] = target.potential_tt[k] * (sepset.potential_tt[entry] /
+                                                  sepset.potential_tt_old[entry])
         target.potential_tt = tt
 
     def __repr__(self):
