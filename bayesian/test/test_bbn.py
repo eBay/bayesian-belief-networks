@@ -11,6 +11,10 @@ def r3(x):
     return round(x, 3)
 
 
+def r5(x):
+    return round(x, 5)
+
+
 def pytest_funcarg__sprinkler_graph(request):
     '''The Sprinkler Example as a BBN
     to be used in tests.
@@ -19,15 +23,14 @@ def pytest_funcarg__sprinkler_graph(request):
     sprinkler = Node('Sprinkler')
     rain = Node('Rain')
     wet_grass = Node('WetGrass')
-    cloudy.children = [
-        sprinkler, rain ]
-    sprinkler.parents = [ cloudy ]
-    sprinkler.children = [ wet_grass ]
-    rain.parents = [ cloudy ]
-    rain.children = [ wet_grass ]
+    cloudy.children = [sprinkler, rain]
+    sprinkler.parents = [cloudy]
+    sprinkler.children = [wet_grass]
+    rain.parents = [cloudy]
+    rain.children = [wet_grass]
     wet_grass.parents = [
         sprinkler,
-        rain ]
+        rain]
     bbn = BBN(
         dict(
             cloudy=cloudy,
@@ -43,7 +46,6 @@ def pytest_funcarg__huang_darwiche_nodes(request):
     def f_a(a):
         return 1 / 2
 
-
     def f_b(a, b):
         tt = dict(
             tt=0.5,
@@ -51,7 +53,6 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             tf=0.5,
             ff=0.6)
         return tt[make_key(a, b)]
-
 
     def f_c(a, c):
         tt = dict(
@@ -61,7 +62,6 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             ff=0.8)
         return tt[make_key(a, c)]
 
-
     def f_d(b, d):
         tt = dict(
             tt=0.9,
@@ -70,7 +70,6 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             ff=0.5)
         return tt[make_key(b, d)]
 
-
     def f_e(c, e):
         tt = dict(
             tt=0.3,
@@ -78,7 +77,6 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             tf=0.7,
             ff=0.4)
         return tt[make_key(c, e)]
-
 
     def f_f(d, e, f):
         tt = dict(
@@ -92,13 +90,11 @@ def pytest_funcarg__huang_darwiche_nodes(request):
             fff=0.01)
         return tt[make_key(d, e, f)]
 
-
     def f_g(c, g):
         tt = dict(
             tt=0.8, tf=0.2,
             ft=0.1, ff=0.9)
         return tt[make_key(c, g)]
-
 
     def f_h(e, g, h):
         tt = dict(
@@ -136,11 +132,11 @@ def pytest_funcarg__huang_darwiche_jt(request):
                 assert node_b not in node_a.neighbours
                 introduced_arcs += 1
         if node.name == 'f_h':
-            return [introduced_arcs, 0] # Force f_h tie breaker
+            return [introduced_arcs, 0]  # Force f_h tie breaker
         if node.name == 'f_g':
-            return [introduced_arcs, 1] # Force f_g tie breaker
+            return [introduced_arcs, 1]  # Force f_g tie breaker
         if node.name == 'f_c':
-            return [introduced_arcs, 2] # Force f_c tie breaker
+            return [introduced_arcs, 2]  # Force f_c tie breaker
         if node.name == 'f_b':
             return [introduced_arcs, 3]
         if node.name == 'f_d':
@@ -238,10 +234,13 @@ class TestBBN():
 
     def test_construct_priority_queue(self, huang_darwiche_moralized):
         nodes = dict(
-            [(node.name, node) for node in \
+            [(node.name, node) for node in
              huang_darwiche_moralized.nodes])
         pq = construct_priority_queue(nodes, priority_func)
-        assert pq == [[0, 2, 'f_f'], [0, 2, 'f_h'], [1, 2, 'f_b'], [1, 2, 'f_a'], [1, 2, 'f_g'], [2, 2, 'f_d'], [2, 2, 'f_c'], [7, 2, 'f_e']]
+        assert pq == [[0, 2, 'f_f'], [0, 2, 'f_h'],
+                      [1, 2, 'f_b'], [1, 2, 'f_a'],
+                      [1, 2, 'f_g'], [2, 2, 'f_d'],
+                      [2, 2, 'f_c'], [7, 2, 'f_e']]
 
         # Note that for this test we want to ensure
         # the same elimination ordering as on page 13
@@ -257,7 +256,7 @@ class TestBBN():
                     assert node_b not in node_a.neighbours
                     introduced_arcs += 1
             if node.name == 'f_h':
-                return [introduced_arcs, 0] # Force f_h tie breaker
+                return [introduced_arcs, 0]  # Force f_h tie breaker
             return [introduced_arcs, 2]
         pq = construct_priority_queue(
             nodes,
@@ -278,11 +277,11 @@ class TestBBN():
                     assert node_b not in node_a.neighbours
                     introduced_arcs += 1
             if node.name == 'f_h':
-                return [introduced_arcs, 0] # Force f_h tie breaker
+                return [introduced_arcs, 0]  # Force f_h tie breaker
             if node.name == 'f_g':
-                return [introduced_arcs, 1] # Force f_g tie breaker
+                return [introduced_arcs, 1]  # Force f_g tie breaker
             if node.name == 'f_c':
-                return [introduced_arcs, 2] # Force f_c tie breaker
+                return [introduced_arcs, 2]  # Force f_c tie breaker
             if node.name == 'f_b':
                 return [introduced_arcs, 3]
             if node.name == 'f_d':
@@ -292,7 +291,7 @@ class TestBBN():
             return [introduced_arcs, 10]
         cliques, elimination_ordering = triangulate(
             huang_darwiche_moralized, priority_func_override)
-        nodes = dict([(node.name, node) for node in \
+        nodes = dict([(node.name, node) for node in
                       huang_darwiche_moralized.nodes])
         assert len(cliques) == 6
         assert cliques[0].nodes == set(
@@ -319,7 +318,7 @@ class TestBBN():
             'f_a']
         # Now lets ensure the triangulated graph is
         # the same as Darwiche Huang fig. 2 pg. 13
-        nodes = dict([(node.name, node) for node in \
+        nodes = dict([(node.name, node) for node in
                       huang_darwiche_moralized.nodes])
         assert set(nodes['f_a'].neighbours) == set([
             nodes['f_b'], nodes['f_c'],
@@ -341,7 +340,6 @@ class TestBBN():
         assert set(nodes['f_h'].neighbours) == set([
             nodes['f_e'], nodes['f_g']])
 
-
     def test_triangulate_no_tie_break(self, huang_darwiche_moralized):
         # Now lets see what happens if
         # we dont enforce the tie-breakers...
@@ -352,7 +350,7 @@ class TestBBN():
         # inference will still be correct.
         cliques, elimination_ordering = triangulate(
             huang_darwiche_moralized)
-        nodes = dict([(node.name, node) for node in \
+        nodes = dict([(node.name, node) for node in
                       huang_darwiche_moralized.nodes])
         assert set(nodes['f_a'].neighbours) == set([
             nodes['f_b'], nodes['f_c']])
@@ -383,11 +381,11 @@ class TestBBN():
                     assert node_b not in node_a.neighbours
                     introduced_arcs += 1
             if node.name == 'f_h':
-                return [introduced_arcs, 0] # Force f_h tie breaker
+                return [introduced_arcs, 0]  # Force f_h tie breaker
             if node.name == 'f_g':
-                return [introduced_arcs, 1] # Force f_g tie breaker
+                return [introduced_arcs, 1]  # Force f_g tie breaker
             if node.name == 'f_c':
-                return [introduced_arcs, 2] # Force f_c tie breaker
+                return [introduced_arcs, 2]  # Force f_c tie breaker
             if node.name == 'f_b':
                 return [introduced_arcs, 3]
             if node.name == 'f_d':
@@ -400,18 +398,23 @@ class TestBBN():
         for node in jt.sepset_nodes:
             assert set([n.clique for n in node.neighbours]) == \
                 set([node.sepset.X, node.sepset.Y])
-        # Need additional tests here...
+        # TODO: Need additional tests here especially for
+        # clique nodes.
 
-    def test_initialize_potentials(self, huang_darwiche_jt, huang_darwiche_dag):
+    def test_initialize_potentials(
+            self, huang_darwiche_jt, huang_darwiche_dag):
         # Seems like there can be multiple assignments so
         # for this test we will set the assignments explicitely
-        cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
-        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+        cliques = dict([(node.name, node) for node in
+                        huang_darwiche_jt.clique_nodes])
+        bbn_nodes = dict([(node.name, node) for node in
+                          huang_darwiche_dag.nodes])
         assignments = {
             cliques['Clique_ACE']: [bbn_nodes['f_c'], bbn_nodes['f_e']],
             cliques['Clique_ABD']: [
                 bbn_nodes['f_a'], bbn_nodes['f_b'],  bbn_nodes['f_d']]}
-        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
+        huang_darwiche_jt.initialize_potentials(
+            assignments, huang_darwiche_dag)
         for node in huang_darwiche_jt.sepset_nodes:
             for v in node.potential_tt.values():
                 assert v == 1
@@ -446,13 +449,20 @@ class TestBBN():
         assert r(tt[('a', False), ('b', False), ('d', True)]) == 0.150
         assert r(tt[('a', False), ('b', False), ('d', False)]) == 0.150
 
+        # TODO: We should add all the other potentials here too.
+
     def test_jtclique_node_variable_names(self, huang_darwiche_jt):
         for node in huang_darwiche_jt.clique_nodes:
             if 'ADE' in node.name:
                 assert set(node.variable_names) == set(['a', 'd', 'e'])
 
     def test_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
-        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+
+        # NOTE: This test will fail sometimes as assign_clusters
+        # is currently non-deterministic, we should fix this.
+
+        bbn_nodes = dict([(node.name, node) for node in
+                          huang_darwiche_dag.nodes])
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
         jt_cliques = dict([(node.name, node) for node
                            in huang_darwiche_jt.clique_nodes])
@@ -481,20 +491,32 @@ class TestBBN():
             set(
                 [node for node in huang_darwiche_dag.nodes])
 
-
-
     def test_propagate(self, huang_darwiche_jt, huang_darwiche_dag):
-        jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
+        jt_cliques = dict([(node.name, node) for node in
+                           huang_darwiche_jt.clique_nodes])
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
-        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
+        huang_darwiche_jt.initialize_potentials(
+            assignments, huang_darwiche_dag)
 
         huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
-        assert True == False # Come back and fill in real tests here!
+        tt = jt_cliques['Clique_DEF'].potential_tt
+        assert r5(tt[(('d', False), ('e', True), ('f', True))]) == 0.00150
+        assert r5(tt[(('d', True), ('e', False), ('f', True))]) == 0.00365
+        assert r5(tt[(('d', False), ('e', False), ('f', True))]) == 0.16800
+        assert r5(tt[(('d', True), ('e', True), ('f', True))]) == 0.00315
+        assert r5(tt[(('d', False), ('e', False), ('f', False))]) == 0.00170
+        assert r5(tt[(('d', True), ('e', True), ('f', False))]) == 0.31155
+        assert r5(tt[(('d', False), ('e', True), ('f', False))]) == 0.14880
+        assert r5(tt[(('d', True), ('e', False), ('f', False))]) == 0.36165
+
+        # TODO: Add more potential truth tables from other nodes.
 
     def test_marginal(self,  huang_darwiche_jt, huang_darwiche_dag):
-        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
+        bbn_nodes = dict([(node.name, node) for node in
+                          huang_darwiche_dag.nodes])
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
-        huang_darwiche_jt.initialize_potentials(assignments, huang_darwiche_dag)
+        huang_darwiche_jt.initialize_potentials(
+            assignments, huang_darwiche_dag)
         huang_darwiche_jt.propagate()
 
         # These test values come directly from
