@@ -12,6 +12,7 @@ from prettytable import PrettyTable
 
 from bayesian.utils import get_args, named_base_type_factory
 
+
 class Node(object):
 
     def __init__(self, name, parents=[], children=[]):
@@ -41,7 +42,6 @@ class UndirectedNode(object):
     def __init__(self, name, neighbours=[]):
         self.name = name
         self.neighbours = neighbours[:]
-
 
     def __repr__(self):
         return '<UndirectedNode %s>' % self.name
@@ -207,7 +207,6 @@ class JoinTree(UndirectedGraph):
                 tt[permutation] = 1
             node.potential_tt = tt
 
-
         # Step 2 for each v assign it a parent cluster...
 
         # now for each assignment we want to
@@ -339,7 +338,6 @@ class JoinTree(UndirectedGraph):
             #    sender, receiver)
             sender.pass_message(receiver)
 
-
     def distribute_evidence(self, sender=None, receiver=None):
 
         # Step 1, Mark X
@@ -393,11 +391,13 @@ class JoinTree(UndirectedGraph):
         clique_node = containing_nodes[0]
         tt = defaultdict(float)
         for k, v in clique_node.potential_tt.items():
-            entry = transform(k, clique_node.variable_names, [bbn_node.name[2:]])
+            entry = transform(
+                k,
+                clique_node.variable_names,
+                [bbn_node.name[2:]])
             tt[entry] += v
         # TODO: It will be safer to copy the defaultdict to a regular dict
         return tt
-
 
 
 class Clique(object):
@@ -513,7 +513,6 @@ class JoinTreeCliqueNode(UndirectedNode):
             tt[entry] += v
         sepset_node.potential_tt = tt
 
-
     def absorb(self, sepset, target):
         # Assign a new potential tt to
         # Y (the target)
@@ -533,11 +532,9 @@ class JoinTreeCliqueNode(UndirectedNode):
             # division which seems logical.
             entry = transform(k, target.variable_names,
                               sepset.variable_names)
-            tt[k] = target.potential_tt[k] * sepset.potential_tt[entry] / \
-                    sepset.potential_tt_old[entry]
+            tt[k] = target.potential_tt[k] * (sepset.potential_tt[entry] /
+                                              sepset.potential_tt_old[entry])
         target.potential_tt = tt
-
-
 
     def __repr__(self):
         return '<JoinTreeCliqueNode: %s>' % self.clique
@@ -576,9 +573,9 @@ class SepSet(object):
         NOTE: For efficiency we should
         add an index that indexes cliques
         into the trees in the forest.'''
-        X_trees = [t for t in forest if self.X in \
+        X_trees = [t for t in forest if self.X in
                    [n.clique for n in t.clique_nodes]]
-        Y_trees = [t for t in forest if self.Y in \
+        Y_trees = [t for t in forest if self.Y in
                    [n.clique for n in t.clique_nodes]]
         assert len(X_trees) == 1
         assert len(Y_trees) == 1
@@ -602,9 +599,9 @@ class SepSet(object):
         as it is now joined to the
         first.
         '''
-        X_tree = [t for t in forest if self.X in \
+        X_tree = [t for t in forest if self.X in
                   [n.clique for n in t.clique_nodes]][0]
-        Y_tree = [t for t in forest if self.Y in \
+        Y_tree = [t for t in forest if self.Y in
                   [n.clique for n in t.clique_nodes]][0]
 
         # Now create and insert a sepset node into the Xtree
@@ -634,9 +631,9 @@ class SepSet(object):
         # the forest...
         forest.remove(Y_tree)
 
-
     def __repr__(self):
-        return 'SepSet_%s' % ''.join([x.name[2:].upper() for x in list(self.label)])
+        return 'SepSet_%s' % ''.join(
+            [x.name[2:].upper() for x in list(self.label)])
 
 
 class JoinTreeSepSetNode(UndirectedNode):
@@ -666,6 +663,7 @@ class JoinTreeSepSetNode(UndirectedNode):
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset
+
 
 class Binding(object):
 
@@ -725,7 +723,6 @@ def build_bbn(*args, **kwds):
         # more than 255 functions.
         args = args[0]
 
-
     for factor in args:
         factor_args = get_args(factor)
         variables.update(factor_args)
@@ -745,7 +742,8 @@ def build_bbn(*args, **kwds):
     original_factors = get_original_factors(factor_nodes.values())
     for factor_node in factor_nodes.values():
         factor_args = get_args(factor_node)
-        parents = [original_factors[arg] for arg in factor_args if original_factors[arg] != factor_node]
+        parents = [original_factors[arg] for arg in
+                   factor_args if original_factors[arg] != factor_node]
         for parent in parents:
             connect(parent, factor_node)
     bbn = BBN(factor_nodes.values(), name=name)
@@ -759,7 +757,7 @@ def make_undirected_copy(dag):
     nodes = dict()
     for node in dag.nodes:
         undirected_node = UndirectedNode(
-            name = node.name)
+            name=node.name)
         undirected_node.func = node.func
         undirected_node.argspec = node.argspec
         nodes[node.name] = undirected_node
@@ -817,7 +815,7 @@ def priority_func(node):
         if node_a not in node_b.neighbours:
             assert node_b not in node_a.neighbours
             introduced_arcs += 1
-    return [introduced_arcs, 2] # TODO: Fix this to look at domains
+    return [introduced_arcs, 2]  # TODO: Fix this to look at domains
 
 
 def construct_priority_queue(nodes, priority_func=priority_func):
@@ -894,9 +892,6 @@ def triangulate(gm, priority_func=priority_func):
     return cliques, elimination_ordering
 
 
-
-
-
 def build_join_tree(dag, clique_priority_func=priority_func):
 
     # First we will create an undirected copy
@@ -936,7 +931,7 @@ def build_join_tree(dag, clique_priority_func=priority_func):
         forest.add(tree)
 
     # Initialize the SepSets
-    S = set() # track the sepsets
+    S = set()  # track the sepsets
     for X, Y in combinations(cliques, 2):
         if X.nodes.intersection(Y.nodes):
             S.add(SepSet(X, Y))
