@@ -28,11 +28,13 @@ def pytest_funcarg__sprinkler_graph(request):
     wet_grass.parents = [
         sprinkler,
         rain ]
-    bbn = BBN([
-        cloudy,
-        sprinkler,
-        rain,
-        wet_grass])
+    bbn = BBN(
+        dict(
+            cloudy=cloudy,
+            sprinkler=sprinkler,
+            rain=rain,
+            wet_grass=wet_grass)
+        )
     return bbn
 
 
@@ -157,18 +159,16 @@ class TestBBN():
         gv_src = '''digraph G {
   graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];
   Cloudy [ shape="ellipse" color="blue"];
-  Sprinkler [ shape="ellipse" color="blue"];
   Rain [ shape="ellipse" color="blue"];
+  Sprinkler [ shape="ellipse" color="blue"];
   WetGrass [ shape="ellipse" color="blue"];
+  Cloudy -> Rain;
+  Cloudy -> Sprinkler;
   Rain -> WetGrass;
   Sprinkler -> WetGrass;
-  Cloudy -> Sprinkler;
-  Cloudy -> Rain;
 }
 '''
         assert sprinkler_graph.get_graphviz_source() == gv_src
-
-
 
     def test_get_original_factors(self, huang_darwiche_nodes):
         original_factors = get_original_factors(
@@ -419,10 +419,10 @@ class TestBBN():
         # Note that in H&D there are two places that show
         # initial potentials, one is for ABD and AD
         # and the second is for ACE and CE
-        # We should test both here
-        # On the first one, for ABD they
-        # seem to be *including* the prior for
-        # A in multiplying the potentials
+        # We should test both here but we must enforce
+        # the assignments above because alternate and
+        # equally correct Junction Trees will give
+        # different potentials.
         def r(x):
             return round(x, 3)
 
@@ -436,10 +436,7 @@ class TestBBN():
         assert r(tt[('a', False), ('c', False), ('e', True)]) == 0.48
         assert r(tt[('a', False), ('c', False), ('e', False)]) == 0.32
 
-
         tt = cliques['Clique_ABD'].potential_tt
-        # NOTE: This may actually be after propagation, its
-        # not clear from H&D
         assert r(tt[('a', True), ('b', True), ('d', True)]) == 0.225
         assert r(tt[('a', True), ('b', True), ('d', False)]) == 0.025
         assert r(tt[('a', True), ('b', False), ('d', True)]) == 0.125
@@ -455,9 +452,35 @@ class TestBBN():
                 assert set(node.variable_names) == set(['a', 'd', 'e'])
 
     def test_assign_clusters(self, huang_darwiche_jt, huang_darwiche_dag):
+        bbn_nodes = dict([(node.name, node) for node in huang_darwiche_dag.nodes])
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
-        jt_cliques = dict([(node.name, node) for node in huang_darwiche_jt.clique_nodes])
-        assert [bbn_nodes['f_e'], bbn_nodes['f_c']] == assignments[jt_cliques['Clique_ACE']]
+        jt_cliques = dict([(node.name, node) for node
+                           in huang_darwiche_jt.clique_nodes])
+        # Note that these assignments are slightly different
+        # to the ones in H&D. In their paper they never
+        # give a full list of assignments so we will use
+        # these default deterministic assignments for the
+        # test. These are assumed to be a valid assignment
+        # as all other tests pass.
+        assert [] == assignments[jt_cliques['Clique_ADE']]
+        assert [bbn_nodes['f_f']] == assignments[jt_cliques['Clique_DEF']]
+        assert [bbn_nodes['f_h']] == assignments[jt_cliques['Clique_EGH']]
+        assert [bbn_nodes['f_a'], bbn_nodes['f_c']] == \
+            assignments[jt_cliques['Clique_ACE']]
+        assert [bbn_nodes['f_b'], bbn_nodes['f_d']] == \
+            assignments[jt_cliques['Clique_ABD']]
+        assert [bbn_nodes['f_e'], bbn_nodes['f_g']] == \
+            assignments[jt_cliques['Clique_CEG']]
+
+        # Now we also need to ensure that every original
+        # factor from the BBN has been assigned once
+        # and only once to some cluster.
+        assert set(
+            [node for assignment in
+             assignments.values() for node in assignment]) == \
+            set(
+                [node for node in huang_darwiche_dag.nodes])
+
 
 
     def test_propagate(self, huang_darwiche_jt, huang_darwiche_dag):
@@ -483,3 +506,55 @@ class TestBBN():
         p_D = huang_darwiche_jt.marginal(bbn_nodes['f_d'])
         assert r3(p_D[(('d', True), )]) == 0.68
         assert r3(p_D[(('d', False), )]) == 0.32
+
+        # The remaining marginals here come
+        # from the module itself, however they
+        # have been corrobarted by running
+        # inference using the sampling inference
+        # engine and the same results are
+        # achieved.
+        '''
+        +------+-------+----------+
+        | Node | Value | Marginal |
+        +------+-------+----------+
+        | a    | False | 0.500000 |
+        | a    | True  | 0.500000 |
+        | b    | False | 0.550000 |
+        | b    | True  | 0.450000 |
+        | c    | False | 0.550000 |
+        | c    | True  | 0.450000 |
+        | d    | False | 0.320000 |
+        | d    | True  | 0.680000 |
+        | e    | False | 0.535000 |
+        | e    | True  | 0.465000 |
+        | f    | False | 0.823694 |
+        | f    | True  | 0.176306 |
+        | g    | False | 0.585000 |
+        | g    | True  | 0.415000 |
+        | h    | False | 0.176900 |
+        | h    | True  | 0.823100 |
+        +------+-------+----------+
+        '''
+        p_B = huang_darwiche_jt.marginal(bbn_nodes['f_b'])
+        assert r3(p_B[(('b', True), )]) == 0.45
+        assert r3(p_B[(('b', False), )]) == 0.55
+
+        p_C = huang_darwiche_jt.marginal(bbn_nodes['f_c'])
+        assert r3(p_C[(('c', True), )]) == 0.45
+        assert r3(p_C[(('c', False), )]) == 0.55
+
+        p_E = huang_darwiche_jt.marginal(bbn_nodes['f_e'])
+        assert r3(p_E[(('e', True), )]) == 0.465
+        assert r3(p_E[(('e', False), )]) == 0.535
+
+        p_F = huang_darwiche_jt.marginal(bbn_nodes['f_f'])
+        assert r3(p_F[(('f', True), )]) == 0.176
+        assert r3(p_F[(('f', False), )]) == 0.824
+
+        p_G = huang_darwiche_jt.marginal(bbn_nodes['f_g'])
+        assert r3(p_G[(('g', True), )]) == 0.415
+        assert r3(p_G[(('g', False), )]) == 0.585
+
+        p_H = huang_darwiche_jt.marginal(bbn_nodes['f_h'])
+        assert r3(p_H[(('h', True), )]) == 0.823
+        assert r3(p_H[(('h', False), )]) == 0.177

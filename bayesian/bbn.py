@@ -10,6 +10,7 @@ from collections import defaultdict
 
 from prettytable import PrettyTable
 
+from bayesian import GREEN, NORMAL
 from bayesian.utils import get_args, named_base_type_factory
 
 
@@ -95,8 +96,8 @@ class UndirectedGraph(object):
 class BBN(Graph):
     '''A Directed Acyclic Graph'''
 
-    def __init__(self, nodes, name=None, domains={}):
-        self.nodes = nodes
+    def __init__(self, nodes_dict, name=None, domains={}):
+        self.nodes = nodes_dict.values()
         self.domains = domains
 
     def get_graphviz_source(self):
@@ -104,12 +105,12 @@ class BBN(Graph):
         fh.write('digraph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
-        for node in self.nodes:
+        for node in sorted(self.nodes, key=lambda x:x.name):
             fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
             for child in node.children:
                 edge = (node.name, child.name)
                 edges.add(edge)
-        for source, target in edges:
+        for source, target in sorted(edges, key=lambda x:(x[0], x[1])):
             fh.write('  %s -> %s;\n' % (source, target))
         fh.write('}\n')
         return fh.getvalue()
@@ -715,6 +716,7 @@ def build_bbn(*args, **kwds):
     name = kwds.get('name')
     variable_nodes = dict()
     factor_nodes = dict()
+
     if isinstance(args[0], list):
         # Assume the functions were all
         # passed in a list in the first
@@ -746,8 +748,9 @@ def build_bbn(*args, **kwds):
                    factor_args if original_factors[arg] != factor_node]
         for parent in parents:
             connect(parent, factor_node)
-    bbn = BBN(factor_nodes.values(), name=name)
+    bbn = BBN(original_factors, name=name)
     bbn.domains = domains
+
     return bbn
 
 
