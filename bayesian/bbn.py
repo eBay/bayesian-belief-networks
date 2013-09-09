@@ -1001,11 +1001,13 @@ def build_join_tree(dag, clique_priority_func=priority_func):
         deco = [(s, -1 * s.mass, s.cost, s.__repr__()) for s in S]
         deco.sort(key=lambda x: x[1:])
         candidate_sepset = deco[0][0]
-        if candidate_sepset.insertable(forest):
-            # Insert into forest and remove the sepset
-            candidate_sepset.insert(forest)
-            S.remove(candidate_sepset)
-            sepsets_inserted += 1
+        for candidate_sepset, _, _, _ in deco:
+            if candidate_sepset.insertable(forest):
+                # Insert into forest and remove the sepset
+                candidate_sepset.insert(forest)
+                S.remove(candidate_sepset)
+                sepsets_inserted += 1
+                break
 
     assert len(forest) == 1
     jt = list(forest)[0]
