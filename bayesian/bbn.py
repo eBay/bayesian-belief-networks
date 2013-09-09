@@ -384,8 +384,6 @@ class JoinTree(UndirectedGraph):
                     receiver=sender)
         # Step 3, pass message from sender to receiver
         if receiver is not None:
-            #print 'Coll. message from %s ----> %s' % (
-            #    sender, receiver)
             sender.pass_message(receiver)
 
     def distribute_evidence(self, sender=None, receiver=None):
@@ -397,8 +395,6 @@ class JoinTree(UndirectedGraph):
         # unmarked neighbouring clusters
         for neighbouring_clique in sender.neighbouring_cliques:
             if not neighbouring_clique.marked:
-                #print 'Dist. message from %s ---> %s' % (
-                #    sender, neighbouring_clique)
                 sender.pass_message(neighbouring_clique)
 
         # Step 3, call distribute_evidence on Xs unmarked neighbours
@@ -674,8 +670,6 @@ class SepSet(object):
 
         # Now create and insert a sepset node into the Xtree
         ss_node = JoinTreeSepSetNode(self, self)
-        #print >> sys.stderr, 'Created new ss_node: %s id %s' % (
-        #    ss_node, id(ss_node))
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -939,8 +933,6 @@ def triangulate(gm, priority_func=priority_func):
         cluster = [v] + v.neighbours
         for node_a, node_b in combinations(cluster, 2):
             if node_a not in node_b.neighbours:
-                #print 'Adding edhe from %s to %s' % (
-                #    node_a.name, node_b.name)
                 node_b.neighbours.append(node_a)
                 node_a.neighbours.append(node_b)
                 # Now also add this new arc to gm...
