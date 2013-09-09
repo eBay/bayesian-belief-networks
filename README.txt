@@ -1,5 +1,13 @@
-Small Bayesian Belief Propagation Framework using
-Sum-Product Algorithm on Factor Graphs.
+Pythonic Bayesian Belief Network Framework
+
+Allows creation of BBNs with pure Python
+functions.
+Currently three different inference methods
+are supported with more to come:
+
+- Junction Tree Algorithm with message passing
+- Sum-product Algorithm
+- MKMC Sampling for approximate inference
 
 Todo:
 
