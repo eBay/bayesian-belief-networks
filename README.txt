@@ -7,7 +7,7 @@ are supported with more to come:
 
 - Junction Tree Algorithm with message passing
 - Sum-product Algorithm
-- MKMC Sampling for approximate inference
+- MCMC Sampling for approximate inference
 
 Todo:
 
