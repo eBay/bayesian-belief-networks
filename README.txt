@@ -35,6 +35,7 @@ $ pip install -r requirements.txt
 
 Building The Tutorial
 
+$ pip install sphinx
 $ cd docs/tutorial
 $ make clean
 $ make html
