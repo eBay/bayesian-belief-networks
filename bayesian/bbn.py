@@ -157,7 +157,8 @@ class BBN(Graph):
 
         if kwds:
             for k, v in marginals.iteritems():
-                marginals[k] /= normalizers[k[0]]
+                if normalizers[k[0]] != 0:
+                    marginals[k] /= normalizers[k[0]]
 
         return marginals
 
