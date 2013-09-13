@@ -1,6 +1,6 @@
 '''Unit tests for the examples in the examples dir.'''
 from bayesian.factor_graph import build_graph
-from bayesian.examples.cancer import fP, fS, fC, fX, fD
+from bayesian.examples.factor_graphs.cancer import fP, fS, fC, fX, fD
 
 
 '''
