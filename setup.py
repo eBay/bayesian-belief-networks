@@ -5,7 +5,7 @@ setup(
     version='0.1.5',
     author='Neville Newey',
     author_email='nn@theneweys.org',
-    packages=['bayesian', 'bayesian.test', 'bayesian.examples'],
+    packages=['bayesian', 'bayesian.test', 'bayesian.examples', 'bayesian.examples.bbns'],
     license='LICENSE.txt',
     description='Small Bayesian Inference Engine using Factor Graphs.',
     long_description=open('README.txt').read(),
