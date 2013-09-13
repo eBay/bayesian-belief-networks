@@ -85,7 +85,8 @@ the value of 'A', 'B' or 'C' would be equal at
 1/3. We will now introduce our first Python
 function which will be used to model the game:
 
-::
+.. code-block :: python
+
     def f_prize_door(prize_door):
         return 1.0 / 3
 
