@@ -1,20 +1,15 @@
 Pythonic Bayesian Belief Network Framework
 
 Allows creation of BBNs with pure Python
-functions.
-Currently three different inference methods
-are supported with more to come:
-
-- Junction Tree Algorithm with message passing
-- Sum-product Algorithm
-- MCMC Sampling for approximate inference
-
+functions. Currently three different inference
+methods are supported with more to come:
 
 - Message Passing and the Junction Tree Algorithm
 - The Sum Product Algorithm
-- MCMC Sampling
+- MCMC Sampling for approximate inference
 
-Other Features:
+
+Other Features
 
 - Automated conversion to Junction Trees
 - Inference of Graph Structure from Mass Functions
