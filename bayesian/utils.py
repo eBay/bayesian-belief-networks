@@ -22,7 +22,12 @@ def make_key(*args):
     '''Handy for short truth table keys'''
     key = ''
     for a in args:
-        key += str(a.value).lower()[0]
+        if hasattr(a, 'value'):
+            # assume this is an old style
+            # instance of Variable or Binding
+            key += str(a.value).lower()[0]
+        else:
+            key += str(a).lower()[0]
     return key
 
 

@@ -265,7 +265,14 @@ class JoinTree(UndirectedGraph):
                         arg = Binding(
                             arg_name,
                             argvals[arg_name])
-                        arg_list.append(arg)
+                        # For BBNs it seems to eliminate
+                        # the use of .name and .value
+                        # All we have to do is change
+                        # this arglist here...
+
+                        #arg_list.append(arg)
+                        arg_list.append(argvals[arg_name])
+
                     potential *= bbn_node.func(*arg_list)
                 tt[permutation] = potential
             clique.potential_tt = tt
