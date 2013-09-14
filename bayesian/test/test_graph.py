@@ -761,7 +761,6 @@ def test_sample_db_filename():
 
 def test_eliminate_var(eliminate_var_factor):
 
-
     eliminated = eliminate_var(eliminate_var_factor, 'x2')
     assert eliminated.argspec == ['x1', 'x3']
 

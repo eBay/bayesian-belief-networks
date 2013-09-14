@@ -4,17 +4,17 @@ from bayesian.bbn import *
 
 def fP(P):
     '''Pollution'''
-    if P.value == 'high':
+    if P == 'high':
         return 0.1
-    elif P.value == 'low':
+    elif P == 'low':
         return 0.9
 
 
 def fS(S):
     '''Smoker'''
-    if S.value is True:
+    if S is True:
         return 0.3
-    elif S.value is False:
+    elif S is False:
         return 0.7
 
 
@@ -30,9 +30,9 @@ def fC(P, S, C):
     table['fft'] = 0.001
     table['fff'] = 0.999
     key = ''
-    key = key + 't' if P.value == 'high' else key + 'f'
-    key = key + 't' if S.value else key + 'f'
-    key = key + 't' if C.value else key + 'f'
+    key = key + 't' if P == 'high' else key + 'f'
+    key = key + 't' if S else key + 'f'
+    key = key + 't' if C else key + 'f'
     return table[key]
 
 
@@ -44,8 +44,8 @@ def fX(C, X):
     table['ft'] = 0.2
     table['ff'] = 0.8
     key = ''
-    key = key + 't' if C.value else key + 'f'
-    key = key + 't' if X.value else key + 'f'
+    key = key + 't' if C else key + 'f'
+    key = key + 't' if X else key + 'f'
     return table[key]
 
 
@@ -57,8 +57,8 @@ def fD(C, D):
     table['ft'] = 0.3
     table['ff'] = 0.7
     key = ''
-    key = key + 't' if C.value else key + 'f'
-    key = key + 't' if D.value else key + 'f'
+    key = key + 't' if C else key + 'f'
+    key = key + 't' if D else key + 'f'
     return table[key]
 
 

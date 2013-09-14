@@ -509,6 +509,17 @@ def make_product_func(factors):
     a list of factors which correctly
     applies the arguments to each
     individual factor.
+
+    The challenge here is to return a function
+    whose argument list we know and ensure that
+    when this function is called, its always
+    called with the correct arguments.
+    Since the correct argspec is attached
+    to the built function it seems that
+    it should be up to the caller to
+    get the argument list correct.
+    So we need to determine when and where its called...
+
     '''
     args_map = {}
     all_args = []
@@ -521,9 +532,14 @@ def make_product_func(factors):
         if hasattr(factor, 'domains'):
             domains.update(factor.domains)
     args = list(set(all_args))
+    # Perhaps if we sort the
 
-    def product_func(*args):
-        arg_dict = dict([(a.name, a) for a in args])
+
+    def product_func(*product_func_args):
+        #import pytest; pytest.set_trace()
+        #arg_dict = dict([(a.name, a) for a in product_func_args])
+        arg_dict = dict(zip(args, product_func_args))
+        #import pytest; pytest.set_trace()
         result = 1
         for factor in factors:
             #domains.update(factor.domains)

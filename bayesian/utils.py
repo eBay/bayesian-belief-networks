@@ -23,9 +23,7 @@ def make_key(*args):
     key = ''
     for a in args:
         if hasattr(a, 'value'):
-            # assume this is an old style
-            # instance of Variable or Binding
-            key += str(a.value).lower()[0]
+            raise "value attribute deprecated"
         else:
             key += str(a).lower()[0]
     return key
