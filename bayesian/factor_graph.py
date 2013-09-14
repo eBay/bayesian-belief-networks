@@ -313,19 +313,54 @@ def eliminate_var(f, var):
     Given a function f return a new
     function which sums over the variable
     we want to eliminate
+
+    This may be where we have the opportunity
+    to remove the use of .value....
+
     '''
     arg_spec = get_args(f)
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     new_spec.remove(var)
+    # Lets say the orginal argspec is
+    # ('a', 'b', 'c', 'd') and they
+    # are all Booleans
+    # Now lets say we want to eliminate c
+    # This means we want to sum over
+    # f(a, b, True, d) and f(a, b, False, d)
+    # Seems like all we have to do is know
+    # the positionn of c and thats it???
+    # Ok so its not as simple as that...
+    # this is because when the *call* is made
+    # to the eliminated function, as opposed
+    # to when its built then its only
+    # called with ('a', 'b', 'd')
+    eliminated_pos = arg_spec.index(var)
 
     def eliminated(*args):
         template = arg_spec[:]
         total = 0
         call_args = template[:]
+        i = 0
         for arg in args:
-            arg_pos = template.index(arg.name)
-            call_args[arg_pos] = arg
+            # To be able to remove .value we
+            # first need to also be able to
+            # remove .name in fact .value is
+            # just a side effect of having to
+            # rely on .name. This means we
+            # probably need to construct a
+            # a list containing the names
+            # of the args based on the position
+            # they are being called.
+            if i == eliminated_pos:
+                # We need to increment i
+                # once more to skip over
+                # the variable being marginalized
+                call_args[i] = 'marginalize me!'
+                i += 1
+            call_args[i] = arg
+            i += 1
+
         for val in f.domains[var]:
             v = VariableNode(name=var)
             v.value = val
@@ -370,6 +405,12 @@ def make_not_sum_func(product_func, keep_var):
     construct a new function only of the
     keep_var, summarized over all the other
     variables.
+
+    For this branch we are trying to
+    get rid of the requirement to have
+    to use .value on arguments....
+    Looks like its actually in the
+    eliminate var...
     '''
     args = get_args(product_func)
     new_func = copy.deepcopy(product_func)

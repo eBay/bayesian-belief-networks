@@ -5,6 +5,8 @@ import os
 from bayesian.factor_graph import *
 
 
+
+
 def fA(x1):
     if x1.value is True:
         return 0.1
@@ -21,6 +23,32 @@ def fB(x2):
         return 0.7
 
 fB.domains = dict(x2=[True, False])
+
+def pytest_funcarg__eliminate_var_factor(request):
+    '''Get a factor to test variable elimination'''
+
+    def factor(x1, x2, x3):
+        table = dict()
+        table['ttt'] = 0.05
+        table['ttf'] = 0.95
+        table['tft'] = 0.02
+        table['tff'] = 0.98
+        table['ftt'] = 0.03
+        table['ftf'] = 0.97
+        table['fft'] = 0.001
+        table['fff'] = 0.999
+        key = ''
+        key = key + 't' if x1.value else key + 'f'
+        key = key + 't' if x2.value else key + 'f'
+        key = key + 't' if x3.value else key + 'f'
+        return table[key]
+
+    factor.domains = dict(
+        x1=[True, False],
+        x2=[True, False],
+        x3=[True, False])
+
+    return factor
 
 
 def fC(x1, x2, x3):
@@ -729,3 +757,18 @@ def test_sample_db_filename():
         'data',
         'model_1.sqlite')
     assert graph.sample_db_filename == expected_filename
+
+
+def test_eliminate_var(eliminate_var_factor):
+
+
+    eliminated = eliminate_var(eliminate_var_factor, 'x2')
+    assert eliminated.argspec == ['x1', 'x3']
+
+    # Now lets make some calls on eliminated
+    x1 = VariableNode(name='x1')
+    x1.value = True
+    x3 = VariableNode(name='x3')
+    x3.value = True
+
+    assert eliminated(x1, x3) == 0.07
