@@ -3,13 +3,13 @@ from bayesian.bbn import build_bbn
 
 
 def f_burglary(burglary):
-    if burglary.value is True:
+    if burglary is True:
         return 0.01
     return 0.99
 
 
 def f_earthquake(earthquake):
-    if earthquake.value is True:
+    if earthquake is True:
         return 0.02
     return 0.98
 
@@ -25,9 +25,9 @@ def f_alarm(burglary, earthquake, alarm):
     table['fft'] = 0.001
     table['fff'] = 0.999
     key = ''
-    key = key + 't' if burglary.value else key + 'f'
-    key = key + 't' if earthquake.value else key + 'f'
-    key = key + 't' if alarm.value else key + 'f'
+    key = key + 't' if burglary else key + 'f'
+    key = key + 't' if earthquake else key + 'f'
+    key = key + 't' if alarm else key + 'f'
     return table[key]
 
 
@@ -38,8 +38,8 @@ def f_johncalls(alarm, johncalls):
     table['ft'] = 0.05
     table['ff'] = 0.95
     key = ''
-    key = key + 't' if alarm.value else key + 'f'
-    key = key + 't' if johncalls.value else key + 'f'
+    key = key + 't' if alarm else key + 'f'
+    key = key + 't' if johncalls else key + 'f'
     return table[key]
 
 
@@ -50,8 +50,8 @@ def f_marycalls(alarm, marycalls):
     table['ft'] = 0.01
     table['ff'] = 0.99
     key = ''
-    key = key + 't' if alarm.value else key + 'f'
-    key = key + 't' if marycalls.value else key + 'f'
+    key = key + 't' if alarm else key + 'f'
+    key = key + 't' if marycalls else key + 'f'
     return table[key]
 
 

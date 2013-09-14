@@ -262,15 +262,6 @@ class JoinTree(UndirectedGraph):
 
                     arg_list = []
                     for arg_name in get_args(bbn_node.func):
-                        arg = Binding(
-                            arg_name,
-                            argvals[arg_name])
-                        # For BBNs it seems to eliminate
-                        # the use of .name and .value
-                        # All we have to do is change
-                        # this arglist here...
-
-                        #arg_list.append(arg)
                         arg_list.append(argvals[arg_name])
 
                     potential *= bbn_node.func(*arg_list)
@@ -728,13 +719,6 @@ class JoinTreeSepSetNode(UndirectedNode):
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset
-
-
-class Binding(object):
-
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
 
 
 def connect(parent, child):

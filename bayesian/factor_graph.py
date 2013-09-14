@@ -113,10 +113,8 @@ class VariableNode(Node):
         normalize.
         '''
         product = 1
-        v = VariableNode(self.name)
-        v.value = val
         for _, message in self.received_messages.iteritems():
-            product *= message(v)
+            product *= message(val)
         return product / normalizer
 
     def reset(self):
@@ -203,7 +201,7 @@ class FactorNode(Node):
         self.cached_functions.insert(0, old_func)
 
         def evidence_func(*args):
-            if args[pos].value != value:
+            if args[pos] != value:
                 return 0
             return old_func(*args)
 
@@ -234,7 +232,7 @@ class Message(object):
         '''
         if getattr(self.func, '__name__', None) == 'unity':
             return 1
-        assert isinstance(var, VariableNode)
+        assert not isinstance(var, VariableNode)
         # Now check that the name of the
         # variable matches the argspec...
         #assert var.name == self.argspec[0]
@@ -285,27 +283,6 @@ def connect(a, b):
         a.neighbours.append(b_)
         b_.neighbours.append(a)
 
-
-def replace_var(f, var, val):
-    arg_spec = get_args(f)
-    pos = arg_spec.index(var)
-    new_spec = arg_spec[:]
-    new_spec.remove(var)
-
-    def replaced(*args):
-        template = arg_spec[:]
-        v = VariableNode(name=var)
-        v.value = val
-        template[pos] = v
-        call_args = template[:]
-        for arg in args:
-            arg_pos = call_args.index(arg.name)
-            call_args[arg_pos] = arg
-
-        return f(*call_args)
-
-    replaced.argspec = new_spec
-    return replaced
 
 
 def eliminate_var(f, var):
@@ -362,9 +339,10 @@ def eliminate_var(f, var):
             i += 1
 
         for val in f.domains[var]:
-            v = VariableNode(name=var)
-            v.value = val
-            call_args[pos] = v
+            #v = VariableNode(name=var)
+            #v.value = val
+            #call_args[pos] = v
+            call_args[pos] = val
             total += f(*call_args)
         return total
 
@@ -386,7 +364,8 @@ def memoize(f):
     cache = {}
 
     def memoized(*args):
-        arg_vals = tuple([arg.value for arg in args])
+        #arg_vals = tuple([arg.value for arg in args])
+        arg_vals = tuple(args)
         if not arg_vals in cache:
             cache[arg_vals] = f(*args)
         return cache[arg_vals]
@@ -686,9 +665,11 @@ def get_sample(ordering, evidence={}):
             args = []
             for arg in get_args(func):
                 if arg == var.name:
-                    args.append(test_var)
+                    #args.append(test_var)
+                    args.append(val)
                 else:
-                    args.append(sample_dict[arg])
+                    args.append(sample_dict[arg].value)
+
             total += func(*args)
             if total > r:
                 # We only want to use this sample

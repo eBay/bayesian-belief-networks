@@ -1,5 +1,3 @@
-
-
 '''The Monty Hall Problem Modelled as a Bayesian Belief Network'''
 from bayesian.factor_graph import *
 
@@ -39,14 +37,14 @@ def f_guest_door(guest_door):
 
 
 def f_monty_door(prize_door, guest_door, monty_door):
-    if prize_door.value == guest_door.value:
-        if prize_door.value == monty_door.value:
+    if prize_door == guest_door:
+        if prize_door == monty_door:
             return 0
         else:
             return 0.5
-    elif prize_door.value == monty_door.value:
+    elif prize_door == monty_door:
         return 0
-    elif guest_door.value == monty_door.value:
+    elif guest_door == monty_door:
         return 0
     return 1
 

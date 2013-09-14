@@ -8,18 +8,18 @@ from bayesian.factor_graph import *
 
 
 def fA(x1):
-    if x1.value is True:
+    if x1 is True:
         return 0.1
-    elif not x1.value:
+    elif not x1:
         return 0.9
 
 fA.domains = dict(x1=[True, False])
 
 
 def fB(x2):
-    if x2.value is True:
+    if x2 is True:
         return 0.3
-    elif not x2.value:
+    elif not x2:
         return 0.7
 
 fB.domains = dict(x2=[True, False])
@@ -38,9 +38,9 @@ def pytest_funcarg__eliminate_var_factor(request):
         table['fft'] = 0.001
         table['fff'] = 0.999
         key = ''
-        key = key + 't' if x1.value else key + 'f'
-        key = key + 't' if x2.value else key + 'f'
-        key = key + 't' if x3.value else key + 'f'
+        key = key + 't' if x1 else key + 'f'
+        key = key + 't' if x2 else key + 'f'
+        key = key + 't' if x3 else key + 'f'
         return table[key]
 
     factor.domains = dict(
@@ -66,9 +66,9 @@ def fC(x1, x2, x3):
     table['fft'] = 0.001
     table['fff'] = 0.999
     key = ''
-    key = key + 't' if x1.value else key + 'f'
-    key = key + 't' if x2.value else key + 'f'
-    key = key + 't' if x3.value else key + 'f'
+    key = key + 't' if x1 else key + 'f'
+    key = key + 't' if x2 else key + 'f'
+    key = key + 't' if x3 else key + 'f'
     return table[key]
 
 fC.domains = dict(
@@ -84,8 +84,8 @@ def fD(x3, x4):
     table['ft'] = 0.2
     table['ff'] = 0.8
     key = ''
-    key = key + 't' if x3.value else key + 'f'
-    key = key + 't' if x4.value else key + 'f'
+    key = key + 't' if x3 else key + 'f'
+    key = key + 't' if x4 else key + 'f'
     return table[key]
 
 fD.domains = dict(
@@ -100,8 +100,8 @@ def fE(x3, x5):
     table['ft'] = 0.3
     table['ff'] = 0.7
     key = ''
-    key = key + 't' if x3.value else key + 'f'
-    key = key + 't' if x5.value else key + 'f'
+    key = key + 't' if x3 else key + 'f'
+    key = key + 't' if x5 else key + 'f'
     return table[key]
 
 fE.domains = dict(
@@ -442,9 +442,9 @@ def test_add_evidence_x5_true_x2_true():
 
 def test_marginals_table_22_part_2_x2_prior_change():
     def fB(x2):
-        if x2.value is True:
+        if x2 is True:
             return 0.5
-        elif not x2.value:
+        elif not x2:
             return 0.5
     fB.domains = dict(x2=[True, False])
 
@@ -765,9 +765,9 @@ def test_eliminate_var(eliminate_var_factor):
     assert eliminated.argspec == ['x1', 'x3']
 
     # Now lets make some calls on eliminated
-    x1 = VariableNode(name='x1')
-    x1.value = True
-    x3 = VariableNode(name='x3')
-    x3.value = True
+    #x1 = VariableNode(name='x1')
+    #x1.value = True
+    #x3 = VariableNode(name='x3')
+    #x3.value = True
 
-    assert eliminated(x1, x3) == 0.07
+    assert eliminated(True, True) == 0.07
