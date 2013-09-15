@@ -240,14 +240,14 @@ only one choice: the door concealing the goat which the guest did not choose. Th
 .. code-block :: python
 
     def f_monty_door(prize_door, guest_door, monty_door):
-        if prize_door.value == guest_door.value:  # Guest was correct!
-	    if prize_door.value == monty_door.value:
+        if prize_door == guest_door:  # Guest was correct!
+	    if prize_door == monty_door:
 	        return 0     # Monty never reveals the prize
 	    else:
                 return 0.5   # Monty can choose either goat door
-        elif prize_door.value == monty_door.value:
+        elif prize_door == monty_door:
             return 0         # Again, Monty wont reveal the prize
-        elif guest_door.value == monty_door.value:
+        elif guest_door == monty_door:
             return 0         # Monty will never choose the guest door
         else:
 	    # This covers all case where
@@ -310,14 +310,14 @@ The entire program should look like this:
 
 
     def f_monty_door(prize_door, guest_door, monty_door):
-        if prize_door.value == guest_door.value:  # Guest was correct!
-	    if prize_door.value == monty_door.value:
+        if prize_door == guest_door:  # Guest was correct!
+	    if prize_door == monty_door:
 	        return 0     # Monty never reveals the prize
 	    else:
                 return 0.5   # Monty can choose either goat door
-        elif prize_door.value == monty_door.value:
+        elif prize_door == monty_door:
             return 0         # Again, Monty wont reveal the prize
-        elif guest_door.value == monty_door.value:
+        elif guest_door == monty_door:
             return 0         # Monty will never choose the guest door
         else:
 	    # This covers all case where
