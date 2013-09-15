@@ -4,19 +4,19 @@ from bayesian.bbn import *
 from bayesian.utils import make_key
 
 def f_rain(rain):
-    if rain.value is True:
+    if rain is True:
         return 0.2
     return 0.8
 
 
 def f_sprinkler(rain, sprinkler):
-    if rain.value is False and sprinkler.value is True:
+    if rain is False and sprinkler is True:
         return 0.4
-    if rain.value is False and sprinkler.value is False:
+    if rain is False and sprinkler is False:
         return 0.6
-    if rain.value is True and sprinkler.value is True:
+    if rain is True and sprinkler is True:
         return 0.01
-    if rain.value is True and sprinkler.value is False:
+    if rain is True and sprinkler is False:
         return 0.99
 
 
