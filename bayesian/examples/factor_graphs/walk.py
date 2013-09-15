@@ -24,11 +24,11 @@ the forecast for rain and on actual rain observed.
 
 
 def little_bool(var):
-    return str(var.value).lower()[0]
+    return str(var).lower()[0]
 
 
 def f_forecast(forecast):
-    if forecast.value is True:
+    if forecast is True:
         return 0.6
     return 0.4
 
@@ -87,7 +87,6 @@ graph = FactorGraph([
 def tabulate(counts, normalizer):
     table = PrettyTable(['Variable', 'Value', 'p'])
     table.align = 'l'
-    #table.align['p'] = 'r'
     deco = [(k, v) for k, v in counts.items()]
     deco.sort()
     for k, v in deco:
@@ -107,10 +106,8 @@ if __name__ == '__main__':
         table.align = 'l'
         sample = graph.get_sample()
         for var in sample:
-            key = (var.name, var.value)
-            #table.add_row(key)
+            key = (var.name, var)
             counts[key] += 1
-        #print table
 
     from pprint import pprint
     pprint(counts)
