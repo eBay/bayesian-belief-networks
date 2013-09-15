@@ -64,6 +64,7 @@ http://www.comm.utoronto.ca/frank/papers/KFL01.pdf
 http://www.snn.ru.nl/~bertk/ (Many real-world examples listed)
 http://www.cs.ubc.ca/~murphyk/Bayes/Charniak_91.pdf
 http://www.sciencedirect.com/science/article/pii/S0888613X96000692
+http://arxiv.org/pdf/1301.7394v1.pdf
 
 Junction Tree Algorithm:
 http://www.inf.ed.ac.uk/teaching/courses/pmr/docs/jta_ex.pdf
