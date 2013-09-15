@@ -705,14 +705,14 @@ def test_discover_sample_ordering():
         return 1.0 / 3
 
     def fMontyDoor(ActualDoor, GuestDoor, MontyDoor):
-        if ActualDoor.value == GuestDoor.value:
-            if GuestDoor.value == MontyDoor.value:
+        if ActualDoor == GuestDoor:
+            if GuestDoor == MontyDoor:
                 return 0
             else:
                 return 0.5
-        if GuestDoor.value == MontyDoor.value:
+        if GuestDoor == MontyDoor:
             return 0
-        if ActualDoor.value == MontyDoor.value:
+        if ActualDoor == MontyDoor:
             return 0
         return 1
 
@@ -763,11 +763,4 @@ def test_eliminate_var(eliminate_var_factor):
 
     eliminated = eliminate_var(eliminate_var_factor, 'x2')
     assert eliminated.argspec == ['x1', 'x3']
-
-    # Now lets make some calls on eliminated
-    #x1 = VariableNode(name='x1')
-    #x1.value = True
-    #x3 = VariableNode(name='x3')
-    #x3.value = True
-
     assert eliminated(True, True) == 0.07
