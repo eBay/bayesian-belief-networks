@@ -500,6 +500,7 @@ class TestBBN():
 
         huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
         tt = jt_cliques['Clique_DEF'].potential_tt
+        import pytest; pytest.set_trace()
         assert r5(tt[(('d', False), ('e', True), ('f', True))]) == 0.00150
         assert r5(tt[(('d', True), ('e', False), ('f', True))]) == 0.00365
         assert r5(tt[(('d', False), ('e', False), ('f', True))]) == 0.16800

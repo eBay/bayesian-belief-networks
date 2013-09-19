@@ -1,6 +1,6 @@
 import pytest
 from bayesian.factor_graph import *
-
+from bayesian.persistance import *
 
 def f_prize_door(prize_door):
     return 1.0 / 3
@@ -42,3 +42,57 @@ class TestPersistance():
         # Now switch the inference_method to sample_db...
         monty_graph.inference_method = 'sample_db'
         assert monty_graph.inference_method == 'sample_db'
+
+    def test_key_to_int(self):
+        assert key_to_int((('a', True),)) == 1
+        assert key_to_int((('a', False),
+                           ('b', False),
+                           ('c', False))) == 0
+
+        assert key_to_int((('a', False),
+                           ('b', True),
+                           ('c', False))) == 2
+
+        assert key_to_int((('a', True),
+                           ('b', False),
+                           ('c', True))) == 5
+
+    def test_diskdict(self):
+        d = DiskDict()
+        d[(('a', False),)] = 0.4
+        assert d[(('a', False),)] == 0.4
+
+        d = DiskDict()
+        key = (('a', True),
+               ('b', False),
+               ('c', True))
+        d[key] = 1
+        assert d[key] == 1
+
+        key = (('a', False),
+               ('b', True),
+               ('c', True))
+
+        d[key] = 3
+        assert d[key] == 3
+
+        # Test default like dict behaviour...
+        d = DiskDict(float)
+        assert d[key] == 0
+
+        # Test copying
+        e = d.copy()
+        for k, v in d.iteritems():
+            assert e[k] == v
+
+        # Test items and iteritems...
+        for k, v in d.items():
+            assert e[k] == d[k]
+
+        # Test all the other attributes...
+        ignore_attribs = ('name', '_db')
+        for k, v in d.__dict__.iteritems():
+            if k in ignore_attribs:
+                continue
+            print k, v
+            assert e.__dict__[k] == v

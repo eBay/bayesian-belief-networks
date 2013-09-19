@@ -12,7 +12,7 @@ from prettytable import PrettyTable
 
 from bayesian import GREEN, NORMAL
 from bayesian.utils import get_args, named_base_type_factory
-
+from bayesian.persistance import DiskDict
 
 class Node(object):
 
@@ -216,7 +216,8 @@ class JoinTree(UndirectedGraph):
     def initialize_potentials(self, assignments, bbn, evidence={}):
         # Step 1, assign 1 to each cluster and sepset
         for node in self.nodes:
-            tt = dict()
+            #tt = dict()
+            tt = DiskDict()
             vals = []
             variables = node.variable_names
             # Lets sort the variables here so that
@@ -224,12 +225,13 @@ class JoinTree(UndirectedGraph):
             # the tt are always sorted.
             variables.sort()
             for variable in variables:
-                domain = bbn.domains.get(variable, [True, False])
+                domain = bbn.domains.get(variable, [False, True])
                 vals.append(list(product([variable], domain)))
             permutations = product(*vals)
             for permutation in permutations:
                 tt[permutation] = 1
             node.potential_tt = tt
+
 
         # Step 2: Note that in H&D the assignments are
         # done as part of step 2 however we have
@@ -242,12 +244,13 @@ class JoinTree(UndirectedGraph):
 
         for clique, bbn_nodes in assignments.iteritems():
 
-            tt = dict()
+            #tt = dict()
+            tt = DiskDict()
             vals = []
             variables = list(clique.variable_names)
             variables.sort()
             for variable in variables:
-                domain = bbn.domains.get(variable, [True, False])
+                domain = bbn.domains.get(variable, [False, True])
                 vals.append(list(product([variable], domain)))
             permutations = product(*vals)
             for permutation in permutations:
@@ -267,6 +270,7 @@ class JoinTree(UndirectedGraph):
                     potential *= bbn_node.func(*arg_list)
                 tt[permutation] = potential
             clique.potential_tt = tt
+
 
         if not evidence:
             # We dont need to deal with likelihoods
@@ -293,7 +297,7 @@ class JoinTree(UndirectedGraph):
         l = defaultdict(dict)
         for clique, bbn_nodes in assignments.iteritems():
             for node in bbn_nodes:
-                for value in bbn.domains.get(node.variable_name, [True, False]):
+                for value in bbn.domains.get(node.variable_name, [False, True]):
                     l[(node.variable_name, value)] = 1
         return l
 
@@ -437,6 +441,7 @@ class JoinTree(UndirectedGraph):
 
         clique_node = containing_nodes[0]
         tt = defaultdict(float)
+        #tt = DiskDict(float)
         for k, v in clique_node.potential_tt.items():
             entry = transform(
                 k,
@@ -559,14 +564,17 @@ class JoinTreeCliqueNode(UndirectedNode):
         assert sepset_node in self.neighbours
         # First we make a copy of the
         # old potential tt
-        sepset_node.potential_tt_old = copy.deepcopy(
-            sepset_node.potential_tt)
+        #sepset_node.potential_tt_old = copy.deepcopy(
+        #    sepset_node.potential_tt)
+
+        sepset_node.potential_tt_old = sepset_node.potential_tt.copy()
 
         # Now we assign a new potential tt
         # to the sepset by marginalizing
         # out the variables from X that are not
         # in the sepset
         tt = defaultdict(float)
+        #tt = DiskDict(float)
         for k, v in self.potential_tt.items():
             entry = transform(k, self.variable_names,
                               sepset_node.variable_names)
@@ -577,6 +585,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         # Assign a new potential tt to
         # Y (the target)
         tt = dict()
+        #tt = DiskDict()
 
         for k, v in target.potential_tt.items():
             # For each entry we multiply by
