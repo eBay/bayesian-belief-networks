@@ -84,6 +84,12 @@ class TestPersistance():
         e = d.copy()
         for k, v in d.iteritems():
             assert e[k] == v
+        assert len(e) == len(d)
+        # Now read the raw files and ensure they are the same
+
+        data_d = open(d.name).read()
+        data_e = open(e.name).read()
+        assert data_d == data_e
 
         # Test items and iteritems...
         for k, v in d.items():

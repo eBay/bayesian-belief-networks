@@ -5,7 +5,7 @@ import os
 
 from bayesian.bbn import *
 from bayesian.utils import make_key
-
+from bayesian.persistance import DiskDict
 
 def r3(x):
     return round(x, 3)
@@ -416,8 +416,12 @@ class TestBBN():
         huang_darwiche_jt.initialize_potentials(
             assignments, huang_darwiche_dag)
         for node in huang_darwiche_jt.sepset_nodes:
+            assert isinstance(node.potential_tt, DiskDict)
             for v in node.potential_tt.values():
                 assert v == 1
+
+        for _, node in cliques.iteritems():
+            assert isinstance(node.potential_tt, DiskDict)
 
         # Note that in H&D there are two places that show
         # initial potentials, one is for ABD and AD
@@ -430,6 +434,7 @@ class TestBBN():
             return round(x, 3)
 
         tt = cliques['Clique_ACE'].potential_tt
+        assert isinstance(tt, DiskDict)
         assert r(tt[('a', True), ('c', True), ('e', True)]) == 0.21
         assert r(tt[('a', True), ('c', True), ('e', False)]) == 0.49
         assert r(tt[('a', True), ('c', False), ('e', True)]) == 0.18
@@ -492,15 +497,42 @@ class TestBBN():
                 [node for node in huang_darwiche_dag.nodes])
 
     def test_propagate(self, huang_darwiche_jt, huang_darwiche_dag):
+
+
+        '''
+        This is from test_initialize_potentioals
+        cliques = dict([(node.name, node) for node in
+                        huang_darwiche_jt.clique_nodes])
+        bbn_nodes = dict([(node.name, node) for node in
+                          huang_darwiche_dag.nodes])
+        assignments = {
+            cliques['Clique_ACE']: [bbn_nodes['f_c'], bbn_nodes['f_e']],
+            cliques['Clique_ABD']: [
+                bbn_nodes['f_a'], bbn_nodes['f_b'],  bbn_nodes['f_d']]}
+        '''
+
+
+
         jt_cliques = dict([(node.name, node) for node in
                            huang_darwiche_jt.clique_nodes])
         assignments = huang_darwiche_jt.assign_clusters(huang_darwiche_dag)
         huang_darwiche_jt.initialize_potentials(
             assignments, huang_darwiche_dag)
+        for node in huang_darwiche_jt.clique_nodes:
+            print node, id(node), type(node.potential_tt)
+            assert isinstance(node.potential_tt, DiskDict)
 
         huang_darwiche_jt.propagate(starting_clique=jt_cliques['Clique_ACE'])
+        for node in huang_darwiche_jt.clique_nodes:
+            print node, id(node), type(node.potential_tt)
+            assert isinstance(node.potential_tt, DiskDict)
+
+        # For some reason after propagation some of
+        # the potential_tt are now ordinary dicts...
+        # need to track where thats happeneing.
+        print id(jt_cliques['Clique_DEF'])
         tt = jt_cliques['Clique_DEF'].potential_tt
-        import pytest; pytest.set_trace()
+
         assert r5(tt[(('d', False), ('e', True), ('f', True))]) == 0.00150
         assert r5(tt[(('d', True), ('e', False), ('f', True))]) == 0.00365
         assert r5(tt[(('d', False), ('e', False), ('f', True))]) == 0.16800

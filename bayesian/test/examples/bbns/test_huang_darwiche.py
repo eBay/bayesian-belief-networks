@@ -17,6 +17,7 @@ def close_enough(x, y, r=3):
 class TestHuangeDarwicheBBN():
 
     def test_no_evidence(self, huang_darwiche_bbn):
+        import pytest; pytest.set_trace()
         result = huang_darwiche_bbn.query()
         assert close_enough(result[('a', True)], 0.5)
         assert close_enough(result[('a', False)], 0.5)

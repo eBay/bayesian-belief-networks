@@ -141,7 +141,7 @@ class BBN(Graph):
         jt.propagate()
         marginals = dict()
         normalizers = defaultdict(float)
-
+        import pytest; pytest.set_trace()
         for node in self.nodes:
             for k, v in jt.marginal(node).items():
                 # For a single node the
@@ -160,6 +160,7 @@ class BBN(Graph):
                 if normalizers[k[0]] != 0:
                     marginals[k] /= normalizers[k[0]]
 
+        self.jt = jt
         return marginals
 
     def q(self, **kwds):
@@ -573,8 +574,8 @@ class JoinTreeCliqueNode(UndirectedNode):
         # to the sepset by marginalizing
         # out the variables from X that are not
         # in the sepset
-        tt = defaultdict(float)
-        #tt = DiskDict(float)
+        #tt = defaultdict(float)
+        tt = DiskDict(float)
         for k, v in self.potential_tt.items():
             entry = transform(k, self.variable_names,
                               sepset_node.variable_names)
@@ -584,8 +585,8 @@ class JoinTreeCliqueNode(UndirectedNode):
     def absorb(self, sepset, target):
         # Assign a new potential tt to
         # Y (the target)
-        tt = dict()
-        #tt = DiskDict()
+        #tt = dict()
+        tt = DiskDict()
 
         for k, v in target.potential_tt.items():
             # For each entry we multiply by
