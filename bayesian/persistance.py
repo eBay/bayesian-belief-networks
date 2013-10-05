@@ -207,6 +207,7 @@ def unpack_data(x):
     # TODO Change this to use struct module
     return float(x)
 
+
 def key_to_int(key):
     '''Convert a tuple of Booleans
     into an integer assuming the
@@ -222,20 +223,21 @@ def key_to_int(key):
 
 
     retval  = 0
-    for i, b in enumerate(list(key)[::-1]):
+    for i, (k, v) in enumerate(list(key)[::-1]):
+        print i, k, v
         if v:
             retval += 2 ** i
     return retval
 
+
 BOOLEANS = frozenset([False, True])
 
 
-
-class DiskDict(object):
-    '''Non thread-safe Persistant Dict'''
+class DiskArray(object):
+    '''Non thread-safe Persistant Array'''
 
     def __init__(self, default_constructor=None):
-        self.name = 'tmp/%s.diskdict' % uuid.uuid4().hex
+        self.name = 'tmp/%s.diskarray' % uuid.uuid4().hex
         self.default_constructor = default_constructor
         self._db = open(self.name, 'w+b')
         if default_constructor is not None:
@@ -251,19 +253,16 @@ class DiskDict(object):
         '''For now we only allow dicts
         where the keys are all boolean
         to persist.'''
-        row_num = key_to_int(key)
+        #row_num = key_to_int(key)
+        row_num = key
         if row_num > self.last_row_num:
-            if self.default_constructor:
-                value = self.default_constructor()
-                self[key] = value
-                return value
-            else:
-                raise KeyError(key)
+            raise KeyError(key)
         offset = row_num * self.record_size
         self._db.seek(offset)
         row = self._db.read(self.record_size)
-        row_key, val = row.split(':')
-        if row_key.startswith('D'):
+        #w_key, val = row.split(':')
+        val = row.strip()
+        if row.startswith('D'):
             if self.default_constructor:
                 value = self.default_constructor()
                 self[key] = value
@@ -272,25 +271,18 @@ class DiskDict(object):
                 raise KeyError(key)
         return float(val)
 
-
     def build_record(self, key, value):
         '''Build a single row for the
         underlying fixed length file'''
-        row = '%s:%s\n' % (
-            key,
-            pack_data(value))
+        row = '%s\n' % (pack_data(value))
         if self.record_size == -1:
             self.record_size = len(row)
-            self.key_size = len(key))
-            self.data_size = self.record_size - self.key_size - 1
-            self.dummy_record = 'D' * self.key_size + ':' + \
-                                'D' * (self.data_size - 1) + '\n'
-
+            self.dummy_record = 'D' * (self.record_size - 1)  + '\n'
         return row
 
     def __setitem__(self, key, value):
         row = self.build_record(key, value)
-        row_num = key_to_int(key)
+        row_num = key
         if row_num > self.last_row_num:
             # We need to write dummy
             # rows to reserve space
@@ -307,30 +299,32 @@ class DiskDict(object):
         self._db.flush()
         if row_num > self.last_row_num:
             self.last_row_num = row_num
-        #self.d[key] = value
+        #return value
 
-    #def __delitem__(self, key):
-    #    try:
-    #        del self._db[str(key)]
-    #    except KeyError:
-    #        raise KeyError(key)
+    def __iter__(self):
+        self._db.seek(0)
+        for row_num in range(0, self.last_row_num + 1):
+            row = self._db.read(self.record_size)
+            value = row.strip()
+            if value.startswith('D'):
+                yield None
+            else:
+                yield float(value)
 
-    #def __iter__(self):
-    #    return iter(self._db)
 
     def __len__(self):
         return self.last_row_num
 
 
-    def values(self):
-        return self.d.values()
-        #for k in self._db.keys():
-        #    yield unpack(self._db[k])
+    #def values(self):
+    #    return self.d.values()
+    #    #for k in self._db.keys():
+    #    #    yield unpack(self._db[k])
 
-    def items(self):
-        if self.d:
-            return self.d.items()
-        return list(self.iteritems())
+    #def items(self):
+    #    if self.d:
+    #        return self.d.items()
+    #    return list(self.iteritems())
 
 
 
@@ -339,9 +333,9 @@ class DiskDict(object):
             for k, v in self.d.iteritems():
                 yield k, v
         else:
-
-            self._db.seek(0)
-            for row_num in range(0, self.last_row_num + 1):
+            for row_num, value in zip(
+                    range(0, self.last_row_num + 1),
+                    super(PersistantTT, self).__iter__()):
                 offset = row_num * self.record_size
                 row = self._db.read(self.record_size)
                 key, value = row.split(':')
@@ -360,22 +354,23 @@ class DiskDict(object):
 
 
     def copy(self):
-        c = DiskDict(self.default_constructor)
+        c = DiskArray(self.default_constructor)
         self._db.seek(0)
         for row_num in range(0, self.last_row_num + 1):
             offset = row_num * self.record_size
             row = self._db.read(self.record_size)
-            key, value = row.split(':')
-            if key.startswith('D'):
+            #key, value = row.split(':')
+
+            if row.startswith('D'):
                 continue
-            c[unpack_key(key)] = unpack_data(value)
+            c[row_num] = unpack_data(row.strip())
         return c
 
     #def __del__(self):
     #    self._db.close()
     #    os.unlink(self.name)
 
-class PersistantTT(DiskDict):
+class PersistantTT(DiskArray):
     '''
     A class which acts as like a dictionary
     but uses a DiskDict as a store instead
@@ -396,32 +391,38 @@ class PersistantTT(DiskDict):
 
     def _pack_key(self, key):
         '''In this version we will just
-        pack the Booleans to a string consisting
-        of 0s and 1s'''
+        pack the Booleans to a int'''
         # First record the variable names so
         # that we can reconstruct the keys later
         # for example during iteritems, keys etc
         if not self.variable_names:
-            self.variable_names = (k[0] for k in key)
-        assert (k[0] for k in key) == self.variable_names
-        return ''.join(['1' if k[1] else '0' for k in key])
+            self.variable_names = [k[0] for k in key]
+        assert [k[0] for k in key] == self.variable_names
+        return key_to_int(key)
 
 
     def _unpack_key(self, key):
         return [(k[0], k[1]=='1') for k in zip(
-            self.variable_names, list(key))]
+            self.variable_names, list(bin(key)[2:]))]
 
 
     def __setitem__(self, key, value):
         if set([k[1] for k in key]).difference(BOOLEANS):
             # Means there are non-booleans in the key
             # TODO: Allow non-booleans
-            self.d[key] = value
-            return
+            raise "Not Implemented"
         super(PersistantTT, self).__setitem__(
             self._pack_key(key), value)
 
     def __getitem__(self, key):
+        if self._pack_key(key) > self.last_row_num:
+            if self.default_constructor:
+                value = self.default_constructor()
+                super(PersistantTT, self).__setitem__(
+                    self._pack_key(key), value)
+                return value
+            else:
+                raise KeyError(key)
         return super(PersistantTT, self).__getitem__(
             self._pack_key(key))
 
@@ -430,12 +431,12 @@ class PersistantTT(DiskDict):
             for k, v in self.d.iteritems():
                 yield k, v
         else:
-
+            for i, v in super(PersistantTT, self).
             self._db.seek(0)
             for row_num in range(0, self.last_row_num + 1):
                 offset = row_num * self.record_size
                 row = self._db.read(self.record_size)
-                key, value = row.split(':')
-                if key.startswith('D'):
+                value = row.strip()
+                if value.startswith('D'):
                     continue
-                yield self._unpack_key(key), float(value)
+                yield self._unpack_key(row_num), float(value)

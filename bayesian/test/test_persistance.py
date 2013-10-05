@@ -57,12 +57,45 @@ class TestPersistance():
                            ('b', False),
                            ('c', True))) == 5
 
-    def test_diskdict(self):
-        d = DiskDict()
+    def test_diskarray(self):
+        # Add first row
+        d = DiskArray()
+        d[0] = 0.4
+        assert d[0] == 0.4
+
+        # Add a row that skips first few
+        d = DiskArray()
+        d[5] = 1
+        assert d[5] == 1
+
+        # Now add one that is less than the last one...
+        d[3] = 3
+        assert d[3] == 3
+
+        # Test copying
+        e = d.copy()
+        # Now read the raw files and ensure they are the same
+
+        data_d = open(d.name).read()
+        data_e = open(e.name).read()
+        assert data_d == data_e
+
+        # Test all the other attributes...
+        ignore_attribs = ('name', '_db')
+        for k, v in d.__dict__.iteritems():
+            if k in ignore_attribs:
+                continue
+            print k, v
+            assert e.__dict__[k] == v
+
+class TestPersistantTT():
+
+    def test_tt(self):
+        d = PersistantTT()
         d[(('a', False),)] = 0.4
         assert d[(('a', False),)] == 0.4
 
-        d = DiskDict()
+        d = PersistantTT()
         key = (('a', True),
                ('b', False),
                ('c', True))
@@ -77,11 +110,12 @@ class TestPersistance():
         assert d[key] == 3
 
         # Test default like dict behaviour...
-        d = DiskDict(float)
+        d = PersistantTT(float)
         assert d[key] == 0
 
         # Test copying
         e = d.copy()
+        import pytest; pytest.set_trace()
         for k, v in d.iteritems():
             assert e[k] == v
         assert len(e) == len(d)
