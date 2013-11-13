@@ -295,7 +295,7 @@ class DiskArray(object):
         if self.record_size != -1:
             offset = row_num * self.record_size
             self._db.seek(offset)
-        self._db.write('%s' % row)
+        self._db.write(row)
         self._db.flush()
         if row_num > self.last_row_num:
             self.last_row_num = row_num
@@ -426,17 +426,17 @@ class PersistantTT(DiskArray):
         return super(PersistantTT, self).__getitem__(
             self._pack_key(key))
 
-    def iteritems(self):
-        if self.d:
-            for k, v in self.d.iteritems():
-                yield k, v
-        else:
-            for i, v in super(PersistantTT, self).
-            self._db.seek(0)
-            for row_num in range(0, self.last_row_num + 1):
-                offset = row_num * self.record_size
-                row = self._db.read(self.record_size)
-                value = row.strip()
-                if value.startswith('D'):
-                    continue
-                yield self._unpack_key(row_num), float(value)
+    #def iteritems(self):
+    #    if self.d:
+    #        for k, v in self.d.iteritems():
+    #            yield k, v
+    #    else:
+    #        for i, v in super(PersistantTT, self):
+    #        self._db.seek(0)
+    #        for row_num in range(0, self.last_row_num + 1):
+    #            offset = row_num * self.record_size
+    #            row = self._db.read(self.record_size)
+    #            value = row.strip()
+    #            if value.startswith('D'):
+    #                continue
+    #            yield self._unpack_key(row_num), float(value)

@@ -57,9 +57,12 @@ class TestPersistance():
                            ('b', False),
                            ('c', True))) == 5
 
+class TestDiskArray():
+
     def test_diskarray(self):
         # Add first row
         d = DiskArray()
+        import pytest; pytest.set_trace()
         d[0] = 0.4
         assert d[0] == 0.4
 
