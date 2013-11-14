@@ -1,0 +1,37 @@
+network unknown {
+}
+variable Burglary {
+  type discrete [ 2 ] { True, False };
+}
+variable Earthquake {
+  type discrete [ 2 ] { True, False };
+}
+variable Alarm {
+  type discrete [ 2 ] { True, False };
+}
+variable JohnCalls {
+  type discrete [ 2 ] { True, False };
+}
+variable MaryCalls {
+  type discrete [ 2 ] { True, False };
+}
+probability ( Burglary ) {
+  table 0.01, 0.99;
+}
+probability ( Earthquake ) {
+  table 0.02, 0.98;
+}
+probability ( Alarm | Burglary, Earthquake ) {
+  (True, True) 0.95, 0.05;
+  (False, True) 0.29, 0.71;
+  (True, False) 0.94, 0.06;
+  (False, False) 0.001, 0.999;
+}
+probability ( JohnCalls | Alarm ) {
+  (True) 0.9, 0.1;
+  (False) 0.05, 0.95;
+}
+probability ( MaryCalls | Alarm ) {
+  (True) 0.7, 0.3;
+  (False) 0.01, 0.99;
+}

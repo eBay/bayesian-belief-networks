@@ -1,0 +1,216 @@
+network unknown {
+}
+variable BirthAsphyxia {
+  type discrete [ 2 ] { yes, no };
+}
+variable HypDistrib {
+  type discrete [ 2 ] { Equal, Unequal };
+}
+variable HypoxiaInO2 {
+  type discrete [ 3 ] { Mild, Moderate, Severe };
+}
+variable CO2 {
+  type discrete [ 3 ] { Normal, Low, High };
+}
+variable ChestXray {
+  type discrete [ 5 ] { Normal, Oligaemic, Plethoric, Grd_Glass, Asy/Patch };
+}
+variable Grunting {
+  type discrete [ 2 ] { yes, no };
+}
+variable LVHreport {
+  type discrete [ 2 ] { yes, no };
+}
+variable LowerBodyO2 {
+  type discrete [ 3 ] { <5, 5-12, 12+ };
+}
+variable RUQO2 {
+  type discrete [ 3 ] { <5, 5-12, 12+ };
+}
+variable CO2Report {
+  type discrete [ 2 ] { <7.5, >=7.5 };
+}
+variable XrayReport {
+  type discrete [ 5 ] { Normal, Oligaemic, Plethoric, Grd_Glass, Asy/Patchy };
+}
+variable Disease {
+  type discrete [ 6 ] { PFC, TGA, Fallot, PAIVS, TAPVD, Lung };
+}
+variable GruntingReport {
+  type discrete [ 2 ] { yes, no };
+}
+variable Age {
+  type discrete [ 3 ] { 0-3_days, 4-10_days, 11-30_days };
+}
+variable LVH {
+  type discrete [ 2 ] { yes, no };
+}
+variable DuctFlow {
+  type discrete [ 3 ] { Lt_to_Rt, None, Rt_to_Lt };
+}
+variable CardiacMixing {
+  type discrete [ 4 ] { None, Mild, Complete, Transp. };
+}
+variable LungParench {
+  type discrete [ 3 ] { Normal, Congested, Abnormal };
+}
+variable LungFlow {
+  type discrete [ 3 ] { Normal, Low, High };
+}
+variable Sick {
+  type discrete [ 2 ] { yes, no };
+}
+probability ( BirthAsphyxia ) {
+  table 0.1, 0.9;
+}
+probability ( HypDistrib | DuctFlow, CardiacMixing ) {
+  (Lt_to_Rt, None) 0.95, 0.05;
+  (None, None) 0.95, 0.05;
+  (Rt_to_Lt, None) 0.05, 0.95;
+  (Lt_to_Rt, Mild) 0.95, 0.05;
+  (None, Mild) 0.95, 0.05;
+  (Rt_to_Lt, Mild) 0.5, 0.5;
+  (Lt_to_Rt, Complete) 0.95, 0.05;
+  (None, Complete) 0.95, 0.05;
+  (Rt_to_Lt, Complete) 0.95, 0.05;
+  (Lt_to_Rt, Transp.) 0.95, 0.05;
+  (None, Transp.) 0.95, 0.05;
+  (Rt_to_Lt, Transp.) 0.5, 0.5;
+}
+probability ( HypoxiaInO2 | CardiacMixing, LungParench ) {
+  (None, Normal) 0.93, 0.05, 0.02;
+  (Mild, Normal) 0.1, 0.8, 0.1;
+  (Complete, Normal) 0.1, 0.7, 0.2;
+  (Transp., Normal) 0.02, 0.18, 0.80;
+  (None, Congested) 0.15, 0.80, 0.05;
+  (Mild, Congested) 0.10, 0.75, 0.15;
+  (Complete, Congested) 0.05, 0.65, 0.30;
+  (Transp., Congested) 0.1, 0.3, 0.6;
+  (None, Abnormal) 0.7, 0.2, 0.1;
+  (Mild, Abnormal) 0.10, 0.65, 0.25;
+  (Complete, Abnormal) 0.1, 0.5, 0.4;
+  (Transp., Abnormal) 0.02, 0.18, 0.80;
+}
+probability ( CO2 | LungParench ) {
+  (Normal) 0.8, 0.1, 0.1;
+  (Congested) 0.65, 0.05, 0.30;
+  (Abnormal) 0.45, 0.05, 0.50;
+}
+probability ( ChestXray | LungParench, LungFlow ) {
+  (Normal, Normal) 0.90, 0.03, 0.03, 0.01, 0.03;
+  (Congested, Normal) 0.05, 0.02, 0.15, 0.70, 0.08;
+  (Abnormal, Normal) 0.05, 0.05, 0.05, 0.05, 0.80;
+  (Normal, Low) 0.14, 0.80, 0.02, 0.02, 0.02;
+  (Congested, Low) 0.05, 0.22, 0.08, 0.50, 0.15;
+  (Abnormal, Low) 0.05, 0.15, 0.05, 0.05, 0.70;
+  (Normal, High) 0.15, 0.01, 0.79, 0.04, 0.01;
+  (Congested, High) 0.05, 0.02, 0.40, 0.40, 0.13;
+  (Abnormal, High) 0.24, 0.33, 0.03, 0.34, 0.06;
+}
+probability ( Grunting | LungParench, Sick ) {
+  (Normal, yes) 0.2, 0.8;
+  (Congested, yes) 0.4, 0.6;
+  (Abnormal, yes) 0.8, 0.2;
+  (Normal, no) 0.05, 0.95;
+  (Congested, no) 0.2, 0.8;
+  (Abnormal, no) 0.6, 0.4;
+}
+probability ( LVHreport | LVH ) {
+  (yes) 0.9, 0.1;
+  (no) 0.05, 0.95;
+}
+probability ( LowerBodyO2 | HypDistrib, HypoxiaInO2 ) {
+  (Equal, Mild) 0.1, 0.3, 0.6;
+  (Unequal, Mild) 0.4, 0.5, 0.1;
+  (Equal, Moderate) 0.3, 0.6, 0.1;
+  (Unequal, Moderate) 0.50, 0.45, 0.05;
+  (Equal, Severe) 0.5, 0.4, 0.1;
+  (Unequal, Severe) 0.60, 0.35, 0.05;
+}
+probability ( RUQO2 | HypoxiaInO2 ) {
+  (Mild) 0.1, 0.3, 0.6;
+  (Moderate) 0.3, 0.6, 0.1;
+  (Severe) 0.5, 0.4, 0.1;
+}
+probability ( CO2Report | CO2 ) {
+  (Normal) 0.9, 0.1;
+  (Low) 0.9, 0.1;
+  (High) 0.1, 0.9;
+}
+probability ( XrayReport | ChestXray ) {
+  (Normal) 0.80, 0.06, 0.06, 0.02, 0.06;
+  (Oligaemic) 0.10, 0.80, 0.02, 0.02, 0.06;
+  (Plethoric) 0.10, 0.02, 0.80, 0.02, 0.06;
+  (Grd_Glass) 0.08, 0.02, 0.10, 0.60, 0.20;
+  (Asy/Patch) 0.08, 0.02, 0.10, 0.10, 0.70;
+}
+probability ( Disease | BirthAsphyxia ) {
+  (yes) 0.20, 0.30, 0.25, 0.15, 0.05, 0.05;
+  (no) 0.03061224, 0.33673469, 0.29591837, 0.23469388, 0.05102041, 0.05102041;
+}
+probability ( GruntingReport | Grunting ) {
+  (yes) 0.8, 0.2;
+  (no) 0.1, 0.9;
+}
+probability ( Age | Disease, Sick ) {
+  (PFC, yes) 0.95, 0.03, 0.02;
+  (TGA, yes) 0.80, 0.15, 0.05;
+  (Fallot, yes) 0.70, 0.15, 0.15;
+  (PAIVS, yes) 0.80, 0.15, 0.05;
+  (TAPVD, yes) 0.80, 0.15, 0.05;
+  (Lung, yes) 0.90, 0.08, 0.02;
+  (PFC, no) 0.85, 0.10, 0.05;
+  (TGA, no) 0.7, 0.2, 0.1;
+  (Fallot, no) 0.25, 0.25, 0.50;
+  (PAIVS, no) 0.80, 0.15, 0.05;
+  (TAPVD, no) 0.7, 0.2, 0.1;
+  (Lung, no) 0.80, 0.15, 0.05;
+}
+probability ( LVH | Disease ) {
+  (PFC) 0.1, 0.9;
+  (TGA) 0.1, 0.9;
+  (Fallot) 0.1, 0.9;
+  (PAIVS) 0.9, 0.1;
+  (TAPVD) 0.05, 0.95;
+  (Lung) 0.1, 0.9;
+}
+probability ( DuctFlow | Disease ) {
+  (PFC) 0.15, 0.05, 0.80;
+  (TGA) 0.1, 0.8, 0.1;
+  (Fallot) 0.8, 0.2, 0.0;
+  (PAIVS) 1.0, 0.0, 0.0;
+  (TAPVD) 0.33, 0.33, 0.34;
+  (Lung) 0.2, 0.4, 0.4;
+}
+probability ( CardiacMixing | Disease ) {
+  (PFC) 0.40, 0.43, 0.15, 0.02;
+  (TGA) 0.02, 0.09, 0.09, 0.80;
+  (Fallot) 0.02, 0.16, 0.80, 0.02;
+  (PAIVS) 0.01, 0.02, 0.95, 0.02;
+  (TAPVD) 0.01, 0.03, 0.95, 0.01;
+  (Lung) 0.40, 0.53, 0.05, 0.02;
+}
+probability ( LungParench | Disease ) {
+  (PFC) 0.6, 0.1, 0.3;
+  (TGA) 0.80, 0.05, 0.15;
+  (Fallot) 0.80, 0.05, 0.15;
+  (PAIVS) 0.80, 0.05, 0.15;
+  (TAPVD) 0.1, 0.6, 0.3;
+  (Lung) 0.03, 0.25, 0.72;
+}
+probability ( LungFlow | Disease ) {
+  (PFC) 0.30, 0.65, 0.05;
+  (TGA) 0.20, 0.05, 0.75;
+  (Fallot) 0.15, 0.80, 0.05;
+  (PAIVS) 0.10, 0.85, 0.05;
+  (TAPVD) 0.3, 0.1, 0.6;
+  (Lung) 0.7, 0.1, 0.2;
+}
+probability ( Sick | Disease ) {
+  (PFC) 0.4, 0.6;
+  (TGA) 0.3, 0.7;
+  (Fallot) 0.2, 0.8;
+  (PAIVS) 0.3, 0.7;
+  (TAPVD) 0.7, 0.3;
+  (Lung) 0.7, 0.3;
+}

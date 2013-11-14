@@ -1,0 +1,2274 @@
+network unknown {
+}
+variable GOAL_2 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_3 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_4 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_5 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_6 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_7 {
+  type discrete [ 2 ] { false, true };
+}
+variable DISPLACEM0 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp1 {
+  type discrete [ 2 ] { false, true };
+}
+variable GIVEN_1 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp2 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_8 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_9 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_10 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_11 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_12 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_13 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_14 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_15 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_16 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_17 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_18 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_19 {
+  type discrete [ 2 ] { false, true };
+}
+variable NEED1 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_20 {
+  type discrete [ 2 ] { false, true };
+}
+variable GRAV2 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_21 {
+  type discrete [ 2 ] { false, true };
+}
+variable VALUE3 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_24 {
+  type discrete [ 2 ] { false, true };
+}
+variable SLIDING4 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_25 {
+  type discrete [ 2 ] { false, true };
+}
+variable CONSTANT5 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_26 {
+  type discrete [ 2 ] { false, true };
+}
+variable KNOWN6 {
+  type discrete [ 2 ] { false, true };
+}
+variable VELOCITY7 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_47 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp3 {
+  type discrete [ 2 ] { false, true };
+}
+variable KNOWN8 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp4 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_27 {
+  type discrete [ 2 ] { false, true };
+}
+variable COMPO16 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_48 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY12 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY11 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_49 {
+  type discrete [ 2 ] { false, true };
+}
+variable CHOOSE19 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_50 {
+  type discrete [ 2 ] { false, true };
+}
+variable SYSTEM18 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_51 {
+  type discrete [ 2 ] { false, true };
+}
+variable KINEMATI17 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_52 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY10 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_53 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY9 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_28 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY13 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY14 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY15 {
+  type discrete [ 2 ] { false, true };
+}
+variable VAR20 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_29 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_31 {
+  type discrete [ 2 ] { false, true };
+}
+variable GIVEN21 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_33 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_34 {
+  type discrete [ 2 ] { false, true };
+}
+variable VECTOR27 {
+  type discrete [ 2 ] { false, true };
+}
+variable APPLY32 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_56 {
+  type discrete [ 2 ] { false, true };
+}
+variable CHOOSE35 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_57 {
+  type discrete [ 2 ] { false, true };
+}
+variable MAXIMIZE34 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_59 {
+  type discrete [ 2 ] { false, true };
+}
+variable AXIS33 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_60 {
+  type discrete [ 2 ] { false, true };
+}
+variable WRITE31 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_61 {
+  type discrete [ 2 ] { false, true };
+}
+variable WRITE30 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_62 {
+  type discrete [ 2 ] { false, true };
+}
+variable RESOLVE37 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_63 {
+  type discrete [ 2 ] { false, true };
+}
+variable NEED36 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_64 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_41 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_42 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY39 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_43 {
+  type discrete [ 2 ] { false, true };
+}
+variable RESOLVE38 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_66 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_67 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY41 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_54 {
+  type discrete [ 2 ] { false, true };
+}
+variable RESOLVE40 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_69 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_70 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY43 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_55 {
+  type discrete [ 2 ] { false, true };
+}
+variable RESOLVE42 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_72 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_73 {
+  type discrete [ 2 ] { false, true };
+}
+variable KINE29 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_74 {
+  type discrete [ 2 ] { false, true };
+}
+variable VECTOR44 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_75 {
+  type discrete [ 2 ] { false, true };
+}
+variable EQUATION28 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_79 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp5 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_80 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp6 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_81 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY25 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY24 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_83 {
+  type discrete [ 2 ] { false, true };
+}
+variable CHOOSE47 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_84 {
+  type discrete [ 2 ] { false, true };
+}
+variable SYSTEM46 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_86 {
+  type discrete [ 2 ] { false, true };
+}
+variable NEWTONS45 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_156 {
+  type discrete [ 2 ] { false, true };
+}
+variable DEFINE23 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_98 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY22 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_37 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY26 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_38 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_40 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_44 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_46 {
+  type discrete [ 2 ] { false, true };
+}
+variable NULL48 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_65 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_68 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_71 {
+  type discrete [ 2 ] { false, true };
+}
+variable FIND49 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_87 {
+  type discrete [ 2 ] { false, true };
+}
+variable NORMAL50 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_88 {
+  type discrete [ 2 ] { false, true };
+}
+variable STRAT_90 {
+  type discrete [ 2 ] { SNode_92_1, SNode_91_2 };
+}
+variable NORMAL52 {
+  type discrete [ 2 ] { false, true };
+}
+variable INCLINE51 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_91 {
+  type discrete [ 2 ] { false, true };
+}
+variable HORIZ53 {
+  type discrete [ 2 ] { false, true };
+}
+variable BUGGY54 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_92 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY55 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_93 {
+  type discrete [ 2 ] { false, true };
+}
+variable WEIGHT56 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_94 {
+  type discrete [ 2 ] { false, true };
+}
+variable WEIGHT57 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_95 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_97 {
+  type discrete [ 2 ] { false, true };
+}
+variable FIND58 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_99 {
+  type discrete [ 2 ] { false, true };
+}
+variable IDENTIFY59 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_100 {
+  type discrete [ 2 ] { false, true };
+}
+variable FORCE60 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_102 {
+  type discrete [ 2 ] { false, true };
+}
+variable APPLY61 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_103 {
+  type discrete [ 2 ] { false, true };
+}
+variable CHOOSE62 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_104 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_106 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_152 {
+  type discrete [ 2 ] { false, true };
+}
+variable WRITE63 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_107 {
+  type discrete [ 2 ] { false, true };
+}
+variable WRITE64 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_108 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_109 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL65 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_110 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL66 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_111 {
+  type discrete [ 2 ] { false, true };
+}
+variable NEED67 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp7 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp8 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_112 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL68 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_113 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_114 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_115 {
+  type discrete [ 2 ] { false, true };
+}
+variable VECTOR69 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_116 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_117 {
+  type discrete [ 2 ] { false, true };
+}
+variable VECTOR70 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_118 {
+  type discrete [ 2 ] { false, true };
+}
+variable EQUAL71 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_119 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_120 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL72 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_121 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_122 {
+  type discrete [ 2 ] { false, true };
+}
+variable VECTOR73 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_123 {
+  type discrete [ 2 ] { false, true };
+}
+variable NEWTONS74 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_124 {
+  type discrete [ 2 ] { false, true };
+}
+variable SUM75 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_125 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_126 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_127 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp9 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp10 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_128 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_129 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_130 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_131 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_132 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_133 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_134 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_135 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_154 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_136 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_137 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_142 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_143 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_146 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp11 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp12 {
+  type discrete [ 2 ] { false, true };
+}
+variable RApp13 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_147 {
+  type discrete [ 2 ] { false, true };
+}
+variable TRY76 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_149 {
+  type discrete [ 2 ] { false, true };
+}
+variable APPLY77 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_150 {
+  type discrete [ 2 ] { false, true };
+}
+variable GRAV78 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_151 {
+  type discrete [ 2 ] { false, true };
+}
+variable GOAL_153 {
+  type discrete [ 2 ] { false, true };
+}
+variable SNode_155 {
+  type discrete [ 2 ] { false, true };
+}
+probability ( GOAL_2 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_3 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_4 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_5 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_6 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_7 ) {
+  table 0.02, 0.98;
+}
+probability ( DISPLACEM0 ) {
+  table 0.5, 0.5;
+}
+probability ( RApp1 | DISPLACEM0, SNode_3 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( GIVEN_1 ) {
+  table 0.02, 0.98;
+}
+probability ( RApp2 | GIVEN_1 ) {
+  (false) 1.0, 0.0;
+  (true) 0.0001, 0.9999;
+}
+probability ( SNode_8 | RApp1, RApp2 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.0, 1.0;
+  (false, true) 0.0, 1.0;
+  (true, true) 0.0, 1.0;
+}
+probability ( SNode_9 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_10 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_11 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_12 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_13 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_14 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_15 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_16 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_17 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_18 ) {
+  table 0.02, 0.98;
+}
+probability ( SNode_19 ) {
+  table 0.02, 0.98;
+}
+probability ( NEED1 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_20 | SNode_16, NEED1 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GRAV2 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_21 | SNode_20, GRAV2 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( VALUE3 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_24 | SNode_21, VALUE3 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( SLIDING4 ) {
+  table 0.1, 0.9;
+}
+probability ( SNode_25 | SNode_15, SLIDING4 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( CONSTANT5 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_26 | SNode_11, CONSTANT5 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( KNOWN6 ) {
+  table 0.5, 0.5;
+}
+probability ( VELOCITY7 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_47 | SNode_3, VELOCITY7 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( RApp3 | KNOWN6, SNode_26, SNode_47 ) {
+  (false, false, false) 1.0, 0.0;
+  (true, false, false) 1.0, 0.0;
+  (false, true, false) 1.0, 0.0;
+  (true, true, false) 1.0, 0.0;
+  (false, false, true) 1.0, 0.0;
+  (true, false, true) 1.0, 0.0;
+  (false, true, true) 1.0, 0.0;
+  (true, true, true) 0.0001, 0.9999;
+}
+probability ( KNOWN8 ) {
+  table 0.5, 0.5;
+}
+probability ( RApp4 | KNOWN8, SNode_11 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( SNode_27 | RApp3, RApp4 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.0, 1.0;
+  (false, true) 0.0, 1.0;
+  (true, true) 0.0, 1.0;
+}
+probability ( COMPO16 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_48 | GOAL_2, COMPO16 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( TRY12 ) {
+  table 0.7, 0.3;
+}
+probability ( TRY11 | TRY12 ) {
+  (false) 0.8, 0.2;
+  (true) 0.0, 1.0;
+}
+probability ( GOAL_49 | SNode_5, SNode_6, GOAL_48, TRY11 ) {
+  (false, false, false, false) 0.8, 0.2;
+  (true, false, false, false) 0.8, 0.2;
+  (false, true, false, false) 0.8, 0.2;
+  (true, true, false, false) 0.8, 0.2;
+  (false, false, true, false) 0.8, 0.2;
+  (true, false, true, false) 0.8, 0.2;
+  (false, true, true, false) 0.8, 0.2;
+  (true, true, true, false) 0.8, 0.2;
+  (false, false, false, true) 0.8, 0.2;
+  (true, false, false, true) 0.8, 0.2;
+  (false, true, false, true) 0.8, 0.2;
+  (true, true, false, true) 0.8, 0.2;
+  (false, false, true, true) 0.8, 0.2;
+  (true, false, true, true) 0.8, 0.2;
+  (false, true, true, true) 0.8, 0.2;
+  (true, true, true, true) 0.00008, 0.99992;
+}
+probability ( CHOOSE19 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_50 | GOAL_49, CHOOSE19 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SYSTEM18 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_51 | SNode_17, GOAL_50, SYSTEM18 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( KINEMATI17 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_52 | SNode_51, KINEMATI17 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY10 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_53 | GOAL_49, SNode_52, IDENTIFY10 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY9 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_28 | SNode_27, GOAL_53, IDENTIFY9 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( TRY13 | TRY12 ) {
+  (false) 0.8, 0.2;
+  (true) 0.0, 1.0;
+}
+probability ( TRY14 | TRY12 ) {
+  (false) 0.9, 0.1;
+  (true) 0.0, 1.0;
+}
+probability ( TRY15 | TRY12 ) {
+  (false) 0.9, 0.1;
+  (true) 0.0, 1.0;
+}
+probability ( VAR20 ) {
+  table 0.3, 0.7;
+}
+probability ( SNode_29 | SNode_28, VAR20 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_31 | SNode_29, VALUE3 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( GIVEN21 ) {
+  table 0.1, 0.9;
+}
+probability ( SNode_33 | SNode_10, GIVEN21 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( SNode_34 | SNode_10, CONSTANT5 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( VECTOR27 ) {
+  table 0.5, 0.5;
+}
+probability ( APPLY32 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_56 | GOAL_49, SNode_52, APPLY32 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( CHOOSE35 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_57 | GOAL_56, CHOOSE35 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( MAXIMIZE34 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_59 | SNode_7, GOAL_57, MAXIMIZE34 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( AXIS33 ) {
+  table 0.2, 0.8;
+}
+probability ( SNode_60 | SNode_59, AXIS33 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( WRITE31 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_61 | GOAL_56, SNode_60, WRITE31 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( WRITE30 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_62 | GOAL_61, WRITE30 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( RESOLVE37 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_63 | SNode_28, GOAL_62, RESOLVE37 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( NEED36 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_64 | GOAL_63, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_41 | SNode_9, CONSTANT5 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_42 | SNode_8, SNode_41, KNOWN6 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY39 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_43 | SNode_42, GOAL_53, IDENTIFY39 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( RESOLVE38 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_66 | SNode_43, GOAL_62, RESOLVE38 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( SNode_67 | GOAL_66, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY41 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_54 | GOAL_53, IDENTIFY41 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( RESOLVE40 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_69 | SNode_54, GOAL_62, RESOLVE40 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( SNode_70 | GOAL_69, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY43 ) {
+  table 0.6, 0.4;
+}
+probability ( SNode_55 | SNode_34, GOAL_53, IDENTIFY43 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( RESOLVE42 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_72 | SNode_55, GOAL_62, RESOLVE42 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( SNode_73 | GOAL_72, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( KINE29 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_74 | GOAL_62, SNode_64, SNode_67, SNode_70, SNode_73, KINE29 ) {
+  (false, false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false, false) 0.9, 0.1;
+  (true, false, true, false, false, false) 0.9, 0.1;
+  (false, true, true, false, false, false) 0.9, 0.1;
+  (true, true, true, false, false, false) 0.9, 0.1;
+  (false, false, false, true, false, false) 0.9, 0.1;
+  (true, false, false, true, false, false) 0.9, 0.1;
+  (false, true, false, true, false, false) 0.9, 0.1;
+  (true, true, false, true, false, false) 0.9, 0.1;
+  (false, false, true, true, false, false) 0.9, 0.1;
+  (true, false, true, true, false, false) 0.9, 0.1;
+  (false, true, true, true, false, false) 0.9, 0.1;
+  (true, true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, false, true, false) 0.9, 0.1;
+  (false, true, false, false, true, false) 0.9, 0.1;
+  (true, true, false, false, true, false) 0.9, 0.1;
+  (false, false, true, false, true, false) 0.9, 0.1;
+  (true, false, true, false, true, false) 0.9, 0.1;
+  (false, true, true, false, true, false) 0.9, 0.1;
+  (true, true, true, false, true, false) 0.9, 0.1;
+  (false, false, false, true, true, false) 0.9, 0.1;
+  (true, false, false, true, true, false) 0.9, 0.1;
+  (false, true, false, true, true, false) 0.9, 0.1;
+  (true, true, false, true, true, false) 0.9, 0.1;
+  (false, false, true, true, true, false) 0.9, 0.1;
+  (true, false, true, true, true, false) 0.9, 0.1;
+  (false, true, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, false, true) 0.9, 0.1;
+  (true, true, false, false, false, true) 0.9, 0.1;
+  (false, false, true, false, false, true) 0.9, 0.1;
+  (true, false, true, false, false, true) 0.9, 0.1;
+  (false, true, true, false, false, true) 0.9, 0.1;
+  (true, true, true, false, false, true) 0.9, 0.1;
+  (false, false, false, true, false, true) 0.9, 0.1;
+  (true, false, false, true, false, true) 0.9, 0.1;
+  (false, true, false, true, false, true) 0.9, 0.1;
+  (true, true, false, true, false, true) 0.9, 0.1;
+  (false, false, true, true, false, true) 0.9, 0.1;
+  (true, false, true, true, false, true) 0.9, 0.1;
+  (false, true, true, true, false, true) 0.9, 0.1;
+  (true, true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, false, true, true) 0.9, 0.1;
+  (false, true, false, false, true, true) 0.9, 0.1;
+  (true, true, false, false, true, true) 0.9, 0.1;
+  (false, false, true, false, true, true) 0.9, 0.1;
+  (true, false, true, false, true, true) 0.9, 0.1;
+  (false, true, true, false, true, true) 0.9, 0.1;
+  (true, true, true, false, true, true) 0.9, 0.1;
+  (false, false, false, true, true, true) 0.9, 0.1;
+  (true, false, false, true, true, true) 0.9, 0.1;
+  (false, true, false, true, true, true) 0.9, 0.1;
+  (true, true, false, true, true, true) 0.9, 0.1;
+  (false, false, true, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( VECTOR44 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_75 | SNode_4, GOAL_72, SNode_73, VECTOR44 ) {
+  (false, false, false, false) 0.9, 0.1;
+  (true, false, false, false) 0.9, 0.1;
+  (false, true, false, false) 0.9, 0.1;
+  (true, true, false, false) 0.9, 0.1;
+  (false, false, true, false) 0.9, 0.1;
+  (true, false, true, false) 0.9, 0.1;
+  (false, true, true, false) 0.9, 0.1;
+  (true, true, true, false) 0.9, 0.1;
+  (false, false, false, true) 0.9, 0.1;
+  (true, false, false, true) 0.9, 0.1;
+  (false, true, false, true) 0.9, 0.1;
+  (true, true, false, true) 0.9, 0.1;
+  (false, false, true, true) 0.9, 0.1;
+  (true, false, true, true) 0.9, 0.1;
+  (false, true, true, true) 0.9, 0.1;
+  (true, true, true, true) 0.00009, 0.99991;
+}
+probability ( EQUATION28 ) {
+  table 0.6, 0.4;
+}
+probability ( GOAL_79 | SNode_74, SNode_75, EQUATION28 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( RApp5 | VECTOR27, GOAL_79 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( GOAL_80 | SNode_75, EQUATION28 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( RApp6 | COMPO16, GOAL_80 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( GOAL_81 | RApp5, RApp6 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.0, 1.0;
+  (false, true) 0.0, 1.0;
+  (true, true) 0.0, 1.0;
+}
+probability ( TRY25 ) {
+  table 0.1, 0.9;
+}
+probability ( TRY24 | TRY25 ) {
+  (false) 0.95, 0.05;
+  (true) 0.0, 1.0;
+}
+probability ( GOAL_83 | GOAL_81, TRY24 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( CHOOSE47 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_84 | GOAL_83, CHOOSE47 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SYSTEM46 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_86 | GOAL_84, SYSTEM46 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( NEWTONS45 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_156 | SNode_86, NEWTONS45 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( DEFINE23 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_98 | GOAL_83, SNode_156, DEFINE23 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY22 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_37 | GOAL_98, IDENTIFY22 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( TRY26 | TRY25 ) {
+  (false) 0.9, 0.1;
+  (true) 0.0, 1.0;
+}
+probability ( SNode_38 | SNode_37, VAR20 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_40 | SNode_38, VALUE3 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( SNode_44 | SNode_43, VAR20 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_46 | SNode_44, VALUE3 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( NULL48 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_65 | SNode_29, GOAL_63, SNode_64, NULL48 ) {
+  (false, false, false, false) 0.9, 0.1;
+  (true, false, false, false) 0.9, 0.1;
+  (false, true, false, false) 0.9, 0.1;
+  (true, true, false, false) 0.9, 0.1;
+  (false, false, true, false) 0.9, 0.1;
+  (true, false, true, false) 0.9, 0.1;
+  (false, true, true, false) 0.9, 0.1;
+  (true, true, true, false) 0.9, 0.1;
+  (false, false, false, true) 0.9, 0.1;
+  (true, false, false, true) 0.9, 0.1;
+  (false, true, false, true) 0.9, 0.1;
+  (true, true, false, true) 0.9, 0.1;
+  (false, false, true, true) 0.9, 0.1;
+  (true, false, true, true) 0.9, 0.1;
+  (false, true, true, true) 0.9, 0.1;
+  (true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_68 | GOAL_66, SNode_67, VECTOR44 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_71 | GOAL_69, SNode_70, VECTOR44 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( FIND49 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_87 | GOAL_83, SNode_156, FIND49 ) {
+  (false, false, false) 0.7, 0.3;
+  (true, false, false) 0.7, 0.3;
+  (false, true, false) 0.7, 0.3;
+  (true, true, false) 0.7, 0.3;
+  (false, false, true) 0.7, 0.3;
+  (true, false, true) 0.7, 0.3;
+  (false, true, true) 0.7, 0.3;
+  (true, true, true) 0.00007, 0.99993;
+}
+probability ( NORMAL50 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_88 | SNode_25, GOAL_87, NORMAL50 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( STRAT_90 ) {
+  table 0.5, 0.5;
+}
+probability ( NORMAL52 ) {
+  table 0.646, 0.354;
+}
+probability ( INCLINE51 | NORMAL52 ) {
+  (false) 1.0, 0.0;
+  (true) 0.0, 1.0;
+}
+probability ( SNode_91 | SNode_88, SNode_12, SNode_13, STRAT_90, INCLINE51 ) {
+  (false, false, false, SNode_92_1, false) 0.8, 0.2;
+  (true, false, false, SNode_92_1, false) 0.8, 0.2;
+  (false, true, false, SNode_92_1, false) 0.8, 0.2;
+  (true, true, false, SNode_92_1, false) 0.8, 0.2;
+  (false, false, true, SNode_92_1, false) 0.8, 0.2;
+  (true, false, true, SNode_92_1, false) 0.8, 0.2;
+  (false, true, true, SNode_92_1, false) 0.8, 0.2;
+  (true, true, true, SNode_92_1, false) 0.8, 0.2;
+  (false, false, false, SNode_91_2, false) 0.8, 0.2;
+  (true, false, false, SNode_91_2, false) 0.8, 0.2;
+  (false, true, false, SNode_91_2, false) 0.8, 0.2;
+  (true, true, false, SNode_91_2, false) 0.8, 0.2;
+  (false, false, true, SNode_91_2, false) 0.8, 0.2;
+  (true, false, true, SNode_91_2, false) 0.8, 0.2;
+  (false, true, true, SNode_91_2, false) 0.8, 0.2;
+  (true, true, true, SNode_91_2, false) 0.8, 0.2;
+  (false, false, false, SNode_92_1, true) 0.8, 0.2;
+  (true, false, false, SNode_92_1, true) 0.8, 0.2;
+  (false, true, false, SNode_92_1, true) 0.8, 0.2;
+  (true, true, false, SNode_92_1, true) 0.8, 0.2;
+  (false, false, true, SNode_92_1, true) 0.8, 0.2;
+  (true, false, true, SNode_92_1, true) 0.8, 0.2;
+  (false, true, true, SNode_92_1, true) 0.8, 0.2;
+  (true, true, true, SNode_92_1, true) 0.8, 0.2;
+  (false, false, false, SNode_91_2, true) 0.8, 0.2;
+  (true, false, false, SNode_91_2, true) 0.8, 0.2;
+  (false, true, false, SNode_91_2, true) 0.8, 0.2;
+  (true, true, false, SNode_91_2, true) 0.8, 0.2;
+  (false, false, true, SNode_91_2, true) 0.8, 0.2;
+  (true, false, true, SNode_91_2, true) 0.8, 0.2;
+  (false, true, true, SNode_91_2, true) 0.8, 0.2;
+  (true, true, true, SNode_91_2, true) 0.00008, 0.99992;
+}
+probability ( HORIZ53 | NORMAL52 ) {
+  (false) 0.8, 0.2;
+  (true) 0.0, 1.0;
+}
+probability ( BUGGY54 | NORMAL52 ) {
+  (false) 0.2, 0.8;
+  (true) 1.0, 0.0;
+}
+probability ( SNode_92 | SNode_12, STRAT_90, BUGGY54 ) {
+  (false, SNode_92_1, false) 0.8, 0.2;
+  (true, SNode_92_1, false) 0.8, 0.2;
+  (false, SNode_91_2, false) 0.8, 0.2;
+  (true, SNode_91_2, false) 0.8, 0.2;
+  (false, SNode_92_1, true) 0.8, 0.2;
+  (true, SNode_92_1, true) 0.00008, 0.99992;
+  (false, SNode_91_2, true) 0.8, 0.2;
+  (true, SNode_91_2, true) 0.8, 0.2;
+}
+probability ( IDENTIFY55 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_93 | GOAL_87, SNode_88, IDENTIFY55 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( WEIGHT56 ) {
+  table 0.3, 0.7;
+}
+probability ( SNode_94 | SNode_16, SNode_33, GOAL_87, WEIGHT56 ) {
+  (false, false, false, false) 0.9, 0.1;
+  (true, false, false, false) 0.9, 0.1;
+  (false, true, false, false) 0.9, 0.1;
+  (true, true, false, false) 0.9, 0.1;
+  (false, false, true, false) 0.9, 0.1;
+  (true, false, true, false) 0.9, 0.1;
+  (false, true, true, false) 0.9, 0.1;
+  (true, true, true, false) 0.9, 0.1;
+  (false, false, false, true) 0.9, 0.1;
+  (true, false, false, true) 0.9, 0.1;
+  (false, true, false, true) 0.9, 0.1;
+  (true, true, false, true) 0.9, 0.1;
+  (false, false, true, true) 0.9, 0.1;
+  (true, false, true, true) 0.9, 0.1;
+  (false, true, true, true) 0.9, 0.1;
+  (true, true, true, true) 0.00009, 0.99991;
+}
+probability ( WEIGHT57 ) {
+  table 0.3, 0.7;
+}
+probability ( SNode_95 | SNode_94, WEIGHT57 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_97 | GOAL_87, SNode_94, IDENTIFY55 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( FIND58 ) {
+  table 0.7, 0.3;
+}
+probability ( GOAL_99 | GOAL_98, FIND58 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( IDENTIFY59 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_100 | GOAL_98, IDENTIFY59 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( FORCE60 ) {
+  table 0.2, 0.8;
+}
+probability ( SNode_102 | GOAL_87, SNode_88, SNode_94, FORCE60 ) {
+  (false, false, false, false) 0.9, 0.1;
+  (true, false, false, false) 0.9, 0.1;
+  (false, true, false, false) 0.9, 0.1;
+  (true, true, false, false) 0.9, 0.1;
+  (false, false, true, false) 0.9, 0.1;
+  (true, false, true, false) 0.9, 0.1;
+  (false, true, true, false) 0.9, 0.1;
+  (true, true, true, false) 0.9, 0.1;
+  (false, false, false, true) 0.9, 0.1;
+  (true, false, false, true) 0.9, 0.1;
+  (false, true, false, true) 0.9, 0.1;
+  (true, true, false, true) 0.9, 0.1;
+  (false, false, true, true) 0.9, 0.1;
+  (true, false, true, true) 0.9, 0.1;
+  (false, true, true, true) 0.9, 0.1;
+  (true, true, true, true) 0.00009, 0.99991;
+}
+probability ( APPLY61 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_103 | GOAL_83, SNode_102, APPLY61 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( CHOOSE62 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_104 | GOAL_103, CHOOSE62 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_106 | GOAL_104, MAXIMIZE34 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_152 | SNode_106, AXIS33 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( WRITE63 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_107 | GOAL_103, SNode_152, WRITE63 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( WRITE64 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_108 | GOAL_107, WRITE64 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_109 | GOAL_107, WRITE64 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL65 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_110 | GOAL_109, GOAL65 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL66 ) {
+  table 0.6, 0.4;
+}
+probability ( GOAL_111 | GOAL_109, GOAL66 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( NEED67 ) {
+  table 0.5, 0.5;
+}
+probability ( RApp7 | NEED67, GOAL_109 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( RApp8 | NEED36, GOAL_111 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( SNode_112 | RApp7, RApp8 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.0, 1.0;
+  (false, true) 0.0, 1.0;
+  (true, true) 0.0, 1.0;
+}
+probability ( GOAL68 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_113 | GOAL_110, GOAL68 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_114 | GOAL_110, GOAL68 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_115 | GOAL_114, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( VECTOR69 ) {
+  table 0.7, 0.3;
+}
+probability ( SNode_116 | SNode_95, SNode_97, GOAL_114, SNode_115, VECTOR69 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_117 | GOAL_113, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( VECTOR70 ) {
+  table 0.1, 0.9;
+}
+probability ( SNode_118 | SNode_91, GOAL_113, VECTOR70 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( EQUAL71 ) {
+  table 0.4, 0.6;
+}
+probability ( SNode_119 | SNode_93, SNode_117, SNode_118, EQUAL71 ) {
+  (false, false, false, false) 0.9, 0.1;
+  (true, false, false, false) 0.9, 0.1;
+  (false, true, false, false) 0.9, 0.1;
+  (true, true, false, false) 0.9, 0.1;
+  (false, false, true, false) 0.9, 0.1;
+  (true, false, true, false) 0.9, 0.1;
+  (false, true, true, false) 0.9, 0.1;
+  (true, true, true, false) 0.9, 0.1;
+  (false, false, false, true) 0.9, 0.1;
+  (true, false, false, true) 0.9, 0.1;
+  (false, true, false, true) 0.9, 0.1;
+  (true, true, false, true) 0.9, 0.1;
+  (false, false, true, true) 0.9, 0.1;
+  (true, false, true, true) 0.9, 0.1;
+  (false, true, true, true) 0.9, 0.1;
+  (true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_120 | SNode_92, SNode_93, GOAL_113, SNode_117, VECTOR69 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( GOAL72 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_121 | GOAL_109, GOAL72 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_122 | GOAL_121, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( VECTOR73 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_123 | SNode_4, SNode_100, GOAL_121, SNode_122, VECTOR73 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( NEWTONS74 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_124 | SNode_37, GOAL_109, SNode_112, SNode_122, NEWTONS74 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SUM75 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_125 | GOAL_109, SNode_112, SUM75 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( GOAL_126 | GOAL_108, GOAL65 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_127 | GOAL_108, GOAL66 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( RApp9 | NEED67, GOAL_108 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( RApp10 | NEED36, GOAL_127 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( SNode_128 | RApp9, RApp10 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.0, 1.0;
+  (false, true) 0.0, 1.0;
+  (true, true) 0.0, 1.0;
+}
+probability ( GOAL_129 | GOAL_126, GOAL68 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_130 | GOAL_126, GOAL68 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_131 | GOAL_130, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_132 | SNode_95, SNode_97, GOAL_130, SNode_131, VECTOR69 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_133 | GOAL_129, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_134 | SNode_91, SNode_93, GOAL_129, SNode_133, VECTOR73 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_135 | SNode_92, SNode_93, GOAL_129, SNode_133, VECTOR69 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_154 | GOAL_121, NEED36 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_136 | SNode_37, GOAL_108, SNode_128, SNode_154, NEWTONS74 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
+probability ( SNode_137 | GOAL_108, SNode_128, SUM75 ) {
+  (false, false, false) 0.9, 0.1;
+  (true, false, false) 0.9, 0.1;
+  (false, true, false) 0.9, 0.1;
+  (true, true, false) 0.9, 0.1;
+  (false, false, true) 0.9, 0.1;
+  (true, false, true) 0.9, 0.1;
+  (false, true, true) 0.9, 0.1;
+  (true, true, true) 0.00009, 0.99991;
+}
+probability ( GOAL_142 | SNode_116, SNode_125, EQUATION28 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_143 | SNode_116, SNode_132, EQUATION28 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( GOAL_146 | SNode_132, SNode_137, EQUATION28 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.8, 0.2;
+  (false, true, false) 0.8, 0.2;
+  (true, true, false) 0.8, 0.2;
+  (false, false, true) 0.8, 0.2;
+  (true, false, true) 0.8, 0.2;
+  (false, true, true) 0.8, 0.2;
+  (true, true, true) 0.00008, 0.99992;
+}
+probability ( RApp11 | VECTOR27, GOAL_142 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( RApp12 | COMPO16, GOAL_143 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( RApp13 | VECTOR27, GOAL_146 ) {
+  (false, false) 1.0, 0.0;
+  (true, false) 1.0, 0.0;
+  (false, true) 1.0, 0.0;
+  (true, true) 0.0001, 0.9999;
+}
+probability ( GOAL_147 | RApp11, RApp12, RApp13 ) {
+  (false, false, false) 0.8, 0.2;
+  (true, false, false) 0.0, 1.0;
+  (false, true, false) 0.0, 1.0;
+  (true, true, false) 0.0, 1.0;
+  (false, false, true) 0.0, 1.0;
+  (true, false, true) 0.0, 1.0;
+  (false, true, true) 0.0, 1.0;
+  (true, true, true) 0.0, 1.0;
+}
+probability ( TRY76 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_149 | GOAL_147, TRY76 ) {
+  (false, false) 0.7, 0.3;
+  (true, false) 0.7, 0.3;
+  (false, true) 0.7, 0.3;
+  (true, true) 0.00007, 0.99993;
+}
+probability ( APPLY77 ) {
+  table 0.5, 0.5;
+}
+probability ( GOAL_150 | SNode_20, SNode_37, GOAL_149, APPLY77 ) {
+  (false, false, false, false) 0.8, 0.2;
+  (true, false, false, false) 0.8, 0.2;
+  (false, true, false, false) 0.8, 0.2;
+  (true, true, false, false) 0.8, 0.2;
+  (false, false, true, false) 0.8, 0.2;
+  (true, false, true, false) 0.8, 0.2;
+  (false, true, true, false) 0.8, 0.2;
+  (true, true, true, false) 0.8, 0.2;
+  (false, false, false, true) 0.8, 0.2;
+  (true, false, false, true) 0.8, 0.2;
+  (false, true, false, true) 0.8, 0.2;
+  (true, true, false, true) 0.8, 0.2;
+  (false, false, true, true) 0.8, 0.2;
+  (true, false, true, true) 0.8, 0.2;
+  (false, true, true, true) 0.8, 0.2;
+  (true, true, true, true) 0.00008, 0.99992;
+}
+probability ( GRAV78 ) {
+  table 0.5, 0.5;
+}
+probability ( SNode_151 | GOAL_150, GRAV78 ) {
+  (false, false) 0.9, 0.1;
+  (true, false) 0.9, 0.1;
+  (false, true) 0.9, 0.1;
+  (true, true) 0.00009, 0.99991;
+}
+probability ( GOAL_153 | GOAL_108, GOAL72 ) {
+  (false, false) 0.8, 0.2;
+  (true, false) 0.8, 0.2;
+  (false, true) 0.8, 0.2;
+  (true, true) 0.00008, 0.99992;
+}
+probability ( SNode_155 | SNode_4, SNode_100, GOAL_153, SNode_154, VECTOR44 ) {
+  (false, false, false, false, false) 0.9, 0.1;
+  (true, false, false, false, false) 0.9, 0.1;
+  (false, true, false, false, false) 0.9, 0.1;
+  (true, true, false, false, false) 0.9, 0.1;
+  (false, false, true, false, false) 0.9, 0.1;
+  (true, false, true, false, false) 0.9, 0.1;
+  (false, true, true, false, false) 0.9, 0.1;
+  (true, true, true, false, false) 0.9, 0.1;
+  (false, false, false, true, false) 0.9, 0.1;
+  (true, false, false, true, false) 0.9, 0.1;
+  (false, true, false, true, false) 0.9, 0.1;
+  (true, true, false, true, false) 0.9, 0.1;
+  (false, false, true, true, false) 0.9, 0.1;
+  (true, false, true, true, false) 0.9, 0.1;
+  (false, true, true, true, false) 0.9, 0.1;
+  (true, true, true, true, false) 0.9, 0.1;
+  (false, false, false, false, true) 0.9, 0.1;
+  (true, false, false, false, true) 0.9, 0.1;
+  (false, true, false, false, true) 0.9, 0.1;
+  (true, true, false, false, true) 0.9, 0.1;
+  (false, false, true, false, true) 0.9, 0.1;
+  (true, false, true, false, true) 0.9, 0.1;
+  (false, true, true, false, true) 0.9, 0.1;
+  (true, true, true, false, true) 0.9, 0.1;
+  (false, false, false, true, true) 0.9, 0.1;
+  (true, false, false, true, true) 0.9, 0.1;
+  (false, true, false, true, true) 0.9, 0.1;
+  (true, true, false, true, true) 0.9, 0.1;
+  (false, false, true, true, true) 0.9, 0.1;
+  (true, false, true, true, true) 0.9, 0.1;
+  (false, true, true, true, true) 0.9, 0.1;
+  (true, true, true, true, true) 0.00009, 0.99991;
+}
