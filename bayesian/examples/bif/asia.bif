@@ -1,0 +1,60 @@
+network unknown {
+}
+variable asia {
+  type discrete [ 2 ] { yes, no };
+}
+variable tub {
+  type discrete [ 2 ] { yes, no };
+}
+variable smoke {
+  type discrete [ 2 ] { yes, no };
+}
+variable lung {
+  type discrete [ 2 ] { yes, no };
+}
+variable bronc {
+  type discrete [ 2 ] { yes, no };
+}
+variable either {
+  type discrete [ 2 ] { yes, no };
+}
+variable xray {
+  type discrete [ 2 ] { yes, no };
+}
+variable dysp {
+  type discrete [ 2 ] { yes, no };
+}
+probability ( asia ) {
+  table 0.01, 0.99;
+}
+probability ( tub | asia ) {
+  (yes) 0.05, 0.95;
+  (no) 0.01, 0.99;
+}
+probability ( smoke ) {
+  table 0.5, 0.5;
+}
+probability ( lung | smoke ) {
+  (yes) 0.1, 0.9;
+  (no) 0.01, 0.99;
+}
+probability ( bronc | smoke ) {
+  (yes) 0.6, 0.4;
+  (no) 0.3, 0.7;
+}
+probability ( either | lung, tub ) {
+  (yes, yes) 1.0, 0.0;
+  (no, yes) 1.0, 0.0;
+  (yes, no) 1.0, 0.0;
+  (no, no) 0.0, 1.0;
+}
+probability ( xray | either ) {
+  (yes) 0.98, 0.02;
+  (no) 0.05, 0.95;
+}
+probability ( dysp | bronc, either ) {
+  (yes, yes) 0.9, 0.1;
+  (no, yes) 0.7, 0.3;
+  (yes, no) 0.8, 0.2;
+  (no, no) 0.1, 0.9;
+}

@@ -1,0 +1,956 @@
+network unknown {
+}
+variable AppOK {
+  type discrete [ 2 ] { Correct, Incorrect_Corrupt };
+}
+variable DataFile {
+  type discrete [ 2 ] { Correct, Incorrect_Corrupt };
+}
+variable AppData {
+  type discrete [ 2 ] { Correct, Incorrect_or_corrupt };
+}
+variable DskLocal {
+  type discrete [ 2 ] { Greater_than_2_Mb, Less_than_2_Mb };
+}
+variable PrtSpool {
+  type discrete [ 2 ] { Enabled, Disabled };
+}
+variable PrtOn {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtPaper {
+  type discrete [ 2 ] { Has_Paper, No_Paper };
+}
+variable NetPrint {
+  type discrete [ 2 ] { No__Local_printer_, Yes__Network_printer_ };
+}
+variable PrtDriver {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtThread {
+  type discrete [ 2 ] { OK, Corrupt_Buggy };
+}
+variable EMFOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable GDIIN {
+  type discrete [ 2 ] { Yes, No };
+}
+variable DrvSet {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable DrvOK {
+  type discrete [ 2 ] { Reinstalled, Corrupt };
+}
+variable GDIOUT {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtSel {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtDataOut {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtPath {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable NtwrkCnfg {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable PTROFFLINE {
+  type discrete [ 2 ] { Online, Offline };
+}
+variable NetOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtCbl {
+  type discrete [ 2 ] { Connected, Loose };
+}
+variable PrtPort {
+  type discrete [ 2 ] { Yes, No };
+}
+variable CblPrtHrdwrOK {
+  type discrete [ 2 ] { Operational, Not_Operational };
+}
+variable LclOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable DSApplctn {
+  type discrete [ 2 ] { DOS, Windows };
+}
+variable PrtMpTPth {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable DS_NTOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable DS_LCLOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PC2PRT {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtMem {
+  type discrete [ 2 ] { Greater_than_2_Mb, Less_than_2Mb };
+}
+variable PrtTimeOut {
+  type discrete [ 2 ] { Long_Enough, Too_Short };
+}
+variable FllCrrptdBffr {
+  type discrete [ 2 ] { Intact__not_Corrupt_, Full_or_Corrupt };
+}
+variable TnrSpply {
+  type discrete [ 2 ] { Adequate, Low };
+}
+variable PrtData {
+  type discrete [ 2 ] { Yes, No };
+}
+variable Problem1 {
+  type discrete [ 2 ] { Normal_Output, No_Output };
+}
+variable AppDtGnTm {
+  type discrete [ 2 ] { Fast_Enough, Too_Long };
+}
+variable PrntPrcssTm {
+  type discrete [ 2 ] { Fast_Enough, Too_Long };
+}
+variable DeskPrntSpd {
+  type discrete [ 2 ] { OK, Too_Slow };
+}
+variable PgOrnttnOK {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable PrntngArOK {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable ScrnFntNtPrntrFnt {
+  type discrete [ 2 ] { Yes, No };
+}
+variable CmpltPgPrntd {
+  type discrete [ 2 ] { Yes, No };
+}
+variable GrphcsRltdDrvrSttngs {
+  type discrete [ 2 ] { Correct, Incorrect };
+}
+variable EPSGrphc {
+  type discrete [ 2 ] { No____TIF___WMF___BMP_, Yes____EPS_ };
+}
+variable NnPSGrphc {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtPScript {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PSGRAPHIC {
+  type discrete [ 2 ] { Yes, No };
+}
+variable Problem4 {
+  type discrete [ 2 ] { No, Yes };
+}
+variable TrTypFnts {
+  type discrete [ 2 ] { Yes, No };
+}
+variable FntInstlltn {
+  type discrete [ 2 ] { Verified, Faulty };
+}
+variable PrntrAccptsTrtyp {
+  type discrete [ 2 ] { Yes, No };
+}
+variable TTOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable NnTTOK {
+  type discrete [ 2 ] { Yes, No };
+}
+variable Problem5 {
+  type discrete [ 2 ] { No, Yes };
+}
+variable LclGrbld {
+  type discrete [ 2 ] { Yes, No };
+}
+variable NtGrbld {
+  type discrete [ 2 ] { Yes, No };
+}
+variable GrbldOtpt {
+  type discrete [ 2 ] { No, Yes };
+}
+variable HrglssDrtnAftrPrnt {
+  type discrete [ 2 ] { Fast_Enough, Too_Long };
+}
+variable REPEAT {
+  type discrete [ 2 ] { Yes__Always_the_Same_, No__Different_Each_Time_ };
+}
+variable AvlblVrtlMmry {
+  type discrete [ 2 ] { Adequate____1Mb_, Inadequate____1_Mb_ };
+}
+variable PSERRMEM {
+  type discrete [ 2 ] { No_Error, Low_Memory };
+}
+variable TstpsTxt {
+  type discrete [ 2 ] { x_1_Mb_Available_VM, x_1_Mb_Available_VM2 };
+}
+variable GrbldPS {
+  type discrete [ 2 ] { No, Yes };
+}
+variable IncmpltPS {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtFile {
+  type discrete [ 2 ] { Yes, No };
+}
+variable PrtIcon {
+  type discrete [ 2 ] { Normal, Grayed_Out };
+}
+variable Problem6 {
+  type discrete [ 2 ] { No, Yes };
+}
+variable Problem3 {
+  type discrete [ 2 ] { No, Yes };
+}
+variable PrtQueue {
+  type discrete [ 2 ] { Short, Long };
+}
+variable NtSpd {
+  type discrete [ 2 ] { OK, Slow };
+}
+variable Problem2 {
+  type discrete [ 2 ] { OK, Too_Long };
+}
+variable PrtStatPaper {
+  type discrete [ 2 ] { No_Error, Jam__Out__Bin_Full };
+}
+variable PrtStatToner {
+  type discrete [ 2 ] { No_Error, Low__None };
+}
+variable PrtStatMem {
+  type discrete [ 2 ] { No_Error, Out_of_Memory };
+}
+variable PrtStatOff {
+  type discrete [ 2 ] { No_Error, OFFLINE__OFF };
+}
+probability ( AppOK ) {
+  table 0.995, 0.005;
+}
+probability ( DataFile ) {
+  table 0.995, 0.005;
+}
+probability ( AppData | AppOK, DataFile ) {
+  (Correct, Correct) 0.9999, 0.0001;
+  (Incorrect_Corrupt, Correct) 0.0, 1.0;
+  (Correct, Incorrect_Corrupt) 0.0, 1.0;
+  (Incorrect_Corrupt, Incorrect_Corrupt) 0.5, 0.5;
+}
+probability ( DskLocal ) {
+  table 0.97, 0.03;
+}
+probability ( PrtSpool ) {
+  table 0.95, 0.05;
+}
+probability ( PrtOn ) {
+  table 0.9, 0.1;
+}
+probability ( PrtPaper ) {
+  table 0.98, 0.02;
+}
+probability ( NetPrint ) {
+  table 0.8, 0.2;
+}
+probability ( PrtDriver ) {
+  table 0.9, 0.1;
+}
+probability ( PrtThread ) {
+  table 0.9999, 0.0001;
+}
+probability ( EMFOK | AppData, DskLocal, PrtThread ) {
+  (Correct, Greater_than_2_Mb, OK) 0.99, 0.01;
+  (Incorrect_or_corrupt, Greater_than_2_Mb, OK) 0.1, 0.9;
+  (Correct, Less_than_2_Mb, OK) 0.0, 1.0;
+  (Incorrect_or_corrupt, Less_than_2_Mb, OK) 0.5, 0.5;
+  (Correct, Greater_than_2_Mb, Corrupt_Buggy) 0.05, 0.95;
+  (Incorrect_or_corrupt, Greater_than_2_Mb, Corrupt_Buggy) 0.5, 0.5;
+  (Correct, Less_than_2_Mb, Corrupt_Buggy) 0.5, 0.5;
+  (Incorrect_or_corrupt, Less_than_2_Mb, Corrupt_Buggy) 0.5, 0.5;
+}
+probability ( GDIIN | AppData, PrtSpool, EMFOK ) {
+  (Correct, Enabled, Yes) 1.0, 0.0;
+  (Incorrect_or_corrupt, Enabled, Yes) 0.0, 1.0;
+  (Correct, Disabled, Yes) 1.0, 0.0;
+  (Incorrect_or_corrupt, Disabled, Yes) 0.0, 1.0;
+  (Correct, Enabled, No) 0.0, 1.0;
+  (Incorrect_or_corrupt, Enabled, No) 0.0, 1.0;
+  (Correct, Disabled, No) 1.0, 0.0;
+  (Incorrect_or_corrupt, Disabled, No) 0.0, 1.0;
+}
+probability ( DrvSet ) {
+  table 0.99, 0.01;
+}
+probability ( DrvOK ) {
+  table 0.99, 0.01;
+}
+probability ( GDIOUT | PrtDriver, GDIIN, DrvSet, DrvOK ) {
+  (Yes, Yes, Correct, Reinstalled) 0.99, 0.01;
+  (No, Yes, Correct, Reinstalled) 0.1, 0.9;
+  (Yes, No, Correct, Reinstalled) 0.1, 0.9;
+  (No, No, Correct, Reinstalled) 0.5, 0.5;
+  (Yes, Yes, Incorrect, Reinstalled) 0.9, 0.1;
+  (No, Yes, Incorrect, Reinstalled) 0.5, 0.5;
+  (Yes, No, Incorrect, Reinstalled) 0.5, 0.5;
+  (No, No, Incorrect, Reinstalled) 0.5, 0.5;
+  (Yes, Yes, Correct, Corrupt) 0.2, 0.8;
+  (No, Yes, Correct, Corrupt) 0.5, 0.5;
+  (Yes, No, Correct, Corrupt) 0.5, 0.5;
+  (No, No, Correct, Corrupt) 0.5, 0.5;
+  (Yes, Yes, Incorrect, Corrupt) 0.5, 0.5;
+  (No, Yes, Incorrect, Corrupt) 0.5, 0.5;
+  (Yes, No, Incorrect, Corrupt) 0.5, 0.5;
+  (No, No, Incorrect, Corrupt) 0.5, 0.5;
+}
+probability ( PrtSel ) {
+  table 0.99, 0.01;
+}
+probability ( PrtDataOut | GDIOUT, PrtSel ) {
+  (Yes, Yes) 0.99, 0.01;
+  (No, Yes) 0.0, 1.0;
+  (Yes, No) 0.0, 1.0;
+  (No, No) 0.5, 0.5;
+}
+probability ( PrtPath ) {
+  table 0.97, 0.03;
+}
+probability ( NtwrkCnfg ) {
+  table 0.98, 0.02;
+}
+probability ( PTROFFLINE ) {
+  table 0.7, 0.3;
+}
+probability ( NetOK | PrtPath, NtwrkCnfg, PTROFFLINE ) {
+  (Correct, Correct, Online) 0.99, 0.01;
+  (Incorrect, Correct, Online) 0.0, 1.0;
+  (Correct, Incorrect, Online) 0.1, 0.9;
+  (Incorrect, Incorrect, Online) 0.5, 0.5;
+  (Correct, Correct, Offline) 0.0, 1.0;
+  (Incorrect, Correct, Offline) 0.5, 0.5;
+  (Correct, Incorrect, Offline) 0.5, 0.5;
+  (Incorrect, Incorrect, Offline) 0.5, 0.5;
+}
+probability ( PrtCbl ) {
+  table 0.98, 0.02;
+}
+probability ( PrtPort ) {
+  table 0.99, 0.01;
+}
+probability ( CblPrtHrdwrOK ) {
+  table 0.99, 0.01;
+}
+probability ( LclOK | PrtCbl, PrtPort, CblPrtHrdwrOK ) {
+  (Connected, Yes, Operational) 0.999, 0.001;
+  (Loose, Yes, Operational) 0.0, 1.0;
+  (Connected, No, Operational) 0.0, 1.0;
+  (Loose, No, Operational) 0.5, 0.5;
+  (Connected, Yes, Not_Operational) 0.01, 0.99;
+  (Loose, Yes, Not_Operational) 0.5, 0.5;
+  (Connected, No, Not_Operational) 0.5, 0.5;
+  (Loose, No, Not_Operational) 0.5, 0.5;
+}
+probability ( DSApplctn ) {
+  table 0.15, 0.85;
+}
+probability ( PrtMpTPth ) {
+  table 0.8, 0.2;
+}
+probability ( DS_NTOK | AppData, PrtPath, PrtMpTPth, NtwrkCnfg, PTROFFLINE ) {
+  (Correct, Correct, Correct, Correct, Online) 0.99, 0.01;
+  (Incorrect_or_corrupt, Correct, Correct, Correct, Online) 0.2, 0.8;
+  (Correct, Incorrect, Correct, Correct, Online) 0.0, 1.0;
+  (Incorrect_or_corrupt, Incorrect, Correct, Correct, Online) 0.5, 0.5;
+  (Correct, Correct, Incorrect, Correct, Online) 0.0, 1.0;
+  (Incorrect_or_corrupt, Correct, Incorrect, Correct, Online) 0.5, 0.5;
+  (Correct, Incorrect, Incorrect, Correct, Online) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Incorrect, Correct, Online) 0.5, 0.5;
+  (Correct, Correct, Correct, Incorrect, Online) 0.1, 0.9;
+  (Incorrect_or_corrupt, Correct, Correct, Incorrect, Online) 0.5, 0.5;
+  (Correct, Incorrect, Correct, Incorrect, Online) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Correct, Incorrect, Online) 0.5, 0.5;
+  (Correct, Correct, Incorrect, Incorrect, Online) 0.5, 0.5;
+  (Incorrect_or_corrupt, Correct, Incorrect, Incorrect, Online) 0.5, 0.5;
+  (Correct, Incorrect, Incorrect, Incorrect, Online) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Incorrect, Incorrect, Online) 0.5, 0.5;
+  (Correct, Correct, Correct, Correct, Offline) 0.0, 1.0;
+  (Incorrect_or_corrupt, Correct, Correct, Correct, Offline) 0.5, 0.5;
+  (Correct, Incorrect, Correct, Correct, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Correct, Correct, Offline) 0.5, 0.5;
+  (Correct, Correct, Incorrect, Correct, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Correct, Incorrect, Correct, Offline) 0.5, 0.5;
+  (Correct, Incorrect, Incorrect, Correct, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Incorrect, Correct, Offline) 0.5, 0.5;
+  (Correct, Correct, Correct, Incorrect, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Correct, Correct, Incorrect, Offline) 0.5, 0.5;
+  (Correct, Incorrect, Correct, Incorrect, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Correct, Incorrect, Offline) 0.5, 0.5;
+  (Correct, Correct, Incorrect, Incorrect, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Correct, Incorrect, Incorrect, Offline) 0.5, 0.5;
+  (Correct, Incorrect, Incorrect, Incorrect, Offline) 0.5, 0.5;
+  (Incorrect_or_corrupt, Incorrect, Incorrect, Incorrect, Offline) 0.5, 0.5;
+}
+probability ( DS_LCLOK | AppData, PrtCbl, PrtPort, CblPrtHrdwrOK ) {
+  (Correct, Connected, Yes, Operational) 1.0, 0.0;
+  (Incorrect_or_corrupt, Connected, Yes, Operational) 0.1, 0.9;
+  (Correct, Loose, Yes, Operational) 0.0, 1.0;
+  (Incorrect_or_corrupt, Loose, Yes, Operational) 0.5, 0.5;
+  (Correct, Connected, No, Operational) 0.0, 1.0;
+  (Incorrect_or_corrupt, Connected, No, Operational) 0.5, 0.5;
+  (Correct, Loose, No, Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, Loose, No, Operational) 0.5, 0.5;
+  (Correct, Connected, Yes, Not_Operational) 0.1, 0.9;
+  (Incorrect_or_corrupt, Connected, Yes, Not_Operational) 0.5, 0.5;
+  (Correct, Loose, Yes, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, Loose, Yes, Not_Operational) 0.5, 0.5;
+  (Correct, Connected, No, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, Connected, No, Not_Operational) 0.5, 0.5;
+  (Correct, Loose, No, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, Loose, No, Not_Operational) 0.5, 0.5;
+}
+probability ( PC2PRT | NetPrint, PrtDataOut, NetOK, LclOK, DSApplctn, DS_NTOK, DS_LCLOK ) {
+  (No__Local_printer_, Yes, Yes, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, Yes, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, Yes, No, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, No, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, No, Yes, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, Yes, Yes, No, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, No, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, Yes, No, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, Yes, No, No, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, No, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, No, No, DOS, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, No, No, DOS, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, Yes, Yes, Yes, Windows, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, Windows, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, Windows, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, Windows, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, Windows, Yes, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, Windows, Yes, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, Yes, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, Yes, Yes, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, Yes, Yes, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, No, Yes, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, No, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, Yes, No, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, Yes, No, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, No, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, DOS, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, No, No, No, DOS, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, Yes, Windows, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, Windows, No, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, Windows, No, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, Windows, No, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, Windows, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, Windows, No, Yes) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, Yes, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, Yes, No, Yes, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, Yes, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, No, Yes, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, Yes, Yes, No, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, Yes, No, No, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, No, No, DOS, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, DOS, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, Yes, Yes, Yes, Windows, Yes, No) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, Windows, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, Windows, Yes, No) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, Windows, Yes, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, Windows, Yes, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, Windows, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, Yes, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, Yes, Yes, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, Yes, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, Yes, No, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, DOS, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, DOS, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, Yes, Windows, No, No) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes, Yes, Windows, No, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, Yes, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, Yes, Windows, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, Yes, Windows, No, No) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No, Yes, Windows, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, Yes, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, Yes, Windows, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, Yes, No, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, Yes, No, Windows, No, No) 1.0, 0.0;
+  (No__Local_printer_, No, Yes, No, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes, No, Windows, No, No) 0.0, 1.0;
+  (No__Local_printer_, Yes, No, No, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, Yes, No, No, Windows, No, No) 0.0, 1.0;
+  (No__Local_printer_, No, No, No, Windows, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No, No, Windows, No, No) 0.0, 1.0;
+}
+probability ( PrtMem ) {
+  table 0.95, 0.05;
+}
+probability ( PrtTimeOut ) {
+  table 0.94, 0.06;
+}
+probability ( FllCrrptdBffr ) {
+  table 0.85, 0.15;
+}
+probability ( TnrSpply ) {
+  table 0.995, 0.005;
+}
+probability ( PrtData | PrtOn, PrtPaper, PC2PRT, PrtMem, PrtTimeOut, FllCrrptdBffr, TnrSpply ) {
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.99, 0.01;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.0, 1.0;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.0, 1.0;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.0, 1.0;
+  (No, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.1, 0.9;
+  (No, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.0, 1.0;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.02, 0.98;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Adequate) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.01, 0.99;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Long_Enough, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Too_Short, Intact__not_Corrupt_, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Long_Enough, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, No, Greater_than_2_Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, Yes, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, Has_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, Has_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (Yes, No_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+  (No, No_Paper, No, Less_than_2Mb, Too_Short, Full_or_Corrupt, Low) 0.5, 0.5;
+}
+probability ( Problem1 | PrtData ) {
+  (Yes) 1.0, 0.0;
+  (No) 0.0, 1.0;
+}
+probability ( AppDtGnTm | PrtSpool ) {
+  (Enabled) 1.0, 0.0;
+  (Disabled) 0.99000001, 0.00999999;
+}
+probability ( PrntPrcssTm | PrtSpool ) {
+  (Enabled) 0.99000001, 0.00999999;
+  (Disabled) 1.0, 0.0;
+}
+probability ( DeskPrntSpd | PrtMem, AppDtGnTm, PrntPrcssTm ) {
+  (Greater_than_2_Mb, Fast_Enough, Fast_Enough) 0.99900001, 0.00099999;
+  (Less_than_2Mb, Fast_Enough, Fast_Enough) 0.25, 0.75;
+  (Greater_than_2_Mb, Too_Long, Fast_Enough) 0.00099999, 0.99900001;
+  (Less_than_2Mb, Too_Long, Fast_Enough) 0.5, 0.5;
+  (Greater_than_2_Mb, Fast_Enough, Too_Long) 0.00099999, 0.99900001;
+  (Less_than_2Mb, Fast_Enough, Too_Long) 0.5, 0.5;
+  (Greater_than_2_Mb, Too_Long, Too_Long) 0.5, 0.5;
+  (Less_than_2Mb, Too_Long, Too_Long) 0.5, 0.5;
+}
+probability ( PgOrnttnOK ) {
+  table 0.95, 0.05;
+}
+probability ( PrntngArOK ) {
+  table 0.98, 0.02;
+}
+probability ( ScrnFntNtPrntrFnt ) {
+  table 0.95, 0.05;
+}
+probability ( CmpltPgPrntd | PrtMem, PgOrnttnOK, PrntngArOK ) {
+  (Greater_than_2_Mb, Correct, Correct) 0.99, 0.01;
+  (Less_than_2Mb, Correct, Correct) 0.3, 0.7;
+  (Greater_than_2_Mb, Incorrect, Correct) 0.00999999, 0.99000001;
+  (Less_than_2Mb, Incorrect, Correct) 0.5, 0.5;
+  (Greater_than_2_Mb, Correct, Incorrect) 0.1, 0.9;
+  (Less_than_2Mb, Correct, Incorrect) 0.5, 0.5;
+  (Greater_than_2_Mb, Incorrect, Incorrect) 0.5, 0.5;
+  (Less_than_2Mb, Incorrect, Incorrect) 0.5, 0.5;
+}
+probability ( GrphcsRltdDrvrSttngs ) {
+  table 0.95, 0.05;
+}
+probability ( EPSGrphc ) {
+  table 0.99, 0.01;
+}
+probability ( NnPSGrphc | PrtMem, GrphcsRltdDrvrSttngs, EPSGrphc ) {
+  (Greater_than_2_Mb, Correct, No____TIF___WMF___BMP_) 0.999, 0.001;
+  (Less_than_2Mb, Correct, No____TIF___WMF___BMP_) 0.25, 0.75;
+  (Greater_than_2_Mb, Incorrect, No____TIF___WMF___BMP_) 0.1, 0.9;
+  (Less_than_2Mb, Incorrect, No____TIF___WMF___BMP_) 0.5, 0.5;
+  (Greater_than_2_Mb, Correct, Yes____EPS_) 0.0, 1.0;
+  (Less_than_2Mb, Correct, Yes____EPS_) 0.5, 0.5;
+  (Greater_than_2_Mb, Incorrect, Yes____EPS_) 0.5, 0.5;
+  (Less_than_2Mb, Incorrect, Yes____EPS_) 0.5, 0.5;
+}
+probability ( PrtPScript ) {
+  table 0.4, 0.6;
+}
+probability ( PSGRAPHIC | PrtMem, GrphcsRltdDrvrSttngs, EPSGrphc ) {
+  (Greater_than_2_Mb, Correct, No____TIF___WMF___BMP_) 0.999, 0.001;
+  (Less_than_2Mb, Correct, No____TIF___WMF___BMP_) 0.25, 0.75;
+  (Greater_than_2_Mb, Incorrect, No____TIF___WMF___BMP_) 0.1, 0.9;
+  (Less_than_2Mb, Incorrect, No____TIF___WMF___BMP_) 0.5, 0.5;
+  (Greater_than_2_Mb, Correct, Yes____EPS_) 1.0, 0.0;
+  (Less_than_2Mb, Correct, Yes____EPS_) 0.5, 0.5;
+  (Greater_than_2_Mb, Incorrect, Yes____EPS_) 0.5, 0.5;
+  (Less_than_2Mb, Incorrect, Yes____EPS_) 0.5, 0.5;
+}
+probability ( Problem4 | NnPSGrphc, PrtPScript, PSGRAPHIC ) {
+  (Yes, Yes, Yes) 0.0, 1.0;
+  (No, Yes, Yes) 0.0, 1.0;
+  (Yes, No, Yes) 0.0, 1.0;
+  (No, No, Yes) 1.0, 0.0;
+  (Yes, Yes, No) 1.0, 0.0;
+  (No, Yes, No) 1.0, 0.0;
+  (Yes, No, No) 0.0, 1.0;
+  (No, No, No) 1.0, 0.0;
+}
+probability ( TrTypFnts ) {
+  table 0.9, 0.1;
+}
+probability ( FntInstlltn ) {
+  table 0.98, 0.02;
+}
+probability ( PrntrAccptsTrtyp ) {
+  table 0.9, 0.1;
+}
+probability ( TTOK | PrtMem, FntInstlltn, PrntrAccptsTrtyp ) {
+  (Greater_than_2_Mb, Verified, Yes) 0.99000001, 0.00999999;
+  (Less_than_2Mb, Verified, Yes) 0.5, 0.5;
+  (Greater_than_2_Mb, Faulty, Yes) 0.1, 0.9;
+  (Less_than_2Mb, Faulty, Yes) 0.5, 0.5;
+  (Greater_than_2_Mb, Verified, No) 0.0, 1.0;
+  (Less_than_2Mb, Verified, No) 0.5, 0.5;
+  (Greater_than_2_Mb, Faulty, No) 0.5, 0.5;
+  (Less_than_2Mb, Faulty, No) 0.5, 0.5;
+}
+probability ( NnTTOK | PrtMem, ScrnFntNtPrntrFnt, FntInstlltn ) {
+  (Greater_than_2_Mb, Yes, Verified) 0.99000001, 0.00999999;
+  (Less_than_2Mb, Yes, Verified) 0.5, 0.5;
+  (Greater_than_2_Mb, No, Verified) 0.1, 0.9;
+  (Less_than_2Mb, No, Verified) 0.5, 0.5;
+  (Greater_than_2_Mb, Yes, Faulty) 0.1, 0.9;
+  (Less_than_2Mb, Yes, Faulty) 0.5, 0.5;
+  (Greater_than_2_Mb, No, Faulty) 0.5, 0.5;
+  (Less_than_2Mb, No, Faulty) 0.5, 0.5;
+}
+probability ( Problem5 | TrTypFnts, TTOK, NnTTOK ) {
+  (Yes, Yes, Yes) 0.0, 1.0;
+  (No, Yes, Yes) 0.0, 1.0;
+  (Yes, No, Yes) 1.0, 0.0;
+  (No, No, Yes) 0.0, 1.0;
+  (Yes, Yes, No) 0.0, 1.0;
+  (No, Yes, No) 1.0, 0.0;
+  (Yes, No, No) 1.0, 0.0;
+  (No, No, No) 1.0, 0.0;
+}
+probability ( LclGrbld | AppData, PrtDriver, PrtMem, CblPrtHrdwrOK ) {
+  (Correct, Yes, Greater_than_2_Mb, Operational) 1.0, 0.0;
+  (Incorrect_or_corrupt, Yes, Greater_than_2_Mb, Operational) 0.2, 0.8;
+  (Correct, No, Greater_than_2_Mb, Operational) 0.4, 0.6;
+  (Incorrect_or_corrupt, No, Greater_than_2_Mb, Operational) 0.5, 0.5;
+  (Correct, Yes, Less_than_2Mb, Operational) 0.2, 0.8;
+  (Incorrect_or_corrupt, Yes, Less_than_2Mb, Operational) 0.5, 0.5;
+  (Correct, No, Less_than_2Mb, Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Less_than_2Mb, Operational) 0.5, 0.5;
+  (Correct, Yes, Greater_than_2_Mb, Not_Operational) 0.1, 0.9;
+  (Incorrect_or_corrupt, Yes, Greater_than_2_Mb, Not_Operational) 0.5, 0.5;
+  (Correct, No, Greater_than_2_Mb, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Greater_than_2_Mb, Not_Operational) 0.5, 0.5;
+  (Correct, Yes, Less_than_2Mb, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, Yes, Less_than_2Mb, Not_Operational) 0.5, 0.5;
+  (Correct, No, Less_than_2Mb, Not_Operational) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Less_than_2Mb, Not_Operational) 0.5, 0.5;
+}
+probability ( NtGrbld | AppData, PrtDriver, PrtMem, NtwrkCnfg ) {
+  (Correct, Yes, Greater_than_2_Mb, Correct) 1.0, 0.0;
+  (Incorrect_or_corrupt, Yes, Greater_than_2_Mb, Correct) 0.3, 0.7;
+  (Correct, No, Greater_than_2_Mb, Correct) 0.4, 0.6;
+  (Incorrect_or_corrupt, No, Greater_than_2_Mb, Correct) 0.5, 0.5;
+  (Correct, Yes, Less_than_2Mb, Correct) 0.2, 0.8;
+  (Incorrect_or_corrupt, Yes, Less_than_2Mb, Correct) 0.5, 0.5;
+  (Correct, No, Less_than_2Mb, Correct) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Less_than_2Mb, Correct) 0.5, 0.5;
+  (Correct, Yes, Greater_than_2_Mb, Incorrect) 0.4, 0.6;
+  (Incorrect_or_corrupt, Yes, Greater_than_2_Mb, Incorrect) 0.5, 0.5;
+  (Correct, No, Greater_than_2_Mb, Incorrect) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Greater_than_2_Mb, Incorrect) 0.5, 0.5;
+  (Correct, Yes, Less_than_2Mb, Incorrect) 0.5, 0.5;
+  (Incorrect_or_corrupt, Yes, Less_than_2Mb, Incorrect) 0.5, 0.5;
+  (Correct, No, Less_than_2Mb, Incorrect) 0.5, 0.5;
+  (Incorrect_or_corrupt, No, Less_than_2Mb, Incorrect) 0.5, 0.5;
+}
+probability ( GrbldOtpt | NetPrint, LclGrbld, NtGrbld ) {
+  (No__Local_printer_, Yes, Yes) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, Yes) 1.0, 0.0;
+  (No__Local_printer_, No, Yes) 0.0, 1.0;
+  (Yes__Network_printer_, No, Yes) 1.0, 0.0;
+  (No__Local_printer_, Yes, No) 1.0, 0.0;
+  (Yes__Network_printer_, Yes, No) 0.0, 1.0;
+  (No__Local_printer_, No, No) 0.0, 1.0;
+  (Yes__Network_printer_, No, No) 0.0, 1.0;
+}
+probability ( HrglssDrtnAftrPrnt | AppDtGnTm ) {
+  (Fast_Enough) 0.99, 0.01;
+  (Too_Long) 0.1, 0.9;
+}
+probability ( REPEAT | CblPrtHrdwrOK, NtwrkCnfg ) {
+  (Operational, Correct) 1.0, 0.0;
+  (Not_Operational, Correct) 0.5, 0.5;
+  (Operational, Incorrect) 0.5, 0.5;
+  (Not_Operational, Incorrect) 0.5, 0.5;
+}
+probability ( AvlblVrtlMmry | PrtPScript ) {
+  (Yes) 0.98, 0.02;
+  (No) 1.0, 0.0;
+}
+probability ( PSERRMEM | PrtPScript, AvlblVrtlMmry ) {
+  (Yes, Adequate____1Mb_) 1.0, 0.0;
+  (No, Adequate____1Mb_) 1.0, 0.0;
+  (Yes, Inadequate____1_Mb_) 0.05, 0.95;
+  (No, Inadequate____1_Mb_) 1.0, 0.0;
+}
+probability ( TstpsTxt | PrtPScript, AvlblVrtlMmry ) {
+  (Yes, Adequate____1Mb_) 0.99900001, 0.00099999;
+  (No, Adequate____1Mb_) 1.0, 0.0;
+  (Yes, Inadequate____1_Mb_) 0.00099999, 0.99900001;
+  (No, Inadequate____1_Mb_) 1.0, 0.0;
+}
+probability ( GrbldPS | GrbldOtpt, AvlblVrtlMmry ) {
+  (No, Adequate____1Mb_) 1.0, 0.0;
+  (Yes, Adequate____1Mb_) 0.0, 1.0;
+  (No, Inadequate____1_Mb_) 0.1, 0.9;
+  (Yes, Inadequate____1_Mb_) 0.5, 0.5;
+}
+probability ( IncmpltPS | CmpltPgPrntd, AvlblVrtlMmry ) {
+  (Yes, Adequate____1Mb_) 1.0, 0.0;
+  (No, Adequate____1Mb_) 0.0, 1.0;
+  (Yes, Inadequate____1_Mb_) 0.3, 0.7;
+  (No, Inadequate____1_Mb_) 0.5, 0.5;
+}
+probability ( PrtFile | PrtDataOut ) {
+  (Yes) 0.8, 0.2;
+  (No) 0.2, 0.8;
+}
+probability ( PrtIcon | NtwrkCnfg, PTROFFLINE ) {
+  (Correct, Online) 0.9999, 0.0001;
+  (Incorrect, Online) 0.25, 0.75;
+  (Correct, Offline) 0.7, 0.3;
+  (Incorrect, Offline) 0.5, 0.5;
+}
+probability ( Problem6 | GrbldOtpt, PrtPScript, GrbldPS ) {
+  (No, Yes, No) 1.0, 0.0;
+  (Yes, Yes, No) 1.0, 0.0;
+  (No, No, No) 1.0, 0.0;
+  (Yes, No, No) 0.0, 1.0;
+  (No, Yes, Yes) 0.0, 1.0;
+  (Yes, Yes, Yes) 0.0, 1.0;
+  (No, No, Yes) 1.0, 0.0;
+  (Yes, No, Yes) 0.0, 1.0;
+}
+probability ( Problem3 | CmpltPgPrntd, PrtPScript, IncmpltPS ) {
+  (Yes, Yes, Yes) 0.0, 1.0;
+  (No, Yes, Yes) 0.0, 1.0;
+  (Yes, No, Yes) 0.0, 1.0;
+  (No, No, Yes) 1.0, 0.0;
+  (Yes, Yes, No) 1.0, 0.0;
+  (No, Yes, No) 1.0, 0.0;
+  (Yes, No, No) 0.0, 1.0;
+  (No, No, No) 1.0, 0.0;
+}
+probability ( PrtQueue ) {
+  table 0.99, 0.01;
+}
+probability ( NtSpd | DeskPrntSpd, NtwrkCnfg, PrtQueue ) {
+  (OK, Correct, Short) 0.99900001, 0.00099999;
+  (Too_Slow, Correct, Short) 0.0, 1.0;
+  (OK, Incorrect, Short) 0.25, 0.75;
+  (Too_Slow, Incorrect, Short) 0.5, 0.5;
+  (OK, Correct, Long) 0.25, 0.75;
+  (Too_Slow, Correct, Long) 0.5, 0.5;
+  (OK, Incorrect, Long) 0.5, 0.5;
+  (Too_Slow, Incorrect, Long) 0.5, 0.5;
+}
+probability ( Problem2 | NetPrint, DeskPrntSpd, NtSpd ) {
+  (No__Local_printer_, OK, OK) 1.0, 0.0;
+  (Yes__Network_printer_, OK, OK) 1.0, 0.0;
+  (No__Local_printer_, Too_Slow, OK) 0.0, 1.0;
+  (Yes__Network_printer_, Too_Slow, OK) 1.0, 0.0;
+  (No__Local_printer_, OK, Slow) 1.0, 0.0;
+  (Yes__Network_printer_, OK, Slow) 0.0, 1.0;
+  (No__Local_printer_, Too_Slow, Slow) 0.0, 1.0;
+  (Yes__Network_printer_, Too_Slow, Slow) 0.0, 1.0;
+}
+probability ( PrtStatPaper | PrtPaper ) {
+  (Has_Paper) 0.99900001, 0.00099999;
+  (No_Paper) 0.00099999, 0.99900001;
+}
+probability ( PrtStatToner | TnrSpply ) {
+  (Adequate) 0.99900001, 0.00099999;
+  (Low) 0.00099999, 0.99900001;
+}
+probability ( PrtStatMem | PrtMem ) {
+  (Greater_than_2_Mb) 0.99900001, 0.00099999;
+  (Less_than_2Mb) 0.2, 0.8;
+}
+probability ( PrtStatOff | PrtOn ) {
+  (Yes) 0.99000001, 0.00999999;
+  (No) 0.00999999, 0.99000001;
+}
