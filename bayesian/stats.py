@@ -1,4 +1,4 @@
-from __future__ import division
+
 '''Basic Stats functionality'''
 
 import math
@@ -39,7 +39,7 @@ class Vector(object):
         counts = defaultdict(int)
         for x in l:
             counts[x] += 1
-        deco = [(k, v) for k, v in counts.items()]
+        deco = [(k, v) for k, v in list(counts.items())]
         deco.sort(reverse=True, key=lambda x: x[1])
         return deco[0][0]
 
@@ -103,4 +103,4 @@ class Vector(object):
                      self.median_absolute_deviation])
         tab.add_row(['Mode Absolute Deviation',
                      self.mode_absolute_deviation])
-        print tab
+        print(tab)

@@ -1,4 +1,4 @@
-from __future__ import division
+
 '''Simple Example Containing A Cycle'''
 
 from bayesian.factor_graph import *
@@ -87,17 +87,17 @@ graph = FactorGraph([
 def tabulate(counts, normalizer):
     table = PrettyTable(['Variable', 'Value', 'p'])
     table.align = 'l'
-    deco = [(k, v) for k, v in counts.items()]
+    deco = [(k, v) for k, v in list(counts.items())]
     deco.sort()
     for k, v in deco:
         if k[1] is not False:
             table.add_row(list(k) + [v / normalizer])
-    print table
+    print(table)
 
 
 if __name__ == '__main__':
     graph.verify()
-    print graph.get_sample()
+    print(graph.get_sample())
 
     n = 10000
     counts = defaultdict(int)
@@ -111,5 +111,5 @@ if __name__ == '__main__':
 
     from pprint import pprint
     pprint(counts)
-    print 'Sampled:'
+    print('Sampled:')
     tabulate(counts, n)

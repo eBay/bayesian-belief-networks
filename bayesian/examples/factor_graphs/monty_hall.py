@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # Initial Marginals without any knowledge.
     # Observe that the likelihood for
     # all three doors is 1/3.
-    print 'Initial Marginal Probabilities:'
+    print('Initial Marginal Probabilities:')
     g.q()
     # Now suppose the guest chooses
     # door A and Monty chooses door B.
@@ -74,5 +74,5 @@ if __name__ == '__main__':
     # The likelihood for door C has
     # indeed increased to 2/3 therefore
     # we should switch to door C.
-    print 'Marginals after knowing Guest chose A and Monty chose B.'
+    print('Marginals after knowing Guest chose A and Monty chose B.')
     g.q(guest_door='A', monty_door='B')

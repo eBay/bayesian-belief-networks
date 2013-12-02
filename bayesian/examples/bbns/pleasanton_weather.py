@@ -1,5 +1,5 @@
 '''Simple Model of Pleasanton Weather'''
-from __future__ import division
+
 
 from bayesian.bbn import build_bbn
 
