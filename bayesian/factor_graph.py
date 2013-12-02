@@ -1,4 +1,4 @@
-from __future__ import division
+
 '''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
 import os
 import csv
@@ -9,7 +9,7 @@ import random
 
 from collections import defaultdict
 from itertools import product as iter_product
-from Queue import Queue
+from queue import Queue
 
 import sqlite3
 from prettytable import PrettyTable
@@ -17,6 +17,7 @@ from prettytable import PrettyTable
 from bayesian.persistance import SampleDB, ensure_data_dir_exists
 from bayesian.exceptions import *
 from bayesian.utils import get_args
+from functools import reduce
 
 DEBUG = False
 GREEN = '\033[92m'
@@ -32,8 +33,8 @@ class Node(object):
     def send(self, message):
         recipient = message.destination
         if DEBUG:
-            print '%s ---> %s' % (
-                self.name, recipient.name), message
+            print('%s ---> %s' % (
+                self.name, recipient.name), message)
         recipient.received_messages[
             self.name] = message
 
@@ -50,13 +51,13 @@ class Node(object):
         List out all messages Node
         currently has received.
         '''
-        print '------------------------------'
-        print 'Messages at Node %s' % self.name
-        print '------------------------------'
-        for k, v in self.received_messages.iteritems():
-            print '%s <-- Argspec:%s' % (v.source.name, v.argspec)
+        print('------------------------------')
+        print('Messages at Node %s' % self.name)
+        print('------------------------------')
+        for k, v in self.received_messages.items():
+            print('%s <-- Argspec:%s' % (v.source.name, v.argspec))
             v.list_factors()
-        print '--'
+        print('--')
 
     def get_target(self):
         '''
@@ -71,11 +72,11 @@ class Node(object):
         needed_to_send = defaultdict(int)
         for target in neighbours:
             needed_to_send[target] = len(neighbours) - 1
-        for _, message in self.received_messages.items():
+        for _, message in list(self.received_messages.items()):
             for target in neighbours:
                 if message.source != target:
                     needed_to_send[target] -= 1
-        for k, v in needed_to_send.items():
+        for k, v in list(needed_to_send.items()):
             if v == 0 and not self.name in k.received_messages:
                 return k
 
@@ -113,7 +114,7 @@ class VariableNode(Node):
         normalize.
         '''
         product = 1
-        for _, message in self.received_messages.iteritems():
+        for _, message in self.received_messages.items():
             product *= message(val)
         return product / normalizer
 
@@ -219,12 +220,12 @@ class FactorNode(Node):
 class Message(object):
 
     def list_factors(self):
-        print '---------------------------'
-        print 'Factors in message %s -> %s' % \
-            (self.source.name, self.destination.name)
-        print '---------------------------'
+        print('---------------------------')
+        print('Factors in message %s -> %s' % \
+            (self.source.name, self.destination.name))
+        print('---------------------------')
         for factor in self.factors:
-            print factor
+            print(factor)
 
     def __call__(self, var):
         '''
@@ -517,7 +518,7 @@ def make_product_func(factors):
     def product_func(*product_func_args):
         #import pytest; pytest.set_trace()
         #arg_dict = dict([(a.name, a) for a in product_func_args])
-        arg_dict = dict(zip(args, product_func_args))
+        arg_dict = dict(list(zip(args, product_func_args)))
         #import pytest; pytest.set_trace()
         result = 1
         for factor in factors:
@@ -570,7 +571,7 @@ def dict_to_tuples(d):
     each of the values
     '''
     retval = []
-    for k, vals in d.iteritems():
+    for k, vals in d.items():
         retval.append([(k, v) for v in vals])
     return retval
 
@@ -642,7 +643,7 @@ def discover_sample_ordering(graph):
                 ordering.append(var_node)
                 accounted_for.add(var_node.name)
                 pmf_ordering.append(node.func)
-    return zip(ordering, pmf_ordering)
+    return list(zip(ordering, pmf_ordering))
 
 
 def get_sample(ordering, evidence={}):
@@ -683,8 +684,8 @@ def get_sample(ordering, evidence={}):
                     sample_dict[var.name] = test_var
                 break
         if not var.name in sample_dict:
-            print 'Iterated through all values for %s and %s but no go...' \
-                % (var.name, func.__name__)
+            print('Iterated through all values for %s and %s but no go...' \
+                % (var.name, func.__name__))
             # This seems to mean that we have never seen this combination
             # of variables before, we can either discard it as irrelevant or
             # use some type of +1 smoothing???
@@ -722,7 +723,7 @@ class FactorGraph(object):
                 domains = dict()
                 for arg in get_args(node.func):
                     if not arg in arg_domains:
-                        print 'WARNING: missing variable for arg:%s' % arg
+                        print('WARNING: missing variable for arg:%s' % arg)
                     else:
                         domains.update({arg: arg_domains[arg]})
                 node.func.domains = domains
@@ -741,7 +742,7 @@ class FactorGraph(object):
                 # no cycles.
                 self.inference_method = 'sumproduct'
         except:
-            print 'Failed to determine if graph has cycles, '
+            print('Failed to determine if graph has cycles, ')
             'setting inference to sample.'
             self.inference_method = 'sample'
         self.enforce_minimum_samples = False
@@ -825,18 +826,18 @@ class FactorGraph(object):
         while not q.empty():
             current_node = q.get()
             if DEBUG:
-                print "Current Node: ", current_node
-                print "Discovered Nodes before adding Current Node: ", \
-                    discovered_nodes
+                print("Current Node: ", current_node)
+                print("Discovered Nodes before adding Current Node: ", \
+                    discovered_nodes)
             if current_node.name in discovered_nodes:
                 # We have a cycle!
                 if DEBUG:
-                    print 'Dequeued node already processed: %s', current_node
+                    print('Dequeued node already processed: %s', current_node)
                 return True
             discovered_nodes.add(current_node.name)
             if DEBUG:
-                print "Discovered Nodes after adding Current Node: ", \
-                    discovered_nodes
+                print("Discovered Nodes after adding Current Node: ", \
+                    discovered_nodes)
             for neighbour in current_node.neighbours:
                 edge = [current_node.name, neighbour.name]
                 # Since this is undirected and we want
@@ -852,7 +853,7 @@ class FactorGraph(object):
                 # and record this edge as traversed
                 if neighbour.name not in discovered_nodes:
                     if DEBUG:
-                        print 'Enqueuing: %s' % neighbour
+                        print('Enqueuing: %s' % neighbour)
                     q.put(neighbour)
                 traversed_edges.add(edge)
         return False
@@ -874,29 +875,29 @@ class FactorGraph(object):
                     not isinstance(node, FactorNode):
                 bases = node.__class__.__bases__
                 if not VariableNode in bases and not FactorNode in bases:
-                    print ('Factor Graph does not '
-                           'support nodes of type: %s' % node.__class__)
+                    print(('Factor Graph does not '
+                           'support nodes of type: %s' % node.__class__))
                     raise InvalidGraphException
         # First check that for each node
         # only connects to nodes of the
         # other type.
-        print 'Checking neighbour node types...'
+        print('Checking neighbour node types...')
         for node in self.nodes:
             if not node.verify_neighbour_types():
-                print '%s has invalid neighbour type.' % node
+                print('%s has invalid neighbour type.' % node)
                 return False
-        print 'Checking that all factor functions have domains...'
+        print('Checking that all factor functions have domains...')
         for node in self.nodes:
             if isinstance(node, FactorNode):
                 if not hasattr(node.func, 'domains'):
-                    print '%s has no domains.' % node
+                    print('%s has no domains.' % node)
                     raise InvalidGraphException
                 elif not node.func.domains:
                     # Also check for an empty domain dict!
-                    print '%s has empty domains.' % node
+                    print('%s has empty domains.' % node)
                     raise InvalidGraphException
-        print 'Checking that all variables are accounted for' + \
-            ' by at least one function...'
+        print('Checking that all variables are accounted for' + \
+            ' by at least one function...')
         variables = set([vn.name for vn in self.nodes
                          if isinstance(vn, VariableNode)])
 
@@ -906,20 +907,18 @@ class FactorGraph(object):
         args = set(reduce(lambda x, y: x + y, largs))
 
         if not variables.issubset(args):
-            print 'These variables are not used in any factors nodes: '
-            print variables.difference(args)
+            print('These variables are not used in any factors nodes: ')
+            print(variables.difference(args))
             return False
-        print 'Checking that all arguments have matching variable nodes...'
+        print('Checking that all arguments have matching variable nodes...')
         if not args.issubset(variables):
-            print 'These arguments have missing variables:'
-            print args.difference(variables)
+            print('These arguments have missing variables:')
+            print(args.difference(variables))
             return False
-        print 'Checking that graph has at least one leaf node...'
-        leaf_nodes = filter(
-            lambda x: x.is_leaf(),
-            self.nodes)
+        print('Checking that graph has at least one leaf node...')
+        leaf_nodes = [x for x in self.nodes if x.is_leaf()]
         if not leaf_nodes:
-            print 'Graph has no leaf nodes.'
+            print('Graph has no leaf nodes.')
             raise InvalidGraphException
         return True
 
@@ -982,7 +981,7 @@ class FactorGraph(object):
 
     def query_by_propagation(self, **kwds):
         self.reset()
-        for k, v in kwds.items():
+        for k, v in list(kwds.items()):
             for node in self.variable_nodes():
                 if node.name == k:
                     add_evidence(node, v)
@@ -1010,14 +1009,14 @@ class FactorGraph(object):
         tab.align = 'l'
         tab.align['Marginal'] = 'r'
         tab.float_format = '%8.6f'
-        for (node, value), prob in result.items():
+        for (node, value), prob in list(result.items()):
             if kwds.get(node, '') == value:
                 tab.add_row(['%s*' % node,
                              '%s%s*%s' % (GREEN, value, NORMAL),
                              '%8.6f' % prob])
             else:
                 tab.add_row([node, value, '%8.6f' % prob])
-        print tab
+        print(tab)
 
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
@@ -1037,20 +1036,20 @@ class FactorGraph(object):
         counts = defaultdict(int)
         valid_samples = 0
         while valid_samples < self.n_samples:
-            print "%s of %s" % (valid_samples, self.n_samples)
+            print("%s of %s" % (valid_samples, self.n_samples))
             try:
                 sample = self.get_sample(kwds)
                 valid_samples += 1
             except:
-                print 'Failed to get a valid sample...'
-                print 'continuing...'
+                print('Failed to get a valid sample...')
+                print('continuing...')
                 continue
             for var in sample:
                 key = (var.name, var.value)
                 counts[key] += 1
         # Now normalize
         normalized = dict(
-            [(k, v / valid_samples) for k, v in counts.items()])
+            [(k, v / valid_samples) for k, v in list(counts.items())])
         return normalized
 
     def generate_samples(self, n):
@@ -1092,11 +1091,11 @@ class FactorGraph(object):
                 'decrease the number of samples '
                 'required for querying (graph.n_samples). ')
         for sample in samples:
-            for name, val in sample.items():
+            for name, val in list(sample.items()):
                 key = (name, val)
                 counts[key] += 1
         normalized = dict(
-            [(k, v / len(samples)) for k, v in counts.items()])
+            [(k, v / len(samples)) for k, v in list(counts.items())])
         return normalized
 
 
@@ -1107,7 +1106,7 @@ class FactorGraph(object):
         else:
             fh = sys.stdout
         if format != 'graphviz':
-            raise 'Unsupported Export Format.'
+            raise ValueError('Unsupported Export Format.')
         fh.write('graph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
@@ -1169,6 +1168,6 @@ def build_graph(*args, **kwds):
     for factor_node in factor_nodes:
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])
-    graph = FactorGraph(variable_nodes.values() + factor_nodes, name=name)
+    graph = FactorGraph(list(variable_nodes.values()) + factor_nodes, name=name)
     #print domains
     return graph

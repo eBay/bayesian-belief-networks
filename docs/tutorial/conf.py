@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Bayesian Belief Networks in Python Tutorial'
-copyright = u'2013, Neville Newey'
+project = 'Bayesian Belief Networks in Python Tutorial'
+copyright = '2013, Neville Newey'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,8 +189,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Bayesian.tex', u'Bayesian Documentation',
-   u'Neville Newey', 'manual'),
+  ('index', 'Bayesian.tex', 'Bayesian Documentation',
+   'Neville Newey', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -219,8 +219,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'bayesian', u'Bayesian Documentation',
-     [u'Neville Newey'], 1)
+    ('index', 'bayesian', 'Bayesian Documentation',
+     ['Neville Newey'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -233,8 +233,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Bayesian', u'Bayesian Documentation',
-   u'Neville Newey', 'Bayesian', 'One line description of project.',
+  ('index', 'Bayesian', 'Bayesian Documentation',
+   'Neville Newey', 'Bayesian', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -254,10 +254,10 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'Bayesian'
-epub_author = u'Neville Newey'
-epub_publisher = u'Neville Newey'
-epub_copyright = u'2013, Neville Newey'
+epub_title = 'Bayesian'
+epub_author = 'Neville Newey'
+epub_publisher = 'Neville Newey'
+epub_copyright = '2013, Neville Newey'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

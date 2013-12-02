@@ -1,5 +1,5 @@
 '''Simple Example Containing A Cycle'''
-from __future__ import division
+
 
 from bayesian.bbn import *
 from bayesian.utils import make_key

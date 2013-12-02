@@ -69,10 +69,10 @@ def %(function)s(%(var)s):
                          'var' : variable,
                          'dict' : str(
                           dict(
-                              zip(
+                              list(zip(
                                   variables[variable],
-                                  map(float, match.group(1).split(", "))
-                                 )
+                                  list(map(float, match.group(1).split(", ")))
+                                 ))
                               )
                             )
                          }
@@ -97,7 +97,7 @@ def %(function)s(%(var)s):
                             break
                         match = conditional_probability_pattern_2.match(line)
                         given_values = match.group(1).split(", ")
-                        for value, prob in zip(variables[variable], map(float, match.group(2).split(", "))):
+                        for value, prob in zip(variables[variable], list(map(float, match.group(2).split(", ")))):
                             dictionary[tuple(given_values + [value])] = prob
                     write("""dictionary_%(var)s = %(dict)s
 def %(function)s(%(given)s, %(var)s):

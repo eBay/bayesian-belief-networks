@@ -23,7 +23,7 @@ def make_key(*args):
     key = ''
     for a in args:
         if hasattr(a, 'value'):
-            raise "value attribute deprecated"
+            raise DeprecationWarning('`value` attribute deprecated')
         else:
             key += str(a).lower()[0]
     return key

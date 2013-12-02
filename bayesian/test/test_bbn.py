@@ -1,4 +1,4 @@
-from __future__ import division
+
 import pytest
 
 import os
@@ -416,7 +416,7 @@ class TestBBN():
         huang_darwiche_jt.initialize_potentials(
             assignments, huang_darwiche_dag)
         for node in huang_darwiche_jt.sepset_nodes:
-            for v in node.potential_tt.values():
+            for v in list(node.potential_tt.values()):
                 assert v == 1
 
         # Note that in H&D there are two places that show
@@ -487,7 +487,7 @@ class TestBBN():
         # and only once to some cluster.
         assert set(
             [node for assignment in
-             assignments.values() for node in assignment]) == \
+             list(assignments.values()) for node in assignment]) == \
             set(
                 [node for node in huang_darwiche_dag.nodes])
 

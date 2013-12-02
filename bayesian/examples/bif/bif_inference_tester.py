@@ -15,16 +15,16 @@ if __name__=='__main__':
 
     start = time()
     module_name = bif_parser.parse(name)
-    print str(time()-start) + "s to parse .bif file into python module"
+    print(str(time()-start) + "s to parse .bif file into python module")
     start = time()
     module = __import__(module_name)
-    print str(time()-start) + "s to import the module"
+    print(str(time()-start) + "s to import the module")
     start = time()
     fg = module.create_graph()
-    print str(time()-start) + "s to create factor graph"
+    print(str(time()-start) + "s to create factor graph")
     start = time()
     bg = module.create_bbn()
-    print str(time()-start) + "s to create bayesian network"
+    print(str(time()-start) + "s to create bayesian network")
 
     # Methods of inference to demonstrate
     exact = True
@@ -37,8 +37,8 @@ if __name__=='__main__':
             # Set exact=True, sampling=False to just show the exact marginals table and select a key of interest
             bg.q()
         else:
-            print 'Exact probability:', bg.query()[key]
-        print 'Time taken for exact query:', time()-start
+            print('Exact probability:', bg.query()[key])
+        print('Time taken for exact query:', time()-start)
 
     if sampling:
         fg.inference_method = 'sample_db'
@@ -59,4 +59,4 @@ if __name__=='__main__':
             prev_p = p
             table.add_row([n, generate_time, query_time, p, diff])
 
-        print table
+        print(table)
