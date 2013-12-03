@@ -94,3 +94,55 @@ def make_log_normal_cdf(mean, std_dev, base=math.e):
         return guassian_cdf((math.log(x, base) - mean) / std_dev)
 
     return log_normal_cdf
+
+
+def discretize_guassian(mu, stddev, buckets,
+                        func_name='f_output_var', var_name='output_var'):
+    '''Given guassian distribution parameters
+    generate python code that specifies
+    a discretized function suitable for
+    use in a bayesian belief network.
+    buckets should be a list of values
+    designating the endpoints of each
+    discretized bin, for example if you
+    have a variable in the domain [0; 1000]
+    and you want 3 discrete intervals
+    say [0-400], [400-600], [600-1000]
+    then you supply n-1 values where n
+    is the number of buckets as follows:
+    buckets = [400, 600]
+    The code that is generated will thus
+    have three values and the prior for
+    each value will be computed from
+    the cdf function.
+    '''
+    result = []
+
+    cdf = make_guassian_cdf(mu, stddev)
+    cutoffs = [cdf(b) for b in buckets]
+    probs = dict()
+
+    # First the -infinity to the first cutoff....
+    probs['%s_LT_%s' % (var_name, buckets[0])] = cutoffs[0]
+
+    # Now the middle buckets
+    for i, (b, c) in enumerate(zip(buckets, cutoffs)):
+        if i == 0:
+            continue
+        probs['%s_GE_%s_LT_%s' % (
+            var_name, buckets[i-1], b)] = c - cutoffs[i-1]
+
+    # And the final bucket...
+    probs['%s_GE_%s' % (
+        var_name, buckets[-1])] = 1 - cutoffs[-1]
+
+    # Check that the values = approx 1
+    assert round(sum(probs.values()), 5) == 1
+
+    # Now build the python fuction
+    result.append('def %s(%s):' % (func_name, var_name))
+    result.append('    probs = dict()')
+    for k, v in probs.iteritems():
+        result.append("    probs['%s'] = %s" % (k, v))
+    result.append('    return probs[%s]' % var_name)
+    return '\n'.join(result)
