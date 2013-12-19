@@ -2,8 +2,8 @@ from __future__ import division
 import math
 
 '''
-Provides Guassian Density functions and
-approximation to Guassian CDF.
+Provides Gaussian Density functions and
+approximation to Gaussian CDF.
 see https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution
 "Numerical approximations for the normal CDF"
 '''
@@ -16,9 +16,9 @@ b4 = -1.821255978
 b5 = 1.330274429
 
 
-def std_guassian_cdf(x):
+def std_gaussian_cdf(x):
     '''Zelen & Severo approximation'''
-    g = make_guassian(0, 1)
+    g = make_gaussian(0, 1)
     t = 1 / (1 + b0 * x)
     return 1 - g(x) * (
         b1 * t +
@@ -28,31 +28,31 @@ def std_guassian_cdf(x):
         b5 * t ** 5)
 
 
-def make_guassian(mean, std_dev):
+def make_gaussian(mean, std_dev):
 
-    def guassian(x):
+    def gaussian(x):
         return 1 / (std_dev * (2 * math.pi) ** 0.5) * \
             math.exp((-(x - mean) ** 2) / (2 * std_dev ** 2))
 
-    guassian.mean = mean
-    guassian.std_dev = std_dev
-    guassian.cdf = make_guassian_cdf(mean, std_dev)
+    gaussian.mean = mean
+    gaussian.std_dev = std_dev
+    gaussian.cdf = make_gaussian_cdf(mean, std_dev)
 
-    return guassian
+    return gaussian
 
 
-def make_guassian_cdf(mean, std_dev):
+def make_gaussian_cdf(mean, std_dev):
 
-    def guassian_cdf(x):
+    def gaussian_cdf(x):
         t = (x - mean) / std_dev
         if t > 0:
-            return std_guassian_cdf(t)
+            return std_gaussian_cdf(t)
         elif t == 0:
             return 0.5
         else:
-            return 1 - std_guassian_cdf(abs(t))
+            return 1 - std_gaussian_cdf(abs(t))
 
-    return guassian_cdf
+    return gaussian_cdf
 
 
 def make_log_normal(mean, std_dev, base=math.e):
@@ -90,15 +90,15 @@ def make_log_normal(mean, std_dev, base=math.e):
 def make_log_normal_cdf(mean, std_dev, base=math.e):
 
     def log_normal_cdf(x):
-        guassian_cdf = make_guassian_cdf(0, 1)
-        return guassian_cdf((math.log(x, base) - mean) / std_dev)
+        gaussian_cdf = make_gaussian_cdf(0, 1)
+        return gaussian_cdf((math.log(x, base) - mean) / std_dev)
 
     return log_normal_cdf
 
 
-def discretize_guassian(mu, stddev, buckets,
+def discretize_gaussian(mu, stddev, buckets,
                         func_name='f_output_var', var_name='output_var'):
-    '''Given guassian distribution parameters
+    '''Given gaussian distribution parameters
     generate python code that specifies
     a discretized function suitable for
     use in a bayesian belief network.
@@ -118,7 +118,7 @@ def discretize_guassian(mu, stddev, buckets,
     '''
     result = []
 
-    cdf = make_guassian_cdf(mu, stddev)
+    cdf = make_gaussian_cdf(mu, stddev)
     cutoffs = [cdf(b) for b in buckets]
     probs = dict()
 
