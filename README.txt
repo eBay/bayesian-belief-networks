@@ -51,7 +51,7 @@ Todo:
 
 1) Change requirement for PMFs to use .value
 2) Rename VariableNode to DiscreteVariableNode
-3) Add GuassianVariableNode for continuous variables
+3) Add GaussianVariableNode for continuous variables
 
 
 Resources
