@@ -37,22 +37,15 @@ $ make html
 
 Unit Tests:
 
-In order to run the unit tests you need the pytest framwork.
-This can be installed in a virtuanlenv with:
-
-$ pip install pytest
-
 To run the tests in a development environment:
 
 $ PYTHONPATH=. py.test bayesian/test
-
 
 Todo:
 
 1) Change requirement for PMFs to use .value
 2) Rename VariableNode to DiscreteVariableNode
 3) Add GaussianVariableNode for continuous variables
-
 
 Resources
 =========
