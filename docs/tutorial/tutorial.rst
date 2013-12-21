@@ -197,7 +197,7 @@ There are several important points to note about the three Python
 function stubs we have introduced here:
 
 1. The parameter names are just the same as the variable names for our model
-2. The functions represnt the nodes of the graph
+2. The functions represent the nodes of the graph
 3. To distinguish between node names and variable names we have prefixed the function names with "f_" (Note that this is simply a convention, you can call them anything but as you will see this convention is used in all the examples in this package.)
 4. Nodes that have parents need to include the parent variable in their parameters.
 5. There are exactly three functions, and exactly three variables representing the three events in the model.
