@@ -268,6 +268,7 @@ function build_bbn from the bbn module. Add this line
 to the top of your file:
 
 .. code-block :: python
+
     from bayesian.bbn import build_bbn
 
 Now lets fill in the rest of the program, add this to the
