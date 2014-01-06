@@ -1,11 +1,16 @@
 from __future__ import division
 import math
+from collections import defaultdict
+from itertools import combinations, product
+
+
 
 '''
 Provides Gaussian Density functions and
 approximation to Gaussian CDF.
 see https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution
 "Numerical approximations for the normal CDF"
+For the multivariate case we use the statsmodels module.
 '''
 
 b0 = 0.2316419
@@ -115,6 +120,12 @@ def discretize_gaussian(mu, stddev, buckets,
     have three values and the prior for
     each value will be computed from
     the cdf function.
+
+    In addition when the function is
+    called with a numeric value it will
+    automatically convert the numeric
+    value into the correct discrete
+    value.
     '''
     result = []
 
@@ -145,4 +156,59 @@ def discretize_gaussian(mu, stddev, buckets,
     for k, v in probs.iteritems():
         result.append("    probs['%s'] = %s" % (k, v))
     result.append('    return probs[%s]' % var_name)
-    return '\n'.join(result)
+
+    # We will store the buckets as well as the arg_name
+    # as attributes
+    # of the function to make conversion to discrete
+    # values easier.
+    result.append('%s.buckets = %s' % (
+        func_name, [buckets]))  # Since the argspec is a list of vars
+                                # we will make the buckets a list of
+                                # buckets one per arg for easy zip.
+
+
+    return '\n'.join(result), probs.keys()
+
+
+def discretize_multivariate_guassian(
+        means, cov, buckets, parent_vars, cdf,
+        func_name='f_output_var', var_name='output_var'):
+    '''buckets should be an iterable of iterables
+    where each element represnts the buckets into
+    which the corresponding variable should be
+    discretized.
+    cov is the covariance matrix.
+    cdf is a callable'''
+    assert len(means) == len(stddevs)
+    assert len(stddevs) == len(buckets)
+    assert len(buckets) == len(parent_vars)
+
+    inf = float("inf")
+    result = []
+    tt = dict()
+
+    # First we will build the discrete value domains
+    # for each of the parent variables.
+    domains = defaultdict(list)
+    for parent_var, bins in zip(parent_vars, buckets):
+        for start, end in zip([-float("inf")] + bins, bins + [float("inf")]):
+            if start == -inf:
+                domains[parent_var].append(
+                '%s_LT_%s' % (parent_var, end))
+            elif end == inf:
+                domains[parent_var].append(
+                    '%s_GE_%s' % (parent_var, start))
+            else:
+
+                domains[parent_var].append(
+                    '%s_GE_%s_LT_%s' % (
+                        parent_var, start, end))
+
+    # TODO Complete this possibly using statsmodels or scipy
+    # to integrate over the pdfs.
+
+    # We store the integrations in a dict with
+    # n dimentional keys e.g.
+    # probs[('A_LT_10', 'B_GT_10')] = 0.001 etc
+    probs = dict()
+    return domains
