@@ -2,6 +2,7 @@ from __future__ import division
 '''Simple Example Using Gaussian Variables'''
 from bayesian.gaussian_bayesian_network import gaussian, conditional_gaussian
 from bayesian.gaussian_bayesian_network import build_graph
+from bayesian.utils import shrink_matrix
 
 '''
 This example comes from page 3 of
@@ -50,8 +51,19 @@ if __name__ == '__main__':
         f_b,
         f_c,
         f_d)
-    import ipdb; ipdb.set_trace()
     sigma = g.get_joint_parameters()
+    import ipdb; ipdb.set_trace()
+    sigma_YY, sigma_YZ, sigma_ZY, sigma_ZZ = g.query(a=7)
+    print sigma_YY
+    print sigma_YZ
+    print sigma_ZY
+    print sigma_ZZ
+    from bayesian.matfunc import Square
+
+    m = Square([[4, 2, -2],[2, 5, -5],[-2, -5, 8]])
+
+    print m.inverse()
+
 
     #    g.i()
 
@@ -127,7 +139,6 @@ variances = [s ** 2 for s in std_devs]
 
 sigma = conditional_to_joint_sigma_2([1,2,3,4], C, variances, betas)
 print sigma
-
 
 
 a = GuassianVariableNode('a')

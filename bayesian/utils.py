@@ -1,6 +1,8 @@
 '''Some Useful Helper Functions'''
 import inspect
 
+from prettytable import PrettyTable
+
 # TODO: Find a better location for get_args
 def get_args(func):
     '''
@@ -61,3 +63,12 @@ def get_original_factors(factors):
             if len(unaccounted_args) == 1:
                 original_factors[unaccounted_args[0]] = factor
     return original_factors
+
+def shrink_matrix(x):
+    '''Remove Nulls'''
+    while True:
+        if len([x for x in m[0] if x is None]) == x.cols:
+            x.pop()
+            x = x.tr()
+            continue
+    return x
