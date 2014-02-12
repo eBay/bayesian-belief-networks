@@ -1,5 +1,7 @@
 from __future__ import division
 '''Simple Example Using Gaussian Variables'''
+from bayesian.gaussian_bayesian_network import gaussian, conditional_gaussian
+from bayesian.gaussian_bayesian_network import build_graph
 
 '''
 This example comes from page 3 of
@@ -10,28 +12,16 @@ we supply mean and standard deviation,
 this differs from the example in the
 above paper which uses variance (=std. dev.) ** 2
 
+Note in the paper they specify variance,
+wheres as this example we are  using std. dev.
+instead hence for A the variance is 4 and std_dev is 2.
 '''
-
-from bayesian.factor_graph import *
-from bayesian.gaussian_node import GaussianNode, gaussian
-from bayesian.gaussian_node import conditional_gaussian, split
-from bayesian.gaussian_node import build_sigma_from_std_devs
-from bayesian.gaussian_node import conditional_to_joint_sigma_2
-
-
-import numpy as np
-
-# Note in the paper they specify variance,
-# I am using std. dev. instead hence
-# for a the variance is 4 and std_dev is 2
 
 @gaussian(3, 2)
 def f_a(a):
     '''represents point A in the river system'''
     pass
 
-# Assume the parameters for the cond. gauss. decorator
-# to be mean of b, variance of b, and 'strength' of edge from a to b.
 
 @conditional_gaussian(4, 1, 1)
 def f_b(a, b):
@@ -41,7 +31,7 @@ def f_b(a, b):
     pass
 
 
-@conditional_gaussian(9, 2, 1)
+@conditional_gaussian(9, 2, 2)
 def f_c(a, c):
     '''Point c is a conditional Guassian
     with parent a'''
@@ -53,14 +43,19 @@ def f_d(b, c, d):
     pass
 
 
-#if __name__ == '__main__':
-#    g = build_graph(
-#        f_a,
-#        f_b,
-#        f_c,
-#        f_d)
-#    g.i()
+if __name__ == '__main__':
 
+    g = build_graph(
+        f_a,
+        f_b,
+        f_c,
+        f_d)
+    import ipdb; ipdb.set_trace()
+    sigma = g.get_joint_parameters()
+
+    #    g.i()
+
+import sys; sys.exit(0)
 
 means = np.matrix([[f_a.mean], [f_b.mean], [f_c.mean], [f_d.mean]])
 

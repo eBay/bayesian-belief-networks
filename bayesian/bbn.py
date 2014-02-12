@@ -11,18 +11,10 @@ from collections import defaultdict
 from prettytable import PrettyTable
 
 from bayesian import GREEN, NORMAL
+from bayesian.graph import Node, UndirectedNode, connect
+from bayesian.graph import Graph, UndirectedGraph
 from bayesian.utils import get_args, named_base_type_factory
-
-
-class Node(object):
-
-    def __init__(self, name, parents=[], children=[]):
-        self.name = name
-        self.parents = parents[:]
-        self.children = children[:]
-
-    def __repr__(self):
-        return '<Node %s>' % self.name
+from bayesian.utils import get_original_factors
 
 
 class BBNNode(Node):
@@ -36,61 +28,6 @@ class BBNNode(Node):
         return '<BBNNode %s (%s)>' % (
             self.name,
             self.argspec)
-
-
-class UndirectedNode(object):
-
-    def __init__(self, name, neighbours=[]):
-        self.name = name
-        self.neighbours = neighbours[:]
-
-    def __repr__(self):
-        return '<UndirectedNode %s>' % self.name
-
-
-class Graph(object):
-
-    def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
-        if format != 'graphviz':
-            raise 'Unsupported Export Format.'
-        if filename:
-            fh = open(filename, 'w')
-        else:
-            fh = sys.stdout
-        fh.write(self.get_graphviz_source())
-
-
-class UndirectedGraph(object):
-
-    def __init__(self, nodes, name=None):
-        self.nodes = nodes
-        self.name = name
-
-    def get_graphviz_source(self):
-        fh = StringIO()
-        fh.write('graph G {\n')
-        fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
-        edges = set()
-        for node in self.nodes:
-            fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
-            for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
-                edges.add(tuple(sorted(edge)))
-        for source, target in edges:
-            fh.write('  %s -- %s;\n' % (source, target))
-        fh.write('}\n')
-        return fh.getvalue()
-
-    def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
-        if format != 'graphviz':
-            raise 'Unsupported Export Format.'
-        if filename:
-            fh = open(filename, 'w')
-        else:
-            fh = sys.stdout
-        fh.write(self.get_graphviz_source())
 
 
 class BBN(Graph):
@@ -719,41 +656,6 @@ class JoinTreeSepSetNode(UndirectedNode):
 
     def __repr__(self):
         return '<JoinTreeSepSetNode: %s>' % self.sepset
-
-
-def connect(parent, child):
-    '''
-    Make an edge between a parent
-    node and a child node.
-    a - parent
-    b - child
-    '''
-    parent.children.append(child)
-    child.parents.append(parent)
-
-
-def get_original_factors(factors):
-    '''
-    For a set of factors, we want to
-    get a mapping of the variables to
-    the factor which first introduces the
-    variable to the set.
-    To do this without enforcing a special
-    naming convention such as 'f_' for factors,
-    or a special ordering, such as the last
-    argument is always the new variable,
-    we will have to discover the 'original'
-    factor that introduces the variable
-    iteratively.
-    '''
-    original_factors = dict()
-    while len(original_factors) < len(factors):
-        for factor in factors:
-            args = get_args(factor)
-            unaccounted_args = [a for a in args if a not in original_factors]
-            if len(unaccounted_args) == 1:
-                original_factors[unaccounted_args[0]] = factor
-    return original_factors
 
 
 def build_bbn(*args, **kwds):

@@ -37,3 +37,27 @@ def named_base_type_factory(v, l):
         'labeled_{}'.format(type(v).__name__),
         (type(v), ),
         {'label': l, 'value': v})(v)
+
+
+def get_original_factors(factors):
+    '''
+    For a set of factors, we want to
+    get a mapping of the variables to
+    the factor which first introduces the
+    variable to the set.
+    To do this without enforcing a special
+    naming convention such as 'f_' for factors,
+    or a special ordering, such as the last
+    argument is always the new variable,
+    we will have to discover the 'original'
+    factor that introduces the variable
+    iteratively.
+    '''
+    original_factors = dict()
+    while len(original_factors) < len(factors):
+        for factor in factors:
+            args = get_args(factor)
+            unaccounted_args = [a for a in args if a not in original_factors]
+            if len(unaccounted_args) == 1:
+                original_factors[unaccounted_args[0]] = factor
+    return original_factors
