@@ -51,19 +51,15 @@ if __name__ == '__main__':
         f_b,
         f_c,
         f_d)
-    sigma = g.get_joint_parameters()
-    import ipdb; ipdb.set_trace()
-    sigma_YY, sigma_YZ, sigma_ZY, sigma_ZZ = g.query(a=7)
-    print sigma_YY
-    print sigma_YZ
-    print sigma_ZY
-    print sigma_ZZ
-    from bayesian.matfunc import Square
-
-    m = Square([[4, 2, -2],[2, 5, -5],[-2, -5, 8]])
-
-    print m.inverse()
-
+    mu, sigma = g.query(a=7)
+    print mu
+    print sigma
+    mu, sigma = g.query(a=7, c=17)
+    print mu
+    print sigma
+    mu, sigma = g.query(a=7, c=17, b=8)
+    print mu
+    print sigma
 
     #    g.i()
 
