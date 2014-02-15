@@ -34,6 +34,24 @@ class Graph(object):
             fh = sys.stdout
         fh.write(self.get_graphviz_source())
 
+    def get_topological_sort(self):
+        l = []
+        l_set = set() # For speed
+        s = set([n for n in self.nodes.values() if not n.parents])
+        while s:
+            n = s.pop()
+            l.append(n)
+            l_set.add(n)
+            # Now some of n's children may be
+            # added to s if all their parents
+            # are already accounted for.
+            for m in n.children:
+                if set(m.parents).issubset(l_set):
+                    s.add(m)
+        if len(l) == len(self.nodes):
+            return l
+        raise "Graph Has Cycles"
+
 
 class UndirectedGraph(object):
 

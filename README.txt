@@ -1,7 +1,9 @@
 Pythonic Bayesian Belief Network Framework
 
-Allows creation of BBNs with pure Python
-functions. Currently three different inference
+Allows creation of Bayesian Belief Networks
+and other Graphical Models with pure Python
+functions. Where tractable exact inference
+is used. Currently three different inference
 methods are supported with more to come:
 
 - Message Passing and the Junction Tree Algorithm
@@ -17,10 +19,13 @@ Other Features
 - Seemless storage of samples for future use
 - Exact inference on cyclic graphs
 - Export of graphs to GraphViz (dot language) format
+- Discrete and Continuous Variables (with some limitations)
+- Minimal dependancies on non-standard library modules.
 
 Please see the short tutorial in the docs/tutorial directory
-for a short introduction on how to build a BBN.
+for a short introduction on how to build a Bayesian Belief Network.
 There are also many examples in the examples directory.
+
 
 
 Installation
@@ -41,11 +46,6 @@ To run the tests in a development environment:
 
 $ PYTHONPATH=. py.test bayesian/test
 
-Todo:
-
-1) Change requirement for PMFs to use .value
-2) Rename VariableNode to DiscreteVariableNode
-3) Add GaussianVariableNode for continuous variables
 
 Resources
 =========
@@ -64,3 +64,8 @@ http://www.inf.ed.ac.uk/teaching/courses/pmr/docs/jta_ex.pdf
 http://ttic.uchicago.edu/~altun/Teaching/CS359/junc_tree.pdf
 http://eniac.cs.qc.cuny.edu/andrew/gcml/lecture10.pdf
 http://leo.ugr.es/pgm2012/proceedings/eproceedings/evers_a_framework.pdf
+
+Guassian Bayesian Networks:
+http://www.cs.ubc.ca/~murphyk/Teaching/CS532c_Fall04/Lectures/lec17x4.pdf
+http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
+http://people.cs.aau.dk/~uk/papers/castillo-kjaerulff-03.pdf
