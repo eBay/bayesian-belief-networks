@@ -47,6 +47,13 @@ class Matrix(object):
                 result[j, i] = self[i, j]
         return result
 
+    def invert(self):
+        # First lets ensure the matrix is square
+        assert len(self.rows) == len(self.rows[0])
+        ones = make_identity(len(self.rows))
+        for col in range(len(self.rows)):
+            k =
+
     def __repr__(self):
         rows = []
         for i in range(0, len(self.rows)):
@@ -64,6 +71,13 @@ def zeros(size):
     return m
 
 
+def make_identity(j):
+    m = zeros((j, j))
+    for i in range(0, j):
+        m[i, i] = 1
+    return m
+
+
 if __name__ == '__main__':
     my_a = Matrix()
     my_b = Matrix()
@@ -73,3 +87,6 @@ if __name__ == '__main__':
     my_b.rows.append([2, 3])
     my_b.rows.append([4, 5])
     print my_a * my_b
+    import ipdb; ipdb.set_trace()
+    m = make_identity(5)
+    print m
