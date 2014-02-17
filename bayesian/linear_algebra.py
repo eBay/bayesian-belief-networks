@@ -52,7 +52,7 @@ class Matrix(object):
 
     @property
     def I(self):
-        # First lets ensure the matrix is square
+        '''Inverse named I tp emulate numpy API'''
         assert len(self.rows) == len(self.rows[0])
         inverse = make_identity(len(self.rows))
         m = Matrix()
@@ -64,31 +64,21 @@ class Matrix(object):
                 m[diag_row, j] *= k
             for j in range(0, len(inverse.rows)):
                 inverse[diag_row, j] *= k
-            #inverse = multiplyRowOfSquareMatrix(inverse, diag_row, k)
             source_row = diag_row
             for target_row in range(len(self.rows)):
                 if source_row != target_row:
                     k = -m[target_row, col]
                     ones = make_identity(len(self.rows))
-                    ones[target_row, source_row] = k
-
-                    #source_vals = ones.rows[source_row][:]
-                    #target_vals =
+                    ones[source_row, target_row] = k
                     source_vals = ones.col(target_row)
-                    target_vals = self.rows[(source_row)]
-                    ip = inner_product(
-                        source_vals, target_vals)
-                    #m[target_row, source_row] = inner_product(
-                    #    source_vals, target_vals)
-                    import ipdb; ipdb.set_trace()
-                    #ones = make_identity(len(self.rows))
-                    #ones[source_row, target_row] = k
-
-
-                    m = addMultipleOfRowOfSquareMatrix(
-                        m, source_row, k, target_row)
-                    inverse = addMultipleOfRowOfSquareMatrix(
-                        inverse, source_row, k, target_row)
+                    for j in range(0, len(self.rows[0])):
+                        target_vals = m.col(j)
+                        m[target_row, j] = inner_product(
+                            source_vals, target_vals)
+                    for j in range(0, len(self.rows[0])):
+                        target_vals = inverse.col(j)
+                        inverse[target_row, j] = inner_product(
+                            source_vals, target_vals)
         return inverse
 
     def __repr__(self):
@@ -101,14 +91,6 @@ class Matrix(object):
 def inner_product(x, y):
     assert len(x) == len(y)
     return sum(map(lambda (x, y): x * y, zip(x, y)))
-
-
-def addMultipleOfRowOfSquareMatrix(m, sourceRow, k, targetRow):
-    # add k * sourceRow to targetRow of matrix m
-    n = len(m.rows)
-    rowOperator = make_identity(n)
-    rowOperator[targetRow][sourceRow] = k
-    return rowOperator * m
 
 
 def zeros(size):
