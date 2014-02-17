@@ -18,6 +18,20 @@ def pytest_funcarg__matrix_b(request):
     return m
 
 
+def pytest_funcarg__matrix_c(request):
+    m = Matrix()
+    m.rows.append([4, 4, 8, 12])
+    m.rows.append([4, 5, 8, 13])
+    m.rows.append([8, 8, 20, 28])
+    m.rows.append([12, 13, 28, 42])
+    return m
+
+
+def close_enough(a, b):
+    if abs(a - b) < 0.000001:
+        return True
+    return False
+
 class TestLinearAlgebra():
 
     def test_zeros(self):
@@ -50,3 +64,25 @@ class TestLinearAlgebra():
         assert m[0, 1] == 28
         assert m[1, 0] == 49
         assert m[1, 1] == 64
+
+    def test_invert(self, matrix_c):
+        c_inv = matrix_c.I
+        assert c_inv[0, 0] == 2.25
+        assert c_inv[0, 1] == -1.0
+        assert c_inv[0, 2] == -0.5
+        assert close_enough(c_inv[0, 3], -2.96059473e-16)
+
+        assert c_inv[1, 0] == -1.0
+        assert c_inv[1, 1] == 2
+        assert c_inv[1, 2] == 1
+        assert c_inv[1, 3] == -1
+
+        assert c_inv[2, 0] == -0.5
+        assert c_inv[2, 1] == 1
+        assert c_inv[2, 2] == 1.25
+        assert c_inv[2, 3] == -1
+
+        assert close_enough(c_inv[3, 0], -2.66453526e-15)
+        assert c_inv[3, 1] == -1
+        assert c_inv[3, 2] == -1
+        assert c_inv[3, 3] == 1

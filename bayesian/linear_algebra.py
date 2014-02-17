@@ -1,5 +1,5 @@
 '''Very Basic backup Matrix ops for non-Numpy installs'''
-
+from copy import deepcopy
 
 class Matrix(object):
 
@@ -38,6 +38,9 @@ class Matrix(object):
                 result[new_i, new_j] = total
         return result
 
+    def col(self, j):
+        return [row[j] for row in self.rows]
+
     @property
     def T(self):
         '''Transpose'''
@@ -47,12 +50,46 @@ class Matrix(object):
                 result[j, i] = self[i, j]
         return result
 
-    def invert(self):
+    @property
+    def I(self):
         # First lets ensure the matrix is square
         assert len(self.rows) == len(self.rows[0])
-        ones = make_identity(len(self.rows))
+        inverse = make_identity(len(self.rows))
+        m = Matrix()
+        m.rows = deepcopy(self.rows)
         for col in range(len(self.rows)):
-            k =
+            diag_row = col
+            k = 1.0 / m[diag_row, col]
+            for j in range(0, len(m.rows)):
+                m[diag_row, j] *= k
+            for j in range(0, len(inverse.rows)):
+                inverse[diag_row, j] *= k
+            #inverse = multiplyRowOfSquareMatrix(inverse, diag_row, k)
+            source_row = diag_row
+            for target_row in range(len(self.rows)):
+                if source_row != target_row:
+                    k = -m[target_row, col]
+                    ones = make_identity(len(self.rows))
+                    ones[target_row, source_row] = k
+
+                    #source_vals = ones.rows[source_row][:]
+                    #target_vals =
+                    source_vals = ones.col(target_row)
+                    target_vals = self.rows[(source_row)]
+                    ip = inner_product(
+                        source_vals, target_vals)
+                    #m[target_row, source_row] = inner_product(
+                    #    source_vals, target_vals)
+                    import ipdb; ipdb.set_trace()
+                    #ones = make_identity(len(self.rows))
+                    #ones[source_row, target_row] = k
+
+
+                    m = addMultipleOfRowOfSquareMatrix(
+                        m, source_row, k, target_row)
+                    inverse = addMultipleOfRowOfSquareMatrix(
+                        inverse, source_row, k, target_row)
+        return inverse
 
     def __repr__(self):
         rows = []
@@ -60,6 +97,18 @@ class Matrix(object):
             row = ['%s' % j for j in self.rows[i]]
             rows.append(str('\t'.join(row)))
         return '\n'.join(rows)
+
+def inner_product(x, y):
+    assert len(x) == len(y)
+    return sum(map(lambda (x, y): x * y, zip(x, y)))
+
+
+def addMultipleOfRowOfSquareMatrix(m, sourceRow, k, targetRow):
+    # add k * sourceRow to targetRow of matrix m
+    n = len(m.rows)
+    rowOperator = make_identity(n)
+    rowOperator[targetRow][sourceRow] = k
+    return rowOperator * m
 
 
 def zeros(size):
@@ -86,7 +135,9 @@ if __name__ == '__main__':
     my_b.rows.append([0, 1])
     my_b.rows.append([2, 3])
     my_b.rows.append([4, 5])
+    m = my_a * my_b
     print my_a * my_b
     import ipdb; ipdb.set_trace()
-    m = make_identity(5)
+    mi = m.I
     print m
+    print mi
