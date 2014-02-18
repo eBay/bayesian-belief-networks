@@ -382,14 +382,13 @@ def conditional_to_joint_using_my_linear_algebra(
      [mu_Xn]]
 
     '''
-
+    import ipdb; ipdb.set_trace()
     mu = zeros((len(beta.rows) + 1, 1))
     for i in range(len(mu_x.rows)):
         mu[i, 0] = mu_x[i, 0]
     assert (beta.T * mu_x).shape == (1, 1)
     mu_y = beta_0 + (beta.T * mu_x)[0, 0]
     mu[len(mu_x), 0] = mu_y
-    #sigma_y = sigma_c + beta.T *
     sigma = zeros((mu.shape[0], mu.shape[0]))
     # Now the top left block
     # of the covariance matrix is
