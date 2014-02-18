@@ -2,7 +2,7 @@ from __future__ import division
 import math
 from collections import defaultdict
 from itertools import combinations, product
-
+from bayesian.linear_algebra import zeros, Matrix
 
 
 '''
@@ -361,3 +361,51 @@ def joint_to_conditional_using_my_linear_algebra(
     beta = sigma_yx * sigma_xx.I
     sigma = sigma_yy - sigma_yx * sigma_xx.I * sigma_xy
     return beta_0, beta, sigma
+
+
+def conditional_to_joint_using_my_linear_algebra(
+        mu_x, sigma_x, beta_0, beta, sigma_c):
+    '''
+    This is from page 19 of
+    http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
+    The notation finally makes sense now!
+    We are given the parameters of a conditional
+    gaussian p(Y|x) = N(beta_0 + beta'x; sigma)
+    and also the unconditional means and sigma
+    of the joint of the parents: mu_x and sigma_x
+    Lets assume Y is always shape(1, 1)
+    mu_x has shape(1, len(betas)) and
+    sigma_x has shape(len(mu_x), len(mu_x))
+    [[mu_X1],
+     [mu_X2],
+     .....
+     [mu_Xn]]
+
+    '''
+
+    mu = zeros((len(beta.rows) + 1, 1))
+    for i in range(len(mu_x.rows)):
+        mu[i, 0] = mu_x[i, 0]
+    assert (beta.T * mu_x).shape == (1, 1)
+    mu_y = beta_0 + (beta.T * mu_x)[0, 0]
+    mu[len(mu_x), 0] = mu_y
+    #sigma_y = sigma_c + beta.T *
+    sigma = zeros((mu.shape[0], mu.shape[0]))
+    # Now the top left block
+    # of the covariance matrix is
+    # just a copy of the sigma_x matrix
+    for i in range(0, len(sigma_x.rows)):
+        for j in range(0, len(sigma_x.rows[0])):
+            sigma[i, j] = sigma_x[i, j]
+    # Now for the top-right and bottom-left corners
+    for i in range(0, len(sigma_x)):
+        total = 0
+        for j in range(0, len(sigma_x)):
+            total += beta[j, 0] * sigma_x[i, j]
+        sigma[i, len(mu_x)] = total
+        sigma[len(mu_x), i] = total
+    # And finally for the bottom right corner
+    sigma_y = sigma_c + (beta.T * sigma_x * beta)[0, 0]
+    sigma[len(sigma_x), len(sigma_x)] = (
+        sigma_y)
+    return mu, sigma

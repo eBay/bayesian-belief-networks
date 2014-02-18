@@ -13,6 +13,9 @@ class Matrix(object):
         '''Like list.append but must be a tuple.'''
         self.rows.append(row)
 
+    def __len__(self):
+        return len(self.rows)
+
     @property
     def shape(self):
         return (len(self.rows), len(self.rows[0]))
@@ -26,6 +29,10 @@ class Matrix(object):
 
     def __setitem__(self, item, val):
         row, col = item
+        assert row >= 0
+        assert col >= 0
+        assert row < len(self.rows)
+        assert col < len(self.rows[0])
         self.rows[row][col] = val
 
     def __add__(self, other):
