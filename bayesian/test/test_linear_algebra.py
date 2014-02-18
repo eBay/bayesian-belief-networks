@@ -4,26 +4,29 @@ import pytest
 from bayesian.linear_algebra import *
 
 def pytest_funcarg__matrix_a(request):
-    m = Matrix()
-    m.rows.append([1, 2, 3])
-    m.rows.append([4, 5, 6])
+    m = Matrix([
+        [1, 2, 3],
+        [4, 5, 6]
+        ])
     return m
 
 
 def pytest_funcarg__matrix_b(request):
-    m = Matrix()
-    m.rows.append([1, 2])
-    m.rows.append([3, 4])
-    m.rows.append([5, 6])
+    m = Matrix([
+        [1, 2],
+        [3, 4],
+        [5, 6]
+        ])
     return m
 
 
 def pytest_funcarg__matrix_c(request):
-    m = Matrix()
-    m.rows.append([4, 4, 8, 12])
-    m.rows.append([4, 5, 8, 13])
-    m.rows.append([8, 8, 20, 28])
-    m.rows.append([12, 13, 28, 42])
+    m = Matrix([
+        [4, 4, 8, 12],
+        [4, 5, 8, 13],
+        [8, 8, 20, 28],
+        [12, 13, 28, 42]
+        ])
     return m
 
 
@@ -33,6 +36,7 @@ def close_enough(a, b):
     return False
 
 class TestLinearAlgebra():
+
 
     def test_zeros(self):
         m = zeros((4, 4))

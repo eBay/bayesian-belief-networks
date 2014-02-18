@@ -52,6 +52,7 @@ if __name__ == '__main__':
         f_b,
         f_c,
         f_d)
+    import ipdb; ipdb.set_trace()
     mu, sigma = g.query(a=7)
     print mu
     print sigma
@@ -83,98 +84,3 @@ if __name__ == '__main__':
     import ipdb; ipdb.set_trace()
     r = conditional_to_joint(y, mu_y, sigma_y, x, mu_x, sigma_x, betas)
     print r
-
-import sys; sys.exit(0)
-
-means = np.matrix([[f_a.mean], [f_b.mean], [f_c.mean], [f_d.mean]])
-
-#std_devs = [f.std_dev for f in [f_a, f_b, f_c, f_d]]
-std_devs = [f.std_dev for f in [f_a, f_b, f_c, f_d]]
-sigma = build_sigma_from_std_devs(std_devs)
-sigma = np.matrix([[4, 4, 8, 12],
-                   [4, 5, 8, 13],
-                   [8, 8, 20, 28],
-                   [12, 13, 28, 42]])
-
-
-N = 4
-q = 3
-
-#splits = split(means, sigma)
-betas = {
-    (1, 0): 1, # BA
-    (2, 0): 2, # CA
-    (3, 1): 1, # DB
-    (3, 2): 1, # DC
-}
-
-
-variances = [s ** 2 for s in std_devs]
-
-
-variances = [4, 4, 3]
-betas = {
-    (1, 0): 0.5,
-    (2, 1): -1
-}
-C = {
-    1: [],
-    2: [1],
-    3: [2]
-}
-
-
-betas = {
-    (2, 1): 0.5,
-    (3, 2): -1
-}
-
-
-sigma = conditional_to_joint_sigma_2([1, 2, 3], C, variances, betas)
-print sigma
-
-
-# Now for the river example first we have to modify the
-# args called with...
-C = {
-    1: [],
-    2: [1],
-    3: [1],
-    4: [2, 3]
-}
-
-betas = {
-    (2, 1): 1, # BA
-    (3, 1): 2, # CA
-    (4, 2): 1, # DB
-    (4, 3): 1, # DC
-}
-
-
-variances = [s ** 2 for s in std_devs]
-
-
-sigma = conditional_to_joint_sigma_2([1,2,3,4], C, variances, betas)
-print sigma
-
-
-a = GuassianVariableNode('a')
-b = GuassianVariableNode('b')
-
-f_a_node = FactorNode('f_a', f_a)
-f_b_node = FactorNode('f_b', f_b)
-
-connect(f_a_node, a)
-connect(f_b_node, [a, b])
-
-graph = FactorGraph([
-                    a,
-                    b,
-                    f_a,
-                    f_b])
-
-
-
-if __name__ == '__main__':
-    graph.verify()
-    graph.q()

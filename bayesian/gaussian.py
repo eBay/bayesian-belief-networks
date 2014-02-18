@@ -241,6 +241,9 @@ def joint_to_conditional(x, y, mu, sigma):
     of some Matrix class which can
     invert matrices and do matrix
     multiplication.
+    size(sigma) = (len(mu), len(mu))
+    len(mu) = len(x) + 1
+    y is a scalar
     '''
     # Lets first work out beta_0 the
     # intercept.
@@ -319,3 +322,42 @@ def conditional_to_joint_2(y, mu_y, sigma_y, x, mu_x, sigma_x, betas):
         sigma[len(x)][i] = total
     # And finally for the bottom right corner
     # Need to finish this....
+
+
+def conditional_to_joint_using_my_linear_algebra(
+        mu_1, mu_2, sigma_11, sigma_12, sigma_21, sigma_22):
+    '''See Wikipedia article...'''
+    pass
+
+def joint_to_conditional_using_my_linear_algebra(
+        mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy):
+    '''
+    See Page 22 from MB08.
+    p(X, Y) = N ([mu_x]; [sigma_xx sigma_xy])
+                 [mu_y]; [sigma_yx sigma_yy]
+
+    We will be returning the conditional
+    distribution of p(Y|X)
+    therefore we will always assume
+    the shape of mu_y and sigma_yy to be (1, 1)
+    Remember that the results of applying
+    a single evidence variable in the
+    iterative update procedure
+    returns the *joint* distribution
+    of the full graph given the evidence.
+    However what we are actually interested in
+    is reading off the individual factors
+    of the graph given their dependancies.
+    From a joint P(x1,x2...,y)
+    return distribution of p(y|x1,x2...)
+    mu and sigma should both be instances
+    of some Matrix class which can
+    invert matrices and do matrix
+    arithemetic.
+    size(sigma) = (len(mu), len(mu))
+    len(mu) = len(x) + 1
+    '''
+    beta_0 = (mu_y - sigma_yx * sigma_xx.I * mu_x)[0, 0]
+    beta = sigma_yx * sigma_xx.I
+    sigma = sigma_yy - sigma_yx * sigma_xx.I * sigma_xy
+    return beta_0, beta, sigma

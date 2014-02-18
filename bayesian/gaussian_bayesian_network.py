@@ -49,6 +49,7 @@ def conditional_gaussian(mu, sigma, betas):
             '''Since this function will never
             be called directly we dont need anything here.
             '''
+            pass
 
         # Actually the mean now becomes a
         # function of the dependent variable
@@ -232,6 +233,7 @@ class GaussianBayesianGraph(Graph):
         # we want to return the conditionals for
         # each one.
         #mu_Y_map_inv = dict([(v, k) for k, v in mu_Y_map.items()])
+        import ipdb; ipdb.set_trace()
         r = self.joint_to_conditional(mu_Y_g_Z, sigma_Y_g_Z, mu_Y_map)
 
         return mu_Y_g_Z, sigma_Y_g_Z

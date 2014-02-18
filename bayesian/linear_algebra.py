@@ -3,19 +3,24 @@ from copy import deepcopy
 
 class Matrix(object):
 
-    def __init__(self, fn=None):
-        self.rows = []
+    def __init__(self, rows=[]):
+        if not rows:
+            self.rows = []
+        else:
+            self.rows = rows
 
     def append(self, row):
         '''Like list.append but must be a tuple.'''
         self.rows.append(row)
 
+    @property
+    def shape(self):
+        return (len(self.rows), len(self.rows[0]))
+
     def __getitem__(self, item):
-        '''Main access dispatcher.'''
         if isinstance(item, int):
-            return self.rows[item]
+            return self.rows[item][:]
         if isinstance(item, tuple):
-            assert len(item) <= len(self.rows[0])
             row, col = item
             return self.rows[row][col]
 
@@ -23,8 +28,23 @@ class Matrix(object):
         row, col = item
         self.rows[row][col] = val
 
+    def __add__(self, other):
+        assert self.shape == other.shape
+        retval = zeros(self.shape)
+        for i in range(len(self.rows)):
+            for j in range(len(self.rows[0])):
+                retval[i, j] = self[i, j] + other[i, j]
+        return retval
+
+    def __sub__(self, other):
+        assert self.shape == other.shape
+        retval = zeros(self.shape)
+        for i in range(len(self.rows)):
+            for j in range(len(self.rows[0])):
+                retval[i, j] = self[i, j] - other[i, j]
+        return retval
+
     def __mul__(self, other):
-        assert len(self.rows) == len(other.rows[0])
         assert len(self.rows[0]) == len(other.rows)
         assert len(self.rows[0]) >= len(self.rows)
         rows = len(self.rows)
@@ -37,6 +57,17 @@ class Matrix(object):
                     total += self[new_i, k] * other[k, new_j]
                 result[new_i, new_j] = total
         return result
+
+    def __div__(self, other):
+        return self * other.I
+
+    def __eq__(self, other):
+        assert self.shape == other.shape
+        for i in range(len(self.rows)):
+            for j in range(len(self.rows[0])):
+                if self[i, j] != other[i, j]:
+                    return False
+        return True
 
     def col(self, j):
         return [row[j] for row in self.rows]
@@ -54,6 +85,8 @@ class Matrix(object):
     def I(self):
         '''Inverse named I tp emulate numpy API'''
         assert len(self.rows) == len(self.rows[0])
+        if len(self.rows) == 1:
+            return Matrix([[1.0 / self[0, 0]]])
         inverse = make_identity(len(self.rows))
         m = Matrix()
         m.rows = deepcopy(self.rows)
