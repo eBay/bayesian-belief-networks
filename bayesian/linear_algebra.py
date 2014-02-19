@@ -53,7 +53,6 @@ class Matrix(object):
 
     def __mul__(self, other):
         assert len(self.rows[0]) == len(other.rows)
-        assert len(self.rows[0]) >= len(self.rows)
         rows = len(self.rows)
         cols = len(other.rows[0])
         result = zeros((rows, cols))
@@ -147,6 +146,34 @@ def make_identity(j):
     for i in range(0, j):
         m[i, i] = 1
     return m
+
+def split(means, sigma):
+    ''' Split the means and covariance matrix
+    into 'parts' as in wikipedia article ie
+
+    mu = | mu_x |
+         | mu_y |
+
+    sigma = | sigma_xx sigma_xy |
+            | sigma_yx sigma_yy |
+
+    We will assume that we always combine
+    one variable at a time and thus we
+    will always split by mu_y ie mu_y will
+    always have dim(1,1) so that it can
+    be subtracted from the scalar a
+    Also we will make dim(sigma_yy)
+    always (1,1)
+
+
+    '''
+    mu_x = means[0:-1]
+    mu_2 = means[-1:]
+    sigma_11 = sigma[0:len(means) -1, 0:len(means) -1]
+    sigma_12 = sigma[:-1,-1:]
+    sigma_21 = sigma_12.T
+    sigma_22 = sigma[len(means) -1:, len(means) - 1:]
+    return mu_1, mu_2, sigma_11, sigma_12, sigma_21, sigma_22
 
 
 if __name__ == '__main__':

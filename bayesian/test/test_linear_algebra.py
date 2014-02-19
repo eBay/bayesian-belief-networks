@@ -69,6 +69,19 @@ class TestLinearAlgebra():
         assert m[1, 0] == 49
         assert m[1, 1] == 64
 
+        sigma_YZ = Matrix([
+            [8],
+            [4],
+            [12]])
+        sigma_ZZ = Matrix([
+            [4]])
+        t = sigma_YZ * sigma_ZZ.I
+        assert t == Matrix([
+            [2],
+            [1],
+            [3]])
+
+
     def test_invert(self, matrix_c):
         c_inv = matrix_c.I
         assert c_inv[0, 0] == 2.25

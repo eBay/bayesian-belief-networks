@@ -3,7 +3,7 @@ from __future__ import division
 from bayesian.gaussian_bayesian_network import gaussian, conditional_gaussian
 from bayesian.gaussian_bayesian_network import build_graph
 from bayesian.utils import shrink_matrix
-from bayesian.gaussian import conditional_to_joint
+#from bayesian.gaussian import conditional_to_joint
 
 '''
 This example comes from page 3 of

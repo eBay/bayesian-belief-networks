@@ -231,105 +231,7 @@ def marginalize_joint(x, mu, sigma):
     return new_mu, new_sigma
 
 
-def joint_to_conditional(x, y, mu, sigma):
-    '''From a joint P(x1,x2...,y)
-    return distribution of p(y|x1,x2...)
-    In this case y is always a single
-    variable. Both x and y are 0-based indices
-    into mu and sigma.
-    mu and sigma should both be instances
-    of some Matrix class which can
-    invert matrices and do matrix
-    multiplication.
-    size(sigma) = (len(mu), len(mu))
-    len(mu) = len(x) + 1
-    y is a scalar
-    '''
-    # Lets first work out beta_0 the
-    # intercept.
-    beta_0 = mu[y][0]
-    for x_ in x:
-        beta_0 -= sigma[y][x_] / sigma[x_][x_] * mu[x_][0]
-    # Now for the rest of the betas....
-    return beta_0
-
-
-def conditional_to_joint(y, mu_y, sigma_y, x, mu_x, sigma_x, betas):
-    ''' here we have p(y|x1,x2....)
-    and we want to return the
-    parameters for P(y, x1, x2...)
-    y is a child node.
-    x is a list of dependant nodes.
-    mu_y is the mean of the conditioanl
-    distribution. sigma_y is the
-    std. dev. of y.
-    mu_x: vector of prior means for x
-    sigma_x: covariance matrix of joint x
-    betas: weights of edges from x_ to y.
-    '''
-    #assert len(x) == len(mu_x)
-    #assert len(mu_x) == len(betas)
-    #assert len(sigma_x[0]) == len(x)
-    mu = mu_y
-    for m, b in zip(mu_x, betas):
-        mu += m * b
-    sigma = dict()
-    all_vars = x[:] + [y]
-    all_sigmas = sigma_x[:]
-    for j in range(0, len(all_vars)):
-        for i in range(0, j):
-            total = 0
-            if j == len(x):
-                # We are on var y
-                for pi, parent in enumerate(x):
-                    total += sigma_x[i][pi] * \
-                             betas[pi]
-                sigma[(j, i)] = total
-                sigma[(i, j)] = total
-        total = 0
-        if j == len(x):
-            for pi, parent in enumerate(x):
-                total += sigma[(j, pi)] * \
-                         betas[pi]
-        if j == len(x):
-            sigma[(j, j)] = sigma_y + total
-        else:
-            sigma[(j, j)] = sigma_x[j][j]
-    return mu, sigma
-
-def conditional_to_joint_2(y, mu_y, sigma_y, x, mu_x, sigma_x, betas):
-    '''
-    This is from page 19 of
-    http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
-    The notation finally makes sense now!
-    '''
-    sz = len(mu_x) + 1
-    sigma = Square([[None] * sz] * sz)
-    mu = mu_y
-    for m, b in zip(mu_x, betas):
-        mu += m * b
-    # Now the top left block
-    # of the covariance matrix is
-    # just a copy of the sigma_x matrix
-    for i in range(0, len(sigma_x)):
-        for j in range(0, len(sigma_x)):
-            sigma[i][j] = sigma_x[i][j]
-    for i in range(0, len(sigma_x)):
-        total = 0
-        for j in range(0, len(sigma_x)):
-            total += betas[j] * sigma_x[i][j]
-        sigma[i][len(x)] = total
-        sigma[len(x)][i] = total
-    # And finally for the bottom right corner
-    # Need to finish this....
-
-
-def conditional_to_joint_using_my_linear_algebra(
-        mu_1, mu_2, sigma_11, sigma_12, sigma_21, sigma_22):
-    '''See Wikipedia article...'''
-    pass
-
-def joint_to_conditional_using_my_linear_algebra(
+def joint_to_conditional(
         mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy):
     '''
     See Page 22 from MB08.
@@ -363,7 +265,7 @@ def joint_to_conditional_using_my_linear_algebra(
     return beta_0, beta, sigma
 
 
-def conditional_to_joint_using_my_linear_algebra(
+def conditional_to_joint(
         mu_x, sigma_x, beta_0, beta, sigma_c):
     '''
     This is from page 19 of
@@ -382,7 +284,6 @@ def conditional_to_joint_using_my_linear_algebra(
      [mu_Xn]]
 
     '''
-    import ipdb; ipdb.set_trace()
     mu = zeros((len(beta.rows) + 1, 1))
     for i in range(len(mu_x.rows)):
         mu[i, 0] = mu_x[i, 0]

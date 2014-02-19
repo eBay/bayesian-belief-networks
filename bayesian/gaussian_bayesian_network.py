@@ -3,15 +3,17 @@ import math
 from functools import wraps
 from numbers import Number
 from collections import Counter
+from itertools import product
 
 from bayesian.graph import Graph, Node, connect
 from bayesian.gaussian import make_gaussian_cdf
 from bayesian.gaussian import marginalize_joint
-from bayesian.gaussian import joint_to_conditional
+from bayesian.gaussian import joint_to_conditional, conditional_to_joint
+from bayesian.linear_algebra import zeros, Matrix
 from bayesian.utils import get_args
 from bayesian.utils import get_original_factors
 
-from bayesian.matfunc import Matrix, Square
+#from bayesian.matfunc import Matrix, Square
 #from numpy import matrix as Matrix
 #import numpy as np
 
@@ -107,23 +109,22 @@ class GaussianBayesianGraph(Graph):
         univariate gaussian or
         conditional guassians.
         '''
-        indexed = [(node.index, (node.name, node)) for node in self.nodes.values()]
-        indexed.sort(key=lambda x: x[0])
-        sigma = dict()
-        for j, (name_j, node_j) in indexed:
-            for i in range(0, j):
-                total = 0
-                for parent in node_j.parents:
-                    total += sigma[(i, parent.index)] * \
-                             node_j.func.betas[parent.variable_name]
-                sigma[(j, i)] = total
-                sigma[(i, j)] = total
+        ordered = self.get_topological_sort()
+        mu_x = Matrix([[ordered[0].func.mean]])
+        sigma_x = Matrix([[ordered[0].func.variance]])
+        # Iteratively build up the mu and sigma matrices
+        for node in ordered[1:]:
+            beta_0 = node.func.mean
+            beta = zeros((node.index, 1))
             total = 0
-            for parent in node_j.parents:
-                total += sigma[(j, parent.index)] * \
-                         node_j.func.betas[parent.variable_name]
-            sigma[(j, j)] = node_j.variance + total
-        return sigma
+            for parent in node.parents:
+                beta_0 -= node.func.betas[parent.variable_name] * \
+                          parent.func.mean
+                beta[parent.index, 0] = node.func.betas[parent.variable_name]
+            sigma_c = node.func.variance
+            mu_x, sigma_x = conditional_to_joint(
+                mu_x, sigma_x, beta_0, beta, sigma_c)
+        return mu_x, sigma_x
 
     def joint_to_conditional(self, mu, sigma, graph_to_matrix):
         '''
@@ -133,6 +134,8 @@ class GaussianBayesianGraph(Graph):
         retval = dict()
         mu_conds = []
         sigma_conds = []
+
+        # mu[graph_to_matrix[self.nodes['b'].index]]
         #mu_conds.append(mu[0])
         #sigma_conds.append(sigma[0][0])
 
@@ -145,6 +148,7 @@ class GaussianBayesianGraph(Graph):
         nodes_of_interest = [n for n in self.nodes.values()
                              if n.index in graph_to_matrix]
         for node in nodes_of_interest:
+
             joint_indices = []
             x_indices = []
             joint_indices.append(graph_to_matrix[node.index])
@@ -160,29 +164,52 @@ class GaussianBayesianGraph(Graph):
             if not x_indices:
                 retval[node.name] = (mu[y_index], sigma[y_index][y_index])
             else:
-                r = joint_to_conditional(x_indices, y_index,
-                                         mu, sigma)
-                retval[node.name] = r
+                pass
+                # This is where we need to construct the
+                # parameters for joint to conditional...
+
+                #r = joint_to_conditional(x_indices, y_index,
+                #                         mu, sigma)
+                #retval[node.name] = r
+
+        # Now lets try the simple way...
+        results = []
+        sigma_xx = zeros((len(mu) - 1, len(mu) - 1))
+        mu_x = zeros((len(mu) - 1, 1))
+        mu_y = Matrix([[mu[len(mu) -1, 0]]])
+        sigma_yy = Matrix([
+            [sigma[len(sigma) -1, len(sigma) - 1]]])
+        sigma_yx = Matrix([])
+
+
+        for i in range(0, len(sigma_x)):
+            mu_x[i, 0] = mu[i, 0]
+            for j in range(0, len(sigma_x)):
+                sigma_x[i, j] = sigma[i, j]
+        #while len(results) < len(mu):
+
+
+
         return retval
 
     def query(self, **kwds):
         '''See equations 6 and 7'''
-        z = Matrix([[None]] * len(kwds))
-        mu_Z = Matrix([[None]] * len(kwds))
-        mu_Y = Matrix([[None]] * (len(self.nodes) - len(kwds)))
+        z = zeros((len(kwds), 1))
+        mu_Z = zeros((len(kwds), 1))
+        mu_Y = zeros((len(self.nodes) - len(kwds), 1))
         mu_Z_map = {}
         mu_Y_map = {}
-        old_sigma = self.get_joint_parameters()
+        old_mu, old_sigma = self.get_joint_parameters()
         c = Counter()
         for e in kwds:
             mu_Z_map[self.nodes[e].index] = c['z']
-            mu_Z[c['z']][0] = self.nodes[e].func.mean
-            z[c['z']][0] = kwds[e]
+            mu_Z[c['z'], 0] = self.nodes[e].func.mean
+            z[c['z'], 0] = kwds[e]
             c['z'] += 1
         for name, node in self.nodes.items():
             if name not in kwds:
                 mu_Y_map[self.nodes[name].index] = c['y']
-                mu_Y[c['y']][0] = (
+                mu_Y[c['y'], 0] = (
                     self.nodes[name].func.mean)
                 c['y'] += 1
 
@@ -191,34 +218,28 @@ class GaussianBayesianGraph(Graph):
         yz_size = len(mu_Y)
         zy_size = len(mu_Z)
         zz_size = len(mu_Z)
-        sigma_YY = Square([[None] * yy_size] * yy_size)
-        sigma_YZ = Matrix([[None] * zy_size] * yz_size)
-        sigma_ZY = Matrix([[None] * yz_size] * zy_size)
-        sigma_ZZ = Square([[None] * zz_size] * zz_size)
+        sigma_YY = zeros((yy_size, yy_size))
+        sigma_YZ = zeros((yz_size, zy_size))
+        sigma_ZY = zeros((zy_size, yz_size))
+        sigma_ZZ = zeros((zz_size, zz_size))
 
         evidence_indices = set([self.nodes[n].index for n in kwds.keys()])
-        for k, v in old_sigma.items():
-            a, b = k
+        for a, b in product(range(len(old_sigma)), range(len(old_sigma))):
+            v = old_sigma[a, b]
             if a in evidence_indices:
                 if b in evidence_indices:
-                    sigma_ZZ[mu_Z_map[a]][mu_Z_map[b]] = v
+                    sigma_ZZ[mu_Z_map[a], mu_Z_map[b]] = old_sigma[a, b]
                 else:
-                    sigma_ZY[mu_Z_map[a]][mu_Y_map[b]] = v
+                    sigma_ZY[mu_Z_map[a], mu_Y_map[b]] = v
             else:
                 if b in evidence_indices:
-                    sigma_YZ[mu_Y_map[a]][mu_Z_map[b]] = v
+                    sigma_YZ[mu_Y_map[a], mu_Z_map[b]] = v
                 else:
-                    sigma_YY[mu_Y_map[a]][mu_Y_map[b]] = v
+                    sigma_YY[mu_Y_map[a], mu_Y_map[b]] = v
         # Now we can apply equations 6 and 7 to
         # get the new joint parameters
-        if len(sigma_ZZ) == 1:
-            # This is a hack for the inverse
-            # since matfunc fails on 1x1 matrixes
-            sigma_ZZ_inverse = Square([[1.0 / sigma_ZZ[0][0]]])
-        else:
-            sigma_ZZ_inverse = sigma_ZZ.inverse()
-        mu_Y_g_Z = mu_Y + sigma_YZ.mmul(sigma_ZZ_inverse).mmul((z - mu_Z))
-        sigma_Y_g_Z = sigma_YY - sigma_YZ.mmul(sigma_ZZ_inverse).mmul(sigma_ZY)
+        mu_Y_g_Z = mu_Y + sigma_YZ * (sigma_ZZ.I * (z - mu_Z))
+        sigma_Y_g_Z = sigma_YY - sigma_YZ * sigma_ZZ.I * sigma_ZY
         # Note, we need to convert the matrices back
         # to the conditional form and also
         # de-map the entries back to the nodes.
