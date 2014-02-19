@@ -1,7 +1,11 @@
 from __future__ import division
+
 import math
 from collections import defaultdict
 from itertools import combinations, product
+
+from prettytable import PrettyTable
+
 from bayesian.linear_algebra import Matrix
 
 
@@ -231,17 +235,6 @@ def marginalize_joint(x, mu, sigma):
     return new_mu, new_sigma
 
 
-def zeros(size, names=[]):
-    '''Emulate the Numpy np.zeros factory'''
-    rows, cols = size
-    _rows = []
-    for i in range(0, rows):
-        _rows.append([0] * cols)
-    m = CovarianceMatrix(_rows, names)
-    return m
-
-
-
 def joint_to_conditional(
         mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy):
     '''
@@ -295,13 +288,13 @@ def conditional_to_joint(
      [mu_Xn]]
 
     '''
-    mu = zeros((len(beta.rows) + 1, 1))
+    mu = MeansVector.zeros((len(beta.rows) + 1, 1))
     for i in range(len(mu_x.rows)):
         mu[i, 0] = mu_x[i, 0]
     assert (beta.T * mu_x).shape == (1, 1)
     mu_y = beta_0 + (beta.T * mu_x)[0, 0]
     mu[len(mu_x), 0] = mu_y
-    sigma = zeros((mu.shape[0], mu.shape[0]))
+    sigma = CovarianceMatrix.zeros((mu.shape[0], mu.shape[0]))
     # Now the top left block
     # of the covariance matrix is
     # just a copy of the sigma_x matrix
@@ -333,6 +326,19 @@ class CovarianceMatrix(Matrix):
             # Default to x1, x2....
             names = ['x%s' % x for x in range(1, len(rows) + 1)]
         self.set_names(names)
+
+    @classmethod
+    def zeros(cls, shape, names=[]):
+        '''Alternate constructor that
+        creates a zero based matrix'''
+        rows, cols = shape
+        matrix_rows = []
+        for i in range(0, rows):
+            matrix_rows.append([0] * cols)
+        if not names:
+            names = ['x%s' % x for x in range(1, rows + 1)]
+        cov = cls(matrix_rows, names)
+        return cov
 
     def set_name(self, col, name):
         self.names[name] = col
@@ -384,11 +390,12 @@ class CovarianceMatrix(Matrix):
         '''Split into sigma_xx, sigma_yy etc...'''
         assert name in self.names
         x_names = [n for n in self.names if n != name]
-        sigma_xx = zeros((len(self) - 1, len(self) - 1),
-                         names=x_names)
-        sigma_yy = zeros((1, 1), names=[name])
-        sigma_xy = zeros((len(sigma_xx), 1), names=x_names)
-        sigma_yx = zeros((1, len(sigma_xx)), names=x_names)
+        sigma_xx = CovarianceMatrix.zeros(
+            (len(self) - 1, len(self) - 1),
+            names=x_names)
+        sigma_yy = CovarianceMatrix.zeros((1, 1), names=[name])
+        sigma_xy = CovarianceMatrix.zeros((len(sigma_xx), 1), names=x_names)
+        sigma_yx = CovarianceMatrix.zeros((1, len(sigma_xx)), names=x_names)
 
         for row, col in product(self.names, self.names):
             v = self[row, col]
@@ -401,3 +408,109 @@ class CovarianceMatrix(Matrix):
             else:
                 sigma_yx[0, row] = v
         return sigma_xx, sigma_xy, sigma_yx, sigma_yy
+
+    def __repr__(self):
+        names = self.names.keys()
+        tab = PrettyTable([''] + names)
+        tab.align = 'r'
+        rows = []
+        for row in names:
+            table_row = [row]
+            for col in names:
+                table_row.append('%s' % self[row, col])
+            tab.add_row(table_row)
+        return tab.get_string()
+
+class MeansVector(Matrix):
+    '''Wrapper allowing referencing
+    of rows by variable name.
+    In this implementation we will
+    always consider a vector of means
+    to be a vertical matrix with
+    a shape of n rows and 1 col.
+    The rows will be named.
+    '''
+
+
+    def __init__(self, rows=[], names=[]):
+        super(MeansVector, self).__init__(rows)
+        if not names:
+            # Default to x1, x2....
+            names = ['x%s' % x for x in range(1, len(rows) + 1)]
+        self.set_names(names)
+
+    @classmethod
+    def zeros(cls, shape, names=[]):
+        '''Alternate constructor that
+        creates a zero based matrix'''
+        rows, cols = shape
+        matrix_rows = []
+        for i in range(0, rows):
+            matrix_rows.append([0] * cols)
+        if not names:
+            names = ['x%s' % x for x in range(1, rows + 1)]
+        cov = cls(matrix_rows, names)
+        return cov
+
+    def set_name(self, row, name):
+        self.names[name] = row
+        self.index_to_name[row] = name
+
+    def set_names(self, names):
+        assert len(names) ==  self.shape[0]
+        self.names = dict(zip(names, range(len(names))))
+        self.index_to_name = dict([(v, k) for k, v in self.names.items()])
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            assert item in self.names
+            item = self.names[item]
+            return super(MeansVector, self).__getitem__(item)
+        elif isinstance(item, tuple):
+            row, col = item
+            if isinstance(row, str):
+                assert row in self.names
+                row = self.names[row]
+            if isinstance(col, str):
+                assert col in self.names
+                col = self.names[col]
+            return super(MeansVector, self).__getitem__((row, col))
+        else:
+            return super(MeansVector, self).__getitem__(item)
+
+    def __setitem__(self, item, value):
+        if isinstance(item, tuple):
+            row, col = item
+            assert col == 0 # means vector is always one col
+            if isinstance(row, str):
+                assert row in self.names
+                row = self.names[row]
+            return super(MeansVector, self).__setitem__((row, col), value)
+        else:
+            return super(MeansVector, self).__setitem__(item, value)
+
+    def __repr__(self):
+        names = self.names.keys()
+        tab = PrettyTable(['', 'mu'])
+        tab.align = 'r'
+        rows = []
+        for row in names:
+            table_row = [row, '%s' % self[row, 0]]
+            tab.add_row(table_row)
+        return tab.get_string()
+
+    def split(self, name):
+        '''Split into mu_x and mu_y'''
+        assert name in self.names
+        x_names = [n for n in self.names if n != name]
+        mu_x = zeros((len(self) - 1, 1),
+                         names=x_names)
+        mu_y = zeros((1, 1), names=[name])
+
+        for row in self.names:
+            v = self[row, 0]
+            if row == name:
+                mu_y[name, 0] = v
+            else:
+                mu_x[name, 0] = v
+        return mu_x, mu_y

@@ -127,6 +127,7 @@ class Matrix(object):
             rows.append(str('\t'.join(row)))
         return '\n'.join(rows)
 
+
 def inner_product(x, y):
     assert len(x) == len(y)
     return sum(map(lambda (x, y): x * y, zip(x, y)))

@@ -125,6 +125,11 @@ class GaussianBayesianGraph(Graph):
             sigma_c = node.func.variance
             mu_x, sigma_x = conditional_to_joint(
                 mu_x, sigma_x, beta_0, beta, sigma_c)
+        # Now set the names on the covariance matrix to
+        # the graphs variabe names
+        names = [n.variable_name for n in ordered]
+        mu_x.set_names(names)
+        sigma_x.set_names(names)
         return mu_x, sigma_x
 
     def joint_to_conditional(self, mu, sigma, graph_to_matrix):
