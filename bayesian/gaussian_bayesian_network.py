@@ -9,6 +9,7 @@ from bayesian.graph import Graph, Node, connect
 from bayesian.gaussian import make_gaussian_cdf
 from bayesian.gaussian import marginalize_joint
 from bayesian.gaussian import joint_to_conditional, conditional_to_joint
+from bayesian.gaussian import CovarianceMatrix
 from bayesian.linear_algebra import zeros, Matrix
 from bayesian.utils import get_args
 from bayesian.utils import get_original_factors

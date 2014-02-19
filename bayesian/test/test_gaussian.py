@@ -1,7 +1,9 @@
 import pytest
 
+from itertools import product as xproduct
 from bayesian.gaussian import *
-from bayesian.linear_algebra import Matrix, zeros
+Matrix = CovarianceMatrix
+
 
 class TestGaussian():
 
@@ -203,3 +205,39 @@ class TestGaussian():
             mu_x, sigma_x, beta_0, beta, sigma_c)
         assert mu == Matrix([[3], [5]])
         assert sigma == Matrix([[4, 0], [0, 1]])
+
+    def test_split(self):
+        sigma = CovarianceMatrix(
+            [
+                [4, 4, 8, 12],
+                [4, 5, 8, 13],
+                [8, 8, 20, 28],
+                [12, 13, 28, 42]],
+            names = ['a', 'b', 'c', 'd'])
+        sigma_xx, sigma_xy, sigma_yx, sigma_yy = sigma.split('a')
+        for name in ['b', 'c', 'd']:
+            assert name in sigma_xx.names
+            assert name in sigma_xy.names
+            assert name in sigma_yx.names
+            assert name not in sigma_yy.names
+        assert 'a' in sigma_yy.names
+        assert 'a' not in sigma_xx.names
+        assert 'a' not in sigma_xy.names
+        assert 'a' not in sigma_yx.names
+        for row, col in xproduct(['b', 'c', 'd'], ['b', 'c', 'd']):
+            assert sigma_xx[row, col] == sigma[row, col]
+
+        # Now lets test joint to conditional...
+        # Since above we already took 'a' out of sigma_xx
+        # we can now just re-split and remove 'd'
+        sigma_xx, sigma_xy, sigma_yx, sigma_yy = sigma_xx.split('d')
+        mu_x = Matrix([
+            [4],
+            [9]])
+        mu_y = Matrix([
+            [14]])
+        beta_0, beta, sigma = joint_to_conditional(
+            mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
+        assert beta_0 == 1
+        assert beta == Matrix([[1, 1]])
+        assert sigma == Matrix([[1]])
