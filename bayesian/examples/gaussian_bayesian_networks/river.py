@@ -25,7 +25,7 @@ def f_a(a):
     pass
 
 
-@conditional_gaussian(4, 1, 1)
+@conditional_gaussian(1, 1, 1)
 def f_b(a, b):
     '''Point b is a conditional Guassian
     with parent a.
@@ -33,14 +33,14 @@ def f_b(a, b):
     pass
 
 
-@conditional_gaussian(9, 2, 2)
+@conditional_gaussian(3, 2, 2)
 def f_c(a, c):
     '''Point c is a conditional Guassian
     with parent a'''
     pass
 
 
-@conditional_gaussian(14, 1, betas=dict(b=1, c=1))
+@conditional_gaussian(1, 1, betas=dict(b=1, c=1))
 def f_d(b, c, d):
     pass
 

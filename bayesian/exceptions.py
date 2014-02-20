@@ -37,3 +37,11 @@ class VariableNotInGraphError(Exception):
     the graph.
     """
     pass
+
+
+class IncorrectInferenceMethodError(Exception):
+    '''Raise when attempt is made to
+    generate samples when the inference
+    method is not 'sample_db'
+    '''
+    pass

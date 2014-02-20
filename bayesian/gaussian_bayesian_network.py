@@ -115,8 +115,8 @@ class GaussianBayesianGraph(Graph):
             beta = zeros((node.index, 1))
             total = 0
             for parent in node.parents:
-                beta_0 -= node.func.betas[parent.variable_name] * \
-                          parent.func.mean
+                #beta_0 -= node.func.betas[parent.variable_name] * \
+                #          parent.func.mean
                 beta[parent.index, 0] = node.func.betas[parent.variable_name]
             sigma_c = node.func.variance
             mu_x, sigma_x = conditional_to_joint(

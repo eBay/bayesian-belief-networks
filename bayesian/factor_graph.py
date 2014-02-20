@@ -1059,6 +1059,10 @@ class FactorGraph(object):
         the SQLite sample db for this
         model.
         '''
+        if self.inference_method != 'sample_db':
+            raise IncorrectInferenceMethodError(
+                'generate_samples() not support for inference method: %s' % \
+                self.inference_method)
         valid_samples = 0
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
@@ -1075,6 +1079,7 @@ class FactorGraph(object):
             sdb.save_sample([(v.name, v.value) for v in sample])
             valid_samples += 1
         sdb.commit()
+        print '%s samples stored in %s' % (n, self.sample_db_filename)
 
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
