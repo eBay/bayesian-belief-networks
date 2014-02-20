@@ -19,17 +19,48 @@ class TestGBN():
         mu, sigma = river_graph.get_joint_parameters()
         assert mu == MeansVector(
             [[3],
-             [9],
              [4],
+             [9],
              [14]],
-            names = ['a','c','b','d'])
+            names = ['a','b','c','d'])
         assert sigma == CovarianceMatrix(
-            [[4, 8, 4, 12],
-             [8, 20, 8, 28],
-             [4, 8, 5, 13],
-             [12, 28, 13, 42]],
-            names = ['a','c','b','d'])
+            [[4, 4, 8, 12],
+             [4, 5, 8, 13],
+             [8, 8, 20, 28],
+             [12, 13, 28, 42]],
+            names = ['a','b','c','d'])
 
     def test_query(self, river_graph):
-        import ipdb; ipdb.set_trace()
+
         result = river_graph.query(a=7)
+        mu = result['joint']['mu']
+        sigma = result['joint']['sigma']
+        assert mu == Matrix([
+            [8],
+            [17],
+            [26]])
+        assert sigma == CovarianceMatrix(
+            [[1, 0, 1],
+             [0, 4, 4],
+             [1, 4, 6]],
+            names = ['b','c','d'])
+
+        result = river_graph.query(a=7, c=17)
+        mu = result['joint']['mu']
+        sigma = result['joint']['sigma']
+        assert mu == Matrix([
+            [8],
+            [26]])
+        assert sigma == CovarianceMatrix(
+            [[1, 1],
+             [1, 2]],
+            names = ['b','d'])
+
+        result = river_graph.query(a=7, c=17, b=8)
+        mu = result['joint']['mu']
+        sigma = result['joint']['sigma']
+        assert mu == Matrix([
+            [26]])
+        assert sigma == CovarianceMatrix(
+            [[1]],
+            names = ['d'])

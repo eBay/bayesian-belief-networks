@@ -7,6 +7,7 @@ class Matrix(object):
         if not rows:
             self.rows = []
         else:
+            assert isinstance(rows, list)
             self.rows = rows
 
     def append(self, row):
@@ -22,10 +23,14 @@ class Matrix(object):
 
     def __getitem__(self, item):
         if isinstance(item, int):
-            return self.rows[item][:]
+            # Since Numpy Matrices return
+            # a Matrix for row gets
+            # we will do the same...
+            return Matrix([self.rows[item][:]])
         if isinstance(item, tuple):
             row, col = item
             return self.rows[row][col]
+
 
     def __setitem__(self, item, val):
         row, col = item

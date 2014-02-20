@@ -9,16 +9,12 @@ from bayesian.graph import Graph, Node, connect
 from bayesian.gaussian import make_gaussian_cdf
 from bayesian.gaussian import marginalize_joint
 from bayesian.gaussian import joint_to_conditional, conditional_to_joint
-from bayesian.gaussian import CovarianceMatrix
+from bayesian.gaussian import CovarianceMatrix, MeansVector
 from bayesian.linear_algebra import zeros, Matrix
 from bayesian.utils import get_args
 from bayesian.utils import get_original_factors
+from bayesian.exceptions import VariableNotInGraphError
 
-#from bayesian.matfunc import Matrix, Square
-#from numpy import matrix as Matrix
-#import numpy as np
-
-# Decorators for creation of Guassian Nodes.
 def gaussian(mu, sigma):
     # This is the gaussian decorator
     # which is a decorator with parameters
@@ -132,139 +128,37 @@ class GaussianBayesianGraph(Graph):
         sigma_x.set_names(names)
         return mu_x, sigma_x
 
-    def joint_to_conditional(self, mu, sigma, graph_to_matrix):
-        '''
-        matrix_to_graph is a dict from matrix indices
-        to node indices in the graph
-        '''
-        retval = dict()
-        mu_conds = []
-        sigma_conds = []
-
-        # mu[graph_to_matrix[self.nodes['b'].index]]
-        #mu_conds.append(mu[0])
-        #sigma_conds.append(sigma[0][0])
-
-        # First we need to determine which of
-        # the conditionals we are interested in
-        # and then 1-by-1 marginalize out
-        # the rest
-        #graph_to_matrix = dict([(v, k) for k, v in matrix_to_graph.items()])
-        retval = dict()
-        nodes_of_interest = [n for n in self.nodes.values()
-                             if n.index in graph_to_matrix]
-        for node in nodes_of_interest:
-
-            joint_indices = []
-            x_indices = []
-            joint_indices.append(graph_to_matrix[node.index])
-            y_index = graph_to_matrix[node.index]
-            for parent in node.parents:
-                if parent.index in graph_to_matrix:
-                    joint_indices.append(graph_to_matrix[parent.index])
-                    x_indices.append(graph_to_matrix[parent.index])
-            print node.name, joint_indices, y_index, x_indices
-            # Now if the parents are not in the matrix
-            # ie x_indices is empty we just return the univariate guassian
-            # for that variable
-            if not x_indices:
-                retval[node.name] = (mu[y_index], sigma[y_index][y_index])
-            else:
-                pass
-                # This is where we need to construct the
-                # parameters for joint to conditional...
-
-                #r = joint_to_conditional(x_indices, y_index,
-                #                         mu, sigma)
-                #retval[node.name] = r
-
-        # Now lets try the simple way...
-        results = []
-        sigma_xx = zeros((len(mu) - 1, len(mu) - 1))
-        mu_x = zeros((len(mu) - 1, 1))
-        mu_y = Matrix([[mu[len(mu) -1, 0]]])
-        sigma_yy = Matrix([
-            [sigma[len(sigma) -1, len(sigma) - 1]]])
-        sigma_yx = Matrix([])
-
-
-        for i in range(0, len(sigma_x)):
-            mu_x[i, 0] = mu[i, 0]
-            for j in range(0, len(sigma_x)):
-                sigma_x[i, j] = sigma[i, j]
-        #while len(results) < len(mu):
-
-
-
-        return retval
-
     def query(self, **kwds):
-        '''See equations 6 and 7'''
-        z = zeros((len(kwds), 1))
-        mu_Z = zeros((len(kwds), 1))
-        mu_Y = zeros((len(self.nodes) - len(kwds), 1))
-        mu_Z_map = {}
-        mu_Y_map = {}
-        old_mu, old_sigma = self.get_joint_parameters()
-        c = Counter()
-        for e in kwds:
-            mu_Z_map[self.nodes[e].index] = c['z']
-            mu_Z[c['z'], 0] = self.nodes[e].func.mean
-            z[c['z'], 0] = kwds[e]
-            c['z'] += 1
-        for name, node in self.nodes.items():
-            if name not in kwds:
-                mu_Y_map[self.nodes[name].index] = c['y']
-                mu_Y[c['y'], 0] = (
-                    self.nodes[name].func.mean)
-                c['y'] += 1
 
-        # Construct block arrays
-        yy_size = len(mu_Y)
-        yz_size = len(mu_Y)
-        zy_size = len(mu_Z)
-        zz_size = len(mu_Z)
-        sigma_YY = zeros((yy_size, yy_size))
-        sigma_YZ = zeros((yz_size, zy_size))
-        sigma_ZY = zeros((zy_size, yz_size))
-        sigma_ZZ = zeros((zz_size, zz_size))
+        # Ensure the evidence variables are actually
+        # present
+        invalid_vars = [v for v in kwds.keys() if v not in self.nodes]
+        if invalid_vars:
+            raise VariableNotInGraphError(invalid_vars)
 
-        evidence_indices = set([self.nodes[n].index for n in kwds.keys()])
-        for a, b in product(range(len(old_sigma)), range(len(old_sigma))):
-            v = old_sigma[a, b]
-            if a in evidence_indices:
-                if b in evidence_indices:
-                    sigma_ZZ[mu_Z_map[a], mu_Z_map[b]] = old_sigma[a, b]
-                else:
-                    sigma_ZY[mu_Z_map[a], mu_Y_map[b]] = v
-            else:
-                if b in evidence_indices:
-                    sigma_YZ[mu_Y_map[a], mu_Z_map[b]] = v
-                else:
-                    sigma_YY[mu_Y_map[a], mu_Y_map[b]] = v
-        # Now we can apply equations 6 and 7 to
-        # get the new joint parameters
-        mu_Y_g_Z = mu_Y + sigma_YZ * (sigma_ZZ.I * (z - mu_Z))
-        sigma_Y_g_Z = sigma_YY - sigma_YZ * sigma_ZZ.I * sigma_ZY
-        # Note, we need to convert the matrices back
-        # to the conditional form and also
-        # de-map the entries back to the nodes.
+        mu, sigma = self.get_joint_parameters()
+
+        # Iteratively apply the evidence...
         result = dict()
-        # We will return a pair for each of the
-        # variables being the mean and sd for
-        # each variable.
+        result['evidence'] = kwds
+
         for k, v in kwds.items():
-            result[k] = (v, 0)
-        # Now for unseen variables ie those definied
-        # by the joint mu_Y_g_Z and sigma_Y_g_Z
-        # we want to return the conditionals for
-        # each one.
-        #mu_Y_map_inv = dict([(v, k) for k, v in mu_Y_map.items()])
-        import ipdb; ipdb.set_trace()
-        r = self.joint_to_conditional(mu_Y_g_Z, sigma_Y_g_Z, mu_Y_map)
+            x = MeansVector([[v]], names=[k])
+            sigma_yy, sigma_yx, sigma_xy, sigma_xx = (
+                sigma.split(k))
+            mu_y, mu_x = mu.split(k)
+            # See equations (6) and (7) of CK
+            mu_y_given_x = MeansVector(
+                (mu_y + sigma_yx * sigma_xx.I * (x - mu_x)).rows,
+                names = mu_y.name_ordering)
+            sigma_y_given_x = CovarianceMatrix(
+                (sigma_yy - sigma_yx * sigma_xx.I * sigma_xy).rows,
+                names=sigma_yy.name_ordering)
+            sigma = sigma_y_given_x
+            mu = mu_y_given_x
 
-        return mu_Y_g_Z, sigma_Y_g_Z
-
+        result['joint'] = dict(mu=mu, sigma=sigma)
+        return result
 
     def q(self, **kwds):
         '''Wrapper around query
@@ -274,18 +168,15 @@ class GaussianBayesianGraph(Graph):
         for interactive use.
         '''
         result = self.query(**kwds)
-        tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
-        tab.align = 'l'
-        tab.align['Marginal'] = 'r'
-        tab.float_format = '%8.6f'
-        for (node, value), prob in result.items():
-            if kwds.get(node, '') == value:
-                tab.add_row(['%s*' % node,
-                             '%s%s*%s' % (GREEN, value, NORMAL),
-                             '%8.6f' % prob])
-            else:
-                tab.add_row([node, value, '%8.6f' % prob])
-        print tab
+        mu = result['joint']['mu']
+        sigma = result['joint']['sigma']
+        evidence = result['evidence']
+        print 'Evidence: %s' % str(evidence)
+        print 'Means:'
+        print mu
+        print 'Covariance Matrix:'
+        print sigma
+
 
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)

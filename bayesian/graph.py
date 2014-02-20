@@ -35,9 +35,13 @@ class Graph(object):
         fh.write(self.get_graphviz_source())
 
     def get_topological_sort(self):
+        '''In order to make this sort
+        deterministic we will use the
+        variable name as a secondary sort'''
         l = []
         l_set = set() # For speed
-        s = set([n for n in self.nodes.values() if not n.parents])
+        s = [n for n in self.nodes.values() if not n.parents]
+        s.sort(reverse=True, key=lambda x:x.variable_name)
         while s:
             n = s.pop()
             l.append(n)
@@ -47,7 +51,8 @@ class Graph(object):
             # are already accounted for.
             for m in n.children:
                 if set(m.parents).issubset(l_set):
-                    s.add(m)
+                    s.append(m)
+                    s.sort(reverse=True, key=lambda x:x.variable_name)
         if len(l) == len(self.nodes):
             return l
         raise "Graph Has Cycles"

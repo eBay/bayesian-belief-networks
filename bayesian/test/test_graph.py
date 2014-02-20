@@ -3,8 +3,13 @@ import pytest
 import os
 
 from bayesian.factor_graph import *
+from bayesian.gaussian_bayesian_network import build_gbn
+from bayesian.examples.gaussian_bayesian_networks.river import f_a, f_b, f_c, f_d
 
 
+def pytest_funcarg__river_graph(request):
+    g = build_gbn(f_a, f_b, f_c, f_d)
+    return g
 
 
 def fA(x1):
@@ -764,3 +769,14 @@ def test_eliminate_var(eliminate_var_factor):
     eliminated = eliminate_var(eliminate_var_factor, 'x2')
     assert eliminated.argspec == ['x1', 'x3']
     assert eliminated(True, True) == 0.07
+
+
+class TestGraphModule(object):
+
+    def test_get_topological_sort(self, river_graph):
+        ordering = river_graph.get_topological_sort()
+        assert len(ordering) == 4
+        assert ordering[0].name == 'f_a'
+        assert ordering[1].name == 'f_b'
+        assert ordering[2].name == 'f_c'
+        assert ordering[3].name == 'f_d'

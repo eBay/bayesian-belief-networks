@@ -52,35 +52,4 @@ if __name__ == '__main__':
         f_b,
         f_c,
         f_d)
-    import ipdb; ipdb.set_trace()
-    mu, sigma = g.query(a=7)
-    print mu
-    print sigma
-    mu, sigma = g.query(a=7, c=17)
-    print mu
-    print sigma
-    mu, sigma = g.query(a=7, c=17, b=8)
-    print mu
-    print sigma
-    # Now to test conditional to joint....
-    y = 1 # index of node in network
-    mu_y = -5
-    sigma_y = 4
-    x = [0]
-    mu_x = [1]
-    sigma_x = [[4]]
-    betas = [0.5]
-    r = conditional_to_joint(y, mu_y, sigma_y, x, mu_x, sigma_x, betas)
-    print r
-    # great above worked now to try again with more than 1 x....
-    y = 2
-    mu_y = 4
-    sigma_y = 3
-    x = [0, 1]
-    mu_x = [1, -4.5]
-    sigma_x = [[4, 2], [2, 5]]
-    betas = [0, -1]
-    #    g.i()
-    import ipdb; ipdb.set_trace()
-    r = conditional_to_joint(y, mu_y, sigma_y, x, mu_x, sigma_x, betas)
-    print r
+    g.q()

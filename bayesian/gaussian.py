@@ -343,10 +343,12 @@ class CovarianceMatrix(Matrix):
     def set_name(self, col, name):
         self.names[name] = col
         self.index_to_name[col] = name
+        self.name_ordering.append(name)
 
     def set_names(self, names):
         assert len(names) in self.shape
         self.names = dict(zip(names, range(len(names))))
+        self.name_ordering = names
         self.index_to_name = dict([(v, k) for k, v in self.names.items()])
 
     def __getitem__(self, item):
@@ -389,7 +391,7 @@ class CovarianceMatrix(Matrix):
     def split(self, name):
         '''Split into sigma_xx, sigma_yy etc...'''
         assert name in self.names
-        x_names = [n for n in self.names if n != name]
+        x_names = [n for n in self.name_ordering if n != name]
         sigma_xx = CovarianceMatrix.zeros(
             (len(self) - 1, len(self) - 1),
             names=x_names)
@@ -397,7 +399,7 @@ class CovarianceMatrix(Matrix):
         sigma_xy = CovarianceMatrix.zeros((len(sigma_xx), 1), names=x_names)
         sigma_yx = CovarianceMatrix.zeros((1, len(sigma_xx)), names=x_names)
 
-        for row, col in product(self.names, self.names):
+        for row, col in product(self.name_ordering, self.name_ordering):
             v = self[row, col]
             if row == name and col == name:
                 sigma_yy[0, 0] = v
@@ -410,13 +412,12 @@ class CovarianceMatrix(Matrix):
         return sigma_xx, sigma_xy, sigma_yx, sigma_yy
 
     def __repr__(self):
-        names = self.names.keys()
-        tab = PrettyTable([''] + names)
+        tab = PrettyTable([''] + self.name_ordering)
         tab.align = 'r'
         rows = []
-        for row in names:
+        for row in self.name_ordering:
             table_row = [row]
-            for col in names:
+            for col in self.name_ordering:
                 table_row.append('%s' % self[row, col])
             tab.add_row(table_row)
         return tab.get_string()
@@ -455,9 +456,11 @@ class MeansVector(Matrix):
     def set_name(self, row, name):
         self.names[name] = row
         self.index_to_name[row] = name
+        self.name_ordering.append(name)
 
     def set_names(self, names):
         assert len(names) ==  self.shape[0]
+        self.name_ordering = names
         self.names = dict(zip(names, range(len(names))))
         self.index_to_name = dict([(v, k) for k, v in self.names.items()])
 
@@ -489,12 +492,26 @@ class MeansVector(Matrix):
         else:
             return super(MeansVector, self).__setitem__(item, value)
 
+    # For now we will leave these out
+    # and explicitely convert the matrix
+    # to a MeansVector during inference
+    #def __add__(self, other):
+    #    assert self.shape == other.shape
+    #    retval = super(MeansVector, self).__add__(other)
+    #    retval = MeansVector(retval, names=self.name_ordering)
+    #    return retval
+
+    #def __sub__(self, other):
+    #    assert self.shape == other.shape
+    #    retval = super(MeansVector, self).__sub__(other)
+    #    retval = MeansVector(retval, names=self.name_ordering)
+    #    return retval
+
     def __repr__(self):
-        names = self.names.keys()
         tab = PrettyTable(['', 'mu'])
         tab.align = 'r'
         rows = []
-        for row in names:
+        for row in self.name_ordering:
             table_row = [row, '%s' % self[row, 0]]
             tab.add_row(table_row)
         return tab.get_string()
@@ -502,15 +519,15 @@ class MeansVector(Matrix):
     def split(self, name):
         '''Split into mu_x and mu_y'''
         assert name in self.names
-        x_names = [n for n in self.names if n != name]
-        mu_x = zeros((len(self) - 1, 1),
+        x_names = [n for n in self.name_ordering if n != name]
+        mu_x = MeansVector.zeros((len(self) - 1, 1),
                          names=x_names)
-        mu_y = zeros((1, 1), names=[name])
+        mu_y = MeansVector.zeros((1, 1), names=[name])
 
-        for row in self.names:
+        for row in self.name_ordering:
             v = self[row, 0]
             if row == name:
                 mu_y[name, 0] = v
             else:
-                mu_x[name, 0] = v
+                mu_x[row, 0] = v
         return mu_x, mu_y

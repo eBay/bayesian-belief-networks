@@ -28,3 +28,12 @@ class InsufficientSamplesException(Exception):
 
 class NoSamplesInDB(Warning):
     pass
+
+
+class VariableNotInGraphError(Exception):
+    """Exception raised when
+    a graph is queried with
+    a variable that is not part of
+    the graph.
+    """
+    pass
