@@ -2,14 +2,14 @@ from distutils.core import setup
 
 setup(
     name='Bayesian',
-    version='0.1.5',
+    version='0.1.6',
     author='Neville Newey',
     author_email='nn@theneweys.org',
     packages=['bayesian', 'bayesian.test', 'bayesian.examples',
               'bayesian.examples.bbns',
               'bayesian.examples.factor_graphs'],
     license='LICENSE.txt',
-    description='Small Bayesian Inference Engine using Factor Graphs.',
+    description='Bayesian Inference Engine using Factor Graphs.',
     long_description=open('README.txt').read(),
     install_requires=[],
 )

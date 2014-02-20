@@ -1,17 +1,30 @@
 Pythonic Bayesian Belief Network Framework
+------------------------------------------
 
 Allows creation of Bayesian Belief Networks
 and other Graphical Models with pure Python
 functions. Where tractable exact inference
-is used. Currently three different inference
-methods are supported with more to come:
+is used. Currently four different inference
+methods are supported with more to come.
+
+Graphical Models Supported
+--------------------------
+
+- Bayesian Belief Networks with discrete variables
+- Gaussian Bayesian Networks with continous variables having gaussian distributions
+
+
+Inference Engines
+-----------------
 
 - Message Passing and the Junction Tree Algorithm
 - The Sum Product Algorithm
 - MCMC Sampling for approximate inference
+- Exact Propagation in Gaussian Bayesian Networks
 
 
 Other Features
+--------------
 
 - Automated conversion to Junction Trees
 - Inference of Graph Structure from Mass Functions
@@ -27,8 +40,8 @@ for a short introduction on how to build a Bayesian Belief Network.
 There are also many examples in the examples directory.
 
 
-
 Installation
+------------
 
 $ python setup.py install
 $ pip install -r requirements.txt
