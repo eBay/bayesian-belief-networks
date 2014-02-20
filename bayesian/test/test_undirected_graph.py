@@ -14,12 +14,12 @@ def pytest_funcarg__sprinkler_graph(request):
     rain = Node('Rain')
     wet_grass = Node('WetGrass')
     cloudy.neighbours = [
-        sprinkler, rain ]
-    sprinkler.neighbours = [ cloudy, wet_grass ]
-    rain.neighbours = [ cloudy, wet_grass ]
+        sprinkler, rain]
+    sprinkler.neighbours = [cloudy, wet_grass]
+    rain.neighbours = [cloudy, wet_grass]
     wet_grass.neighbours = [
         sprinkler,
-        rain ]
+        rain]
     graph = UndirectedGraph([
         cloudy,
         sprinkler,

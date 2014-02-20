@@ -1,6 +1,7 @@
 '''Test the Monty Hall example as a BBN.'''
 from bayesian.bbn import build_bbn
-from bayesian.examples.bbns.monty_hall import f_guest_door, f_prize_door, f_monty_door
+from bayesian.examples.bbns.monty_hall import (
+    f_guest_door, f_prize_door, f_monty_door)
 
 
 def pytest_funcarg__monty_hall_graph(request):
