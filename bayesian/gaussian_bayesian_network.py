@@ -4,6 +4,7 @@ from functools import wraps
 from numbers import Number
 from collections import Counter
 from itertools import product
+from StringIO import StringIO
 
 from bayesian.graph import Graph, Node, connect
 from bayesian.gaussian import make_gaussian_cdf
@@ -172,40 +173,30 @@ class GaussianBayesianGraph(Graph):
         sigma = result['joint']['sigma']
         evidence = result['evidence']
         print 'Evidence: %s' % str(evidence)
-        print 'Means:'
-        print mu
         print 'Covariance Matrix:'
         print sigma
+        print 'Means:'
+        print mu
 
 
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
 
-    def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
-        if filename:
-            fh = open(filename, 'w')
-        else:
-            fh = sys.stdout
-        if format != 'graphviz':
-            raise 'Unsupported Export Format.'
-        fh.write('graph G {\n')
+
+    def get_graphviz_source(self):
+        fh = StringIO()
+        fh.write('digraph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
-        for node in self.nodes:
-            if isinstance(node, FactorNode):
-                fh.write('  %s [ shape="rectangle" color="red"];\n' % node.name)
-            else:
-                fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
-        for node in self.nodes:
-            for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
-                edge = tuple(sorted(edge))
+        for node in sorted(self.nodes.values(), key=lambda x:x.name):
+            fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
+            for child in node.children:
+                edge = (node.name, child.name)
                 edges.add(edge)
-        for source, target in edges:
-            fh.write('  %s -- %s;\n' % (source, target))
+        for source, target in sorted(edges, key=lambda x:(x[0], x[1])):
+            fh.write('  %s -> %s;\n' % (source, target))
         fh.write('}\n')
-
+        return fh.getvalue()
 
 def build_gbn(*args, **kwds):
     '''Builds a Gaussian Bayesian Graph from
