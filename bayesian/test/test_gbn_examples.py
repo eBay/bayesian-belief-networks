@@ -1,6 +1,7 @@
 '''Tests for the examples in examples/gaussian_bayesian_networks'''
 from bayesian.gaussian_bayesian_network import build_graph
-from bayesian.examples.gaussian_bayesian_networks.river import f_a, f_b, f_c, f_d
+from bayesian.examples.gaussian_bayesian_networks.river import (
+    f_a, f_b, f_c, f_d)
 from bayesian.linear_algebra import zeros, Matrix
 
 

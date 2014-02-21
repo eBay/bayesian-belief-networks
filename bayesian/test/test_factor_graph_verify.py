@@ -136,13 +136,13 @@ class TestVerify():
             graph_with_function_as_node.verify()
 
     def test_broken_graph_empty_factor_domains(
-        self, graph_with_empty_func_domains):
+            self, graph_with_empty_func_domains):
         """Ensure exception is raised for broken graph."""
         with pytest.raises(InvalidGraphException):
             graph_with_empty_func_domains.verify()
 
     def test_broken_graph_missing_factor_domains(
-        self, graph_with_missing_func_domains):
+            self, graph_with_missing_func_domains):
         """Ensureexception is raised for broken graph."""
         with pytest.raises(InvalidGraphException):
             graph_with_missing_func_domains.verify()

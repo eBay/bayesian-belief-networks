@@ -5,7 +5,8 @@ import os
 
 from bayesian.gaussian import MeansVector, CovarianceMatrix
 from bayesian.gaussian_bayesian_network import *
-from bayesian.examples.gaussian_bayesian_networks.river import f_a, f_b, f_c, f_d
+from bayesian.examples.gaussian_bayesian_networks.river import (
+    f_a, f_b, f_c, f_d)
 
 
 def pytest_funcarg__river_graph(request):
@@ -22,13 +23,13 @@ class TestGBN():
              [4],
              [9],
              [14]],
-            names = ['a','b','c','d'])
+            names=['a', 'b', 'c', 'd'])
         assert sigma == CovarianceMatrix(
             [[4, 4, 8, 12],
              [4, 5, 8, 13],
              [8, 8, 20, 28],
              [12, 13, 28, 42]],
-            names = ['a','b','c','d'])
+            names=['a', 'b', 'c', 'd'])
 
     def test_query(self, river_graph):
 
@@ -43,7 +44,7 @@ class TestGBN():
             [[1, 0, 1],
              [0, 4, 4],
              [1, 4, 6]],
-            names = ['b','c','d'])
+            names=['b', 'c', 'd'])
 
         result = river_graph.query(a=7, c=17)
         mu = result['joint']['mu']
@@ -54,7 +55,7 @@ class TestGBN():
         assert sigma == CovarianceMatrix(
             [[1, 1],
              [1, 2]],
-            names = ['b','d'])
+            names=['b', 'd'])
 
         result = river_graph.query(a=7, c=17, b=8)
         mu = result['joint']['mu']
@@ -63,4 +64,4 @@ class TestGBN():
             [26]])
         assert sigma == CovarianceMatrix(
             [[1]],
-            names = ['d'])
+            names=['d'])

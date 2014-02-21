@@ -3,6 +3,7 @@ import pytest
 
 from bayesian.linear_algebra import *
 
+
 def pytest_funcarg__matrix_a(request):
     m = Matrix([
         [1, 2, 3],
@@ -35,8 +36,8 @@ def close_enough(a, b):
         return True
     return False
 
-class TestLinearAlgebra():
 
+class TestLinearAlgebra():
 
     def test_zeros(self):
         m = zeros((4, 4))
@@ -80,7 +81,6 @@ class TestLinearAlgebra():
             [2],
             [1],
             [3]])
-
 
     def test_invert(self, matrix_c):
         c_inv = matrix_c.I

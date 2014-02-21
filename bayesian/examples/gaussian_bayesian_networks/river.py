@@ -3,7 +3,6 @@ from __future__ import division
 from bayesian.gaussian_bayesian_network import gaussian, conditional_gaussian
 from bayesian.gaussian_bayesian_network import build_graph
 from bayesian.utils import shrink_matrix
-#from bayesian.gaussian import conditional_to_joint
 
 '''
 This example comes from page 3 of
@@ -18,6 +17,7 @@ Note in the paper they specify variance,
 wheres as this example we are  using std. dev.
 instead hence for A the variance is 4 and std_dev is 2.
 '''
+
 
 @gaussian(3, 2)
 def f_a(a):

@@ -4,7 +4,8 @@ import os
 
 from bayesian.factor_graph import *
 from bayesian.gaussian_bayesian_network import build_gbn
-from bayesian.examples.gaussian_bayesian_networks.river import f_a, f_b, f_c, f_d
+from bayesian.examples.gaussian_bayesian_networks.river import (
+    f_a, f_b, f_c, f_d)
 
 
 def pytest_funcarg__river_graph(request):
@@ -28,6 +29,7 @@ def fB(x2):
         return 0.7
 
 fB.domains = dict(x2=[True, False])
+
 
 def pytest_funcarg__eliminate_var_factor(request):
     '''Get a factor to test variable elimination'''
@@ -75,6 +77,7 @@ def fC(x1, x2, x3):
     key = key + 't' if x2 else key + 'f'
     key = key + 't' if x3 else key + 'f'
     return table[key]
+
 
 fC.domains = dict(
     x1=[True, False],

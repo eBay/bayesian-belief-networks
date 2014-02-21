@@ -18,9 +18,9 @@ class TestGaussian():
         sigma_yy = CovarianceMatrix([[5]])
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
-        assert beta_0 == -5 # checked
-        assert beta == MeansVector([[0.5]]) # checked
-        assert sigma == MeansVector([[4]])  # checked
+        assert beta_0 == -5
+        assert beta == MeansVector([[0.5]])
+        assert sigma == MeansVector([[4]])
 
     def test_joint_to_conditional_2(self):
         # Now do the same for P(X2|X3)
@@ -32,9 +32,9 @@ class TestGaussian():
         sigma_yy = CovarianceMatrix([[8]])
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
-        assert beta_0 == 4 # checked
-        assert beta == MeansVector([[-1]]) #checked
-        assert sigma == CovarianceMatrix([[3]]) # checked
+        assert beta_0 == 4
+        assert beta == MeansVector([[-1]])
+        assert sigma == CovarianceMatrix([[3]])
 
     def test_joint_to_conditional_3(self):
         # Now for the river example...
@@ -48,7 +48,7 @@ class TestGaussian():
         sigma_yy = CovarianceMatrix([[5]])
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
-        assert beta_0 == 1 # Checked see below comments
+        assert beta_0 == 1
         # On page 3, the conditional for the factor f(b|a):
         # N(mu_B + beta_BA(a - mu_A), v_B)
         #
@@ -58,8 +58,8 @@ class TestGaussian():
         #    ==     4 + a - 3
         #    ==     1 + a
         #    ==> beta_0 should be 1
-        assert beta == MeansVector([[1]]) # checked
-        assert sigma == CovarianceMatrix([[1]]) # checked
+        assert beta == MeansVector([[1]])
+        assert sigma == CovarianceMatrix([[1]])
 
     def test_joint_to_conditional_4(self):
         # p(C|A)
@@ -78,9 +78,9 @@ class TestGaussian():
         #    ==     9 + 2a - 6
         #    ==     3 + 2a
         #    ==> beta_0 = 3 and beta_1 = 2
-        assert beta_0 == 3 # checked
-        assert beta == MeansVector([[2]]) # checked
-        assert sigma == CovarianceMatrix([[4]]) # checked
+        assert beta_0 == 3
+        assert beta == MeansVector([[2]])
+        assert sigma == CovarianceMatrix([[4]])
 
     def test_joint_to_conditional_5(self):
         # Now the more complicated example
@@ -104,17 +104,19 @@ class TestGaussian():
         # From page 3 :
         # f(d|b,c) ~ N(mu_D + beta_DB(b - mu_B) + beta_DC(c - mu_C), v_D)
         #              mu_D + beta_DB(b - mu_B) + beta_DC(c - mu_C
-        #          ==  mu_D + beta_DB * b - beta_DB * mu_B + beta_DC * c - beta_DC * mu_C
+        #          ==  mu_D + beta_DB * b - beta_DB * mu_B + \
+        #                 beta_DC * c - beta_DC * mu_C
         #          ==  14   + 1 * b - 1 * 4 + 1 * c - 1 * 9
         #          ==  14 + 1b - 4 + 1c -9
         #          ==  1 + 1b + 1c
         #          ==> beta_0 = 1, beta = (1  1)'
-        assert beta_0 == 1 # checked
-        assert beta == MeansVector([[1, 1]]) # checked
-        assert sigma == CovarianceMatrix([[1]]) # checked
+        assert beta_0 == 1
+        assert beta == MeansVector([[1, 1]])
+        assert sigma == CovarianceMatrix([[1]])
 
     def test_conditional_to_joint_1(self):
-        # For the example in http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
+        # For the example in http://webdocs.cs.ualberta.ca/
+        # ~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
         # we will build up the joint parameters one by one to test...
         mu_x = MeansVector([[1]])
         sigma_x = CovarianceMatrix([[4]])
@@ -140,7 +142,7 @@ class TestGaussian():
             [2, 5]])
         beta_0 = 4
         beta = MeansVector([
-            [0], # Represents no edge from x1 to x3
+            [0],  # Represents no edge from x1 to x3
             [-1]])
         sigma_c = 3
         mu, sigma = conditional_to_joint(
@@ -160,9 +162,9 @@ class TestGaussian():
             [3]])
         sigma_x = CovarianceMatrix([     # variance(A)
             [4]])
-        beta_0 = 1 # See above test for joint_to_conditional mean(B|A)
+        beta_0 = 1  # See above test for joint_to_conditional mean(B|A)
         beta = MeansVector([
-            [1]])  # beta_BA
+            [1]])   # beta_BA
         sigma_c = 1            # variance(B|A)
         # now mu and sigma will get the joint parameters for A,B
         mu, sigma = conditional_to_joint(
@@ -184,8 +186,8 @@ class TestGaussian():
             [4, 5]])
         beta_0 = 3
         beta = MeansVector([
-            [2], #  c->a
-            [0], #  c-> Not connected so 0
+            [2],  # c->a
+            [0],  # c-> Not connected so 0
         ])
         sigma_c = 4       # variance(C) == variance(CA)
         # now mu and sigma will get the joint parameters for A,B
@@ -210,11 +212,11 @@ class TestGaussian():
             [4, 4, 8],
             [4, 5, 8],
             [8, 8, 20]])
-        beta_0 = 1 # See above test for joint_to_conditional
+        beta_0 = 1  # See above test for joint_to_conditional
         beta = MeansVector([
-            [0], # No edge from a->c
-            [1], # beta_DB Taken directly from page 4
-            [1]]) # beta_DC Taken from page 4
+            [0],    # No edge from a->c
+            [1],    # beta_DB Taken directly from page 4
+            [1]])   # beta_DC Taken from page 4
         sigma_c = 1
         mu, sigma = conditional_to_joint(
             mu_x, sigma_x, beta_0, beta, sigma_c)
@@ -250,7 +252,7 @@ class TestGaussian():
                 [4, 5, 8, 13],
                 [8, 8, 20, 28],
                 [12, 13, 28, 42]],
-            names = ['a', 'b', 'c', 'd'])
+            names=['a', 'b', 'c', 'd'])
         sigma_xx, sigma_xy, sigma_yx, sigma_yy = sigma.split('a')
         for name in ['b', 'c', 'd']:
             assert name in sigma_xx.names
