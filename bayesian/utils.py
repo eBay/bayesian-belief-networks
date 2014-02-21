@@ -64,6 +64,7 @@ def get_original_factors(factors):
                 original_factors[unaccounted_args[0]] = factor
     return original_factors
 
+
 def shrink_matrix(x):
     '''Remove Nulls'''
     while True:

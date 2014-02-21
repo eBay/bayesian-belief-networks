@@ -22,6 +22,7 @@ the forecast for rain and on actual rain observed.
 
 '''
 
+
 def f_forecast(forecast):
     if forecast is True:
         return 0.6

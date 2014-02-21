@@ -20,6 +20,7 @@ Koller example uses Variance.
 
 '''
 
+
 @gaussian(1, 2)
 def f_x1(x1):
     pass

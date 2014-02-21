@@ -3,6 +3,7 @@
 from bayesian.bbn import *
 from bayesian.utils import make_key
 
+
 def f_rain(rain):
     if rain is True:
         return 0.2

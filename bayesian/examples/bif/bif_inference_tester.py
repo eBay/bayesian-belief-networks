@@ -2,16 +2,18 @@ import bif_parser
 from time import time
 from prettytable import *
 
-# Perform exact and/or persistent sampling inference on a given .bif file,
-# showing the time taken and the convergence of probability in the case of increasing samples
+# Perform exact and/or persistent sampling
+# inference on a given .bif file,
+# showing the time taken and the convergence
+# of probability in the case of increasing samples
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     # Name of .bif file
     name = 'insurance'
 
     # (Variable, Value) pair in marginals table to focus on
-    key = ('RuggedAuto','Football')
+    key = ('RuggedAuto', 'Football')
 
     start = time()
     module_name = bif_parser.parse(name)
@@ -34,7 +36,9 @@ if __name__=='__main__':
         start = time()
         if not sampling:
 
-            # Set exact=True, sampling=False to just show the exact marginals table and select a key of interest
+            # Set exact=True, sampling=False to
+            # just show the exact marginals table
+            # and select a key of interest
             bg.q()
         else:
             print 'Exact probability:', bg.query()[key]
@@ -43,7 +47,10 @@ if __name__=='__main__':
     if sampling:
         fg.inference_method = 'sample_db'
 
-        table = PrettyTable(["Number of samples", "Time to generate samples", "Time to query", "Probability", "Difference from previous"])
+        table = PrettyTable(["Number of samples",
+                             "Time to generate samples",
+                             "Time to query", "Probability",
+                             "Difference from previous"])
 
         for power in range(10):
             n = 2**power
