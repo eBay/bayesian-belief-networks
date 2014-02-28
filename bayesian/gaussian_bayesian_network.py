@@ -1,5 +1,6 @@
 '''Classes for pure Gaussian Bayesian Networks'''
 import math
+import types
 from functools import wraps
 from numbers import Number
 from collections import Counter
@@ -36,6 +37,9 @@ def gaussian(mu, sigma):
         gaussianized.variance = sigma ** 2
         gaussianized.cdf = make_gaussian_cdf(mu, sigma)
         gaussianized.argspec = get_args(f)
+        gaussianized.entropy = types.MethodType(
+            lambda x: 0.5 * math.log(2 * math.pi * math.e * x.variance),
+            gaussianized)
 
         return gaussianized
     return gaussianize
@@ -65,6 +69,11 @@ def conditional_gaussian(mu, sigma, betas):
         conditional_gaussianized.variance = sigma ** 2
         conditional_gaussianized.raw_betas = betas
         conditional_gaussianized.argspec = get_args(f)
+        conditional_gaussianized.entropy = types.MethodType(
+            lambda x: len(x.joint_mu) / 2 * \
+            (1 + math.log(2 * math.pi)) + \
+            0.5 * math.log(x.covariance_matrix.det()), conditional_gaussianized)
+
         # NOTE: the joint parameters are
         # add to this function at the time of the
         # graph construction
