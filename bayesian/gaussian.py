@@ -6,7 +6,7 @@ from itertools import combinations, product
 
 from prettytable import PrettyTable
 
-from bayesian.linear_algebra import Matrix
+from bayesian.linear_algebra import Matrix, zeros
 
 
 '''
@@ -274,7 +274,6 @@ def conditional_to_joint(
     '''
     This is from page 19 of
     http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
-    The notation finally makes sense now!
     We are given the parameters of a conditional
     gaussian p(Y|x) = N(beta_0 + beta'x; sigma)
     and also the unconditional means and sigma
@@ -315,13 +314,13 @@ def conditional_to_joint(
     return mu, sigma
 
 
-class CovarianceMatrix(Matrix):
+class NamedMatrix(Matrix):
     '''Wrapper allowing referencing
     of columns and rows by variable
     name'''
 
     def __init__(self, rows=[], names=[]):
-        super(CovarianceMatrix, self).__init__(rows)
+        super(NamedMatrix, self).__init__(rows)
         if not names:
             # Default to x1, x2....
             names = ['x%s' % x for x in range(1, len(rows) + 1)]
@@ -355,7 +354,7 @@ class CovarianceMatrix(Matrix):
         if isinstance(item, str):
             assert item in self.names
             item = self.names[item]
-            return super(CovarianceMatrix, self).__getitem__(item)
+            return super(NamedMatrix, self).__getitem__(item)
         elif isinstance(item, tuple):
             row, col = item
             if isinstance(row, str):
@@ -364,9 +363,9 @@ class CovarianceMatrix(Matrix):
             if isinstance(col, str):
                 assert col in self.names
                 col = self.names[col]
-            return super(CovarianceMatrix, self).__getitem__((row, col))
+            return super(NamedMatrix, self).__getitem__((row, col))
         else:
-            return super(CovarianceMatrix, self).__getitem__(item)
+            return super(NamedMatrix, self).__getitem__(item)
 
     def __setitem__(self, item, value):
         if isinstance(item, tuple):
@@ -377,16 +376,39 @@ class CovarianceMatrix(Matrix):
             if isinstance(col, str):
                 assert col in self.names
                 col = self.names[col]
-            return super(CovarianceMatrix, self).__setitem__((row, col), value)
+            return super(NamedMatrix, self).__setitem__((row, col), value)
         else:
-            return super(CovarianceMatrix, self).__setitem__(item, value)
-
+            return super(NamedMatrix, self).__setitem__(item, value)
 
     def col(self, j):
         if isinstance(j, str):
             assert j in self.names
             j = self.names[j]
         return [row[j] for row in self.rows]
+
+    def __repr__(self):
+        cols = self.name_ordering[:self.shape[1]]
+        tab = PrettyTable([''] + cols)
+        tab.align = 'r'
+        for row in self.name_ordering:
+            table_row = [row]
+            for col in cols:
+                table_row.append('%s' % self[row, col])
+            tab.add_row(table_row)
+        return tab.get_string()
+
+
+class CovarianceMatrix(NamedMatrix):
+    '''Wrapper allowing referencing
+    of columns and rows by variable
+    name'''
+
+    def __init__(self, rows=[], names=[]):
+        super(CovarianceMatrix, self).__init__(rows)
+        if not names:
+            # Default to x1, x2....
+            names = ['x%s' % x for x in range(1, len(rows) + 1)]
+        self.set_names(names)
 
     def split(self, name):
         '''Split into sigma_xx, sigma_yy etc...'''
@@ -396,10 +418,14 @@ class CovarianceMatrix(Matrix):
             (len(self) - 1, len(self) - 1),
             names=x_names)
         sigma_yy = CovarianceMatrix.zeros((1, 1), names=[name])
-        sigma_xy = CovarianceMatrix.zeros((len(sigma_xx), 1), names=x_names)
-        sigma_yx = CovarianceMatrix.zeros((1, len(sigma_xx)), names=x_names)
+        #sigma_xy = zeros((len(sigma_xx), 1))
+        sigma_xy = NamedMatrix.zeros((len(sigma_xx), 1), names=x_names)
+        #sigma_yx = zeros((1, len(sigma_xx)))
+        sigma_yx = NamedMatrix.zeros((1, len(sigma_xx)), names=x_names)
 
-        for row, col in product(self.name_ordering, self.name_ordering):
+        for row, col in product(
+                self.name_ordering,
+                self.name_ordering):
             v = self[row, col]
             if row == name and col == name:
                 sigma_yy[0, 0] = v
@@ -411,18 +437,8 @@ class CovarianceMatrix(Matrix):
                 sigma_yx[0, row] = v
         return sigma_xx, sigma_xy, sigma_yx, sigma_yy
 
-    def __repr__(self):
-        tab = PrettyTable([''] + self.name_ordering)
-        tab.align = 'r'
-        rows = []
-        for row in self.name_ordering:
-            table_row = [row]
-            for col in self.name_ordering:
-                table_row.append('%s' % self[row, col])
-            tab.add_row(table_row)
-        return tab.get_string()
 
-class MeansVector(Matrix):
+class MeansVector(NamedMatrix):
     '''Wrapper allowing referencing
     of rows by variable name.
     In this implementation we will
@@ -439,30 +455,6 @@ class MeansVector(Matrix):
             # Default to x1, x2....
             names = ['x%s' % x for x in range(1, len(rows) + 1)]
         self.set_names(names)
-
-    @classmethod
-    def zeros(cls, shape, names=[]):
-        '''Alternate constructor that
-        creates a zero based matrix'''
-        rows, cols = shape
-        matrix_rows = []
-        for i in range(0, rows):
-            matrix_rows.append([0] * cols)
-        if not names:
-            names = ['x%s' % x for x in range(1, rows + 1)]
-        cov = cls(matrix_rows, names)
-        return cov
-
-    def set_name(self, row, name):
-        self.names[name] = row
-        self.index_to_name[row] = name
-        self.name_ordering.append(name)
-
-    def set_names(self, names):
-        assert len(names) ==  self.shape[0]
-        self.name_ordering = names
-        self.names = dict(zip(names, range(len(names))))
-        self.index_to_name = dict([(v, k) for k, v in self.names.items()])
 
     def __getitem__(self, item):
         if isinstance(item, str):
@@ -489,23 +481,15 @@ class MeansVector(Matrix):
                 assert row in self.names
                 row = self.names[row]
             return super(MeansVector, self).__setitem__((row, col), value)
+        elif isinstance(item, str):
+            # Since a MeansVector is always a n x 1
+            # matrix we will allow setitem by row only
+            # and infer col 0 always
+            assert item in self.names
+            row = self.names[item]
+            return super(MeansVector, self).__setitem__((row, 0), value)
         else:
             return super(MeansVector, self).__setitem__(item, value)
-
-    # For now we will leave these out
-    # and explicitely convert the matrix
-    # to a MeansVector during inference
-    #def __add__(self, other):
-    #    assert self.shape == other.shape
-    #    retval = super(MeansVector, self).__add__(other)
-    #    retval = MeansVector(retval, names=self.name_ordering)
-    #    return retval
-
-    #def __sub__(self, other):
-    #    assert self.shape == other.shape
-    #    retval = super(MeansVector, self).__sub__(other)
-    #    retval = MeansVector(retval, names=self.name_ordering)
-    #    return retval
 
     def __repr__(self):
         tab = PrettyTable(['', 'mu'])

@@ -73,12 +73,9 @@ class Matrix(object):
         return self * other.I
 
     def __eq__(self, other):
-        assert self.shape == other.shape
-        for i in range(len(self.rows)):
-            for j in range(len(self.rows[0])):
-                if self[i, j] != other[i, j]:
-                    return False
-        return True
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
 
     def col(self, j):
         return [row[j] for row in self.rows]
@@ -94,7 +91,7 @@ class Matrix(object):
 
     @property
     def I(self):
-        '''Inverse named I tp emulate numpy API'''
+        '''Inverse named I to emulate numpy API'''
         assert len(self.rows) == len(self.rows[0])
         if len(self.rows) == 1:
             return Matrix([[1.0 / self[0, 0]]])
@@ -124,6 +121,9 @@ class Matrix(object):
                         inverse[target_row, j] = inner_product(
                             source_vals, target_vals)
         return inverse
+
+    def det(self):
+        return _det(self.rows)
 
     def __repr__(self):
         rows = []
@@ -180,6 +180,34 @@ def split(means, sigma):
     sigma_21 = sigma_12.T
     sigma_22 = sigma[len(means) -1:, len(means) - 1:]
     return mu_1, mu_2, sigma_11, sigma_12, sigma_21, sigma_22
+
+
+def _det(l):
+    n = len(l)
+    if (n > 2):
+        i = 1
+        t = 0
+        sum = 0
+        while t <= n - 1:
+            d = {}
+            t1 = 1
+            while t1 <= n - 1:
+                m = 0
+                d[t1] = []
+                while m <= n - 1:
+                    if (m == t):
+                        u = 0
+                    else:
+                        d[t1].append(l[t1][m])
+                    m += 1
+                t1 += 1
+            l1 = [d[x] for x in d]
+            sum = sum + i * (l[0][t]) * (_det(l1))
+            i = i * (-1)
+            t += 1
+        return sum
+    else:
+        return (l[0][0]*l[1][1]-l[0][1]*l[1][0])
 
 
 if __name__ == '__main__':

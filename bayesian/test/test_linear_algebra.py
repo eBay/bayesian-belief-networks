@@ -30,6 +30,43 @@ def pytest_funcarg__matrix_c(request):
         ])
     return m
 
+def pytest_funcarg__matrix_e(request):
+    m = Matrix([
+        [4, 4, 8, 12],
+        [4, 5, 8, 13],
+        [8, 8, 20, 28],
+        [12, 13, 28, 42]
+        ])
+    return m
+
+def pytest_funcarg__matrix_f(request):
+    '''differs in one cell to matrix_e'''
+    m = Matrix([
+        [4, 4, 8, 12],
+        [4, 5, 88, 13],
+        [8, 8, 20, 28],
+        [12, 13, 28, 42]
+        ])
+    return m
+
+
+def pytest_funcarg__matrix_d(request):
+    m = Matrix([
+        [0],
+        [1],
+        [2],
+        [3],
+        [4]
+        ])
+    return m
+
+
+def pytest_funcarg__matrix_g(request):
+    m = Matrix([[-2, 2, -3],
+                [-1, 1, 3],
+                [2, 0, -1]])
+    return m
+
 
 def close_enough(a, b):
     if abs(a - b) < 0.000001:
@@ -103,3 +140,17 @@ class TestLinearAlgebra():
         assert c_inv[3, 1] == -1
         assert c_inv[3, 2] == -1
         assert c_inv[3, 3] == 1
+
+    def test_slicing(self, matrix_d):
+        # Note slicing is NOT YET IMPLEMENTED
+        pass
+
+    def test_equality(self, matrix_c, matrix_d,
+                      matrix_e, matrix_f):
+        assert matrix_c == matrix_e
+        assert matrix_c != matrix_d
+        assert matrix_e != matrix_f
+
+    def test_matrix_determinant(self, matrix_g):
+        d = matrix_g.det()
+        assert d == 18

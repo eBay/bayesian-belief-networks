@@ -3,7 +3,7 @@ import math
 from functools import wraps
 from numbers import Number
 from collections import Counter
-from itertools import product
+from itertools import product as xproduct
 from StringIO import StringIO
 
 from bayesian.graph import Graph, Node, connect
@@ -15,6 +15,7 @@ from bayesian.linear_algebra import zeros, Matrix
 from bayesian.utils import get_args
 from bayesian.utils import get_original_factors
 from bayesian.exceptions import VariableNotInGraphError
+from bayesian.linear_algebra import Matrix
 
 def gaussian(mu, sigma):
     # This is the gaussian decorator
@@ -45,20 +46,28 @@ def conditional_gaussian(mu, sigma, betas):
     def conditional_gaussianize(f):
 
         @wraps(f)
-        def conditional_gaussianized(**args):
+        def conditional_gaussianized(*args, **kwds):
             '''Since this function will never
             be called directly we dont need anything here.
             '''
-            pass
-
-        # Actually the mean now becomes a
-        # function of the dependent variable
+            # First we need to construct a vector
+            # out of the args...
+            x = zeros((len(args), 1))
+            for i, a in enumerate(args):
+                x[i, 0] = a
+            sigma = conditional_gaussianized.covariance_matrix
+            mu = conditional_gaussianized.joint_mu
+            return 1 / (2 * math.pi * sigma.det()) ** 0.5 \
+                * math.exp(-0.5 * ((x - mu).T * sigma.I * (x - mu))[0, 0])
 
         conditional_gaussianized.mean = mu
         conditional_gaussianized.std_dev = sigma
         conditional_gaussianized.variance = sigma ** 2
         conditional_gaussianized.raw_betas = betas
         conditional_gaussianized.argspec = get_args(f)
+        # NOTE: the joint parameters are
+        # add to this function at the time of the
+        # graph construction
 
         return conditional_gaussianized
 
@@ -261,6 +270,23 @@ def build_gbn(*args, **kwds):
             else:
                 factor_node.func.betas = factor_node.func.raw_betas
     gbn = GaussianBayesianGraph(original_factors, name=name)
+    # Now for any conditional gaussian nodes
+    # we need to tell the node function what the
+    # parent parameters are so that the pdf can
+    # be computed.
+    sorted = gbn.get_topological_sort()
+    joint_mu, joint_sigma = gbn.get_joint_parameters()
+    for node in sorted:
+        if hasattr(node.func, 'betas'):
+            # This means its multivariate gaussian
+            names = [n.variable_name for n in node.parents] + [node.variable_name]
+            node.func.joint_mu = MeansVector.zeros((len(names), 1), names=names)
+            for name in names:
+                node.func.joint_mu[name] = joint_mu[name][0, 0]
+            node.func.covariance_matrix = CovarianceMatrix.zeros(
+                (len(names), len(names)), names)
+            for row, col in xproduct(names, names):
+                node.func.covariance_matrix[row, col] = joint_sigma[row, col]
     return gbn
 
 

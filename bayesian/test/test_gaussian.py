@@ -4,6 +4,26 @@ from itertools import product as xproduct
 from bayesian.gaussian import *
 
 
+def pytest_funcarg__means_vector_a(request):
+    m = MeansVector([[0], [1], [2]], names=('a', 'b', 'c'))
+    return m
+
+
+def pytest_funcarg__means_vector_b(request):
+    m = MeansVector([[0], [1], [2]], names=('a', 'b', 'c'))
+    return m
+
+
+def pytest_funcarg__means_vector_c(request):
+    m = MeansVector([[0], [1], [2]], names=('a', 'b', 'd'))
+    return m
+
+
+def pytest_funcarg__means_vector_d(request):
+    m = MeansVector([[0], [1], [3]], names=('a', 'b', 'c'))
+    return m
+
+
 class TestGaussian():
 
     def test_joint_to_conditional_1(self):
@@ -19,8 +39,8 @@ class TestGaussian():
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
         assert beta_0 == -5
-        assert beta == MeansVector([[0.5]])
-        assert sigma == MeansVector([[4]])
+        assert beta == Matrix([[0.5]])
+        assert sigma == Matrix([[4]])
 
     def test_joint_to_conditional_2(self):
         # Now do the same for P(X2|X3)
@@ -33,8 +53,8 @@ class TestGaussian():
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
         assert beta_0 == 4
-        assert beta == MeansVector([[-1]])
-        assert sigma == CovarianceMatrix([[3]])
+        assert beta == Matrix([[-1]])
+        assert sigma == Matrix([[3]])
 
     def test_joint_to_conditional_3(self):
         # Now for the river example...
@@ -58,8 +78,8 @@ class TestGaussian():
         #    ==     4 + a - 3
         #    ==     1 + a
         #    ==> beta_0 should be 1
-        assert beta == MeansVector([[1]])
-        assert sigma == CovarianceMatrix([[1]])
+        assert beta == Matrix([[1]])
+        assert sigma == Matrix([[1]])
 
     def test_joint_to_conditional_4(self):
         # p(C|A)
@@ -79,8 +99,8 @@ class TestGaussian():
         #    ==     3 + 2a
         #    ==> beta_0 = 3 and beta_1 = 2
         assert beta_0 == 3
-        assert beta == MeansVector([[2]])
-        assert sigma == CovarianceMatrix([[4]])
+        assert beta == Matrix([[2]])
+        assert sigma == Matrix([[4]])
 
     def test_joint_to_conditional_5(self):
         # Now the more complicated example
@@ -111,8 +131,8 @@ class TestGaussian():
         #          ==  1 + 1b + 1c
         #          ==> beta_0 = 1, beta = (1  1)'
         assert beta_0 == 1
-        assert beta == MeansVector([[1, 1]])
-        assert sigma == CovarianceMatrix([[1]])
+        assert beta == Matrix([[1, 1]])
+        assert sigma == Matrix([[1]])
 
     def test_conditional_to_joint_1(self):
         # For the example in http://webdocs.cs.ualberta.ca/
@@ -254,6 +274,8 @@ class TestGaussian():
                 [12, 13, 28, 42]],
             names=['a', 'b', 'c', 'd'])
         sigma_xx, sigma_xy, sigma_yx, sigma_yy = sigma.split('a')
+        print sigma_xx
+        print sigma_xy
         for name in ['b', 'c', 'd']:
             assert name in sigma_xx.names
             assert name in sigma_xy.names
@@ -278,5 +300,12 @@ class TestGaussian():
         beta_0, beta, sigma = joint_to_conditional(
             mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy)
         assert beta_0 == 1
-        assert beta == MeansVector([[1, 1]])
-        assert sigma == CovarianceMatrix([[1]])
+        assert beta == Matrix([[1, 1]])
+        assert sigma == Matrix([[1]])
+
+    def test_means_vector_equality(
+            self, means_vector_a, means_vector_b,
+            means_vector_c, means_vector_d):
+        assert means_vector_a == means_vector_b
+        assert means_vector_a != means_vector_c
+        assert means_vector_a != means_vector_d
