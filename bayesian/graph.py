@@ -57,6 +57,14 @@ class Graph(object):
             return l
         raise "Graph Has Cycles"
 
+    def list(self):
+        '''Try to show a simple character based representation'''
+        for node in self.nodes:
+            print node
+            if node.children:
+                for child in node.children:
+                    print '  -> %s' % child
+
 
 class UndirectedGraph(object):
 
@@ -88,6 +96,14 @@ class UndirectedGraph(object):
         else:
             fh = sys.stdout
         fh.write(self.get_graphviz_source())
+
+    def list(self):
+        '''Try to show a simple character based representation'''
+        for node in self.nodes:
+            print node
+            if node.neighbours:
+                for neighbour in node.neighbours:
+                    print '   * %s' % neighbour
 
 
 def connect(parent, child):

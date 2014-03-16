@@ -6,7 +6,11 @@ from bayesian.factor_graph import (
 from bayesian.bbn import (
     JoinTreeSepSetNode, JoinTreeCliqueNode)
 from bayesian.bbn import Clique
-from bayesian.factor_graph import make_product_func, make_not_sum_func
+from bayesian.factor_graph import (
+    make_product_func, make_not_sum_func, VariableNode,
+    FactorNode, FactorGraph)
+from bayesian.factor_graph import connect as fg_connect
+from bayesian.exceptions import *
 
 from itertools import product as xproduct
 
@@ -62,28 +66,12 @@ def f_monty_door(prize_door, guest_door, monty_door):
     return 1
 
 
-# Now lets try and define the nodes of the
-# Notice that because we have additional edges
-# in the undirected graph, each conditional
-# probability distribution has additional
-# variables.
-def f_u_prize_door(u_monty_door, u_prize_door):
-    # How we specify these potential functions
-    # is interesting...
-    if u_prize_door == u_monty_door:
-        # Since monty will never choose
-        # the same door as the prize
-        return 0
-    # Now given that this is *only*
-    # the potential func of these two
-    # vars we return 0.5...
-    return 1.0 / 2.0
+def f_u_prize_door(u_prize_door):
+    return 1.0 / 3
 
 
-def f_u_guest_door(u_guest_door, u_monty_door):
-    if u_guest_door == u_monty_door:
-        return 0
-    return 1.0 / 2.0
+def f_u_guest_door(u_guest_door):
+    return 1.0 / 3
 
 
 # Essentially these will all actually be the same as the BBN
@@ -178,7 +166,6 @@ def get_Z(
     # factor graph.
     # For now we will do this seperately
     totals = defaultdict(float)
-    #import ipdb; ipdb.set_trace()
     for guest_door in ['A', 'B', 'C']:
         res = fg.query(u_guest_door=guest_door)
         for k, v in res.iteritems():
@@ -196,7 +183,6 @@ def build_potential_functions(ug, jt):
     factor functions.'''
     for node in jt.nodes:
         if isinstance(node, JoinTreeSepSetNode):
-            import ipdb; ipdb.set_trace()
             # For the sepsets we need a not sum
             # to exclude all variables that are
             # not in the sepset. See page 10 of
@@ -208,6 +194,7 @@ def build_potential_functions(ug, jt):
             # have to choose one neighbour..)
             ns_func = make_not_sum_func(
                 jt.nodes[0].clique.node.func, 'u_monty_door')
+            ns_func.original_args = ['u_monty_door']
             # Now we also have to get rid of Prize door...
             #ns_func = make_not_sum_func(
             #    ns_func, 'u_prize_door')
@@ -238,9 +225,11 @@ def dummyize(f):
         # lets require that the single
         # arg is a list of the
         # underlying args
-        retval = f(*dummy_arg)
+        retval = f(*tuple(dummy_arg))
         return retval
     dummyized.argspec = [dummy_arg]
+    dummyized.original_args = f.argspec
+
     return dummyized
 
 
@@ -312,24 +301,71 @@ def build_factor_graph_from_jt(jt):
     #
 
 
-    factor_graph_funcs = [node.func for node in jt.nodes \
-                          if isinstance(node, JoinTreeCliqueNode)]
+    #factor_graph_funcs = [node.func for node in jt.nodes \
+    #                      if isinstance(node, JoinTreeCliqueNode)]
+    # Also include the sepsets...
+    factor_graph_funcs = [node.func for node in jt.nodes]
+
     # Now dummyize these...
     factor_graph_funcs = [dummyize(f) for f in factor_graph_funcs]
     # Now add the [PGM] func... what would its arg be???
     # I think it should be a not_sum func of NOT monty
-    factor_graph_funcs.append(jt.nodes[1].func)
+    #sepset_func
+    #factor_graph_funcs.append(jt.nodes[1].func)
+    # Note that because we have dummyized all factors
+    # the domains need to all be tuples...
     domains = dict(
-        u_prize_door_u_monty_door_u_guest_door=xproduct(
-            ['A', 'B', 'C'], ['A', 'B', 'C'], ['A', 'B', 'C']),
-        u_guest_door_u_monty_door_u_prize_door=xproduct(
-            ['A', 'B', 'C'], ['A', 'B', 'C'], ['A', 'B', 'C']),
-        u_monty_door=['A', 'B', 'C'])
-    import ipdb; ipdb.set_trace()
+        u_prize_door_u_monty_door_u_guest_door=list(xproduct(
+            ['A', 'B', 'C'], ['A', 'B', 'C'], ['A', 'B', 'C'])),
+        u_guest_door_u_monty_door_u_prize_door=list(xproduct(
+            ['A', 'B', 'C'], ['A', 'B', 'C'], ['A', 'B', 'C'])),
+        u_monty_door=list(xproduct(['A', 'B', 'C'])))
     fg = build_factor_graph(
         *factor_graph_funcs,
         domains=domains)
     return fg
+
+
+def dispatch_query(ug, fg, **query_kwds):
+    '''
+    Dispatch queries on the Undirected
+    Graphical Model to the Factor Graph
+    Representation.
+    To do this we need a mapping from
+    the original ug factor arguments to
+    the cluster arguments...
+    Lets say the query has var_x in the UG observed.
+    We need to now ensure that in the factor graph
+    every cluster function that contains the variable
+    var_x is also instantiated to this value.
+    '''
+    # First lets ensure that the instantiated variable
+    # is actually in the model and that the
+    # value is actually in the domain for that
+    # functions argument.
+    original_vars = [n.variable_name for n in ug.nodes]
+    for k, v in query_kwds.items():
+        if k not in original_vars:
+            raise VariableNotInGraphError(k)
+    # Now we need to find all factors in the
+    # fg representation that contain the
+    # variable var_x
+    fg_factors = []
+    fg_query = dict()
+    for node in fg.factor_nodes():
+        for k, v in query_kwds.items():
+            if k in node.func.original_args:
+                fg_factors.append(node)
+                fg_query[k] = v
+
+
+    print fg_factors
+    print fg_query
+    #import ipdb; ipdb.set_trace()
+    fg.q(**fg_query)
+    print 'Yes!!!!'
+
+
 
 
 if __name__ == '__main__':
@@ -350,13 +386,48 @@ if __name__ == '__main__':
 
     # Now we will initially manually
     # create the Undirected Graph until we have a
-    # build_graph method...
+    # build_graph method. We will start off
+    # by directly building the moralized
+    # undirected version of the BBN monty
+    # as its unclear if there is any
+    # alternative Undirected representation
+    # of Monty. Remember that there
+    # are several steps of conversions
+    # from BBN to Junction Tree
+    # - Removal of arrows
+    # - Moralization
+    # - Triangulation
+    # - Transform to JT
+    # See Bishop page 391 for notes on
+    # converting directed to undirected.
+    # The Triangulation step is
+    # really part of the JT conversion so
+    # we can start off with the moralized version...
+
+
+    # These next 3 lines are from bbn.build_join_tree
+    import ipdb; ipdb.set_trace()
+    gu = make_undirected_copy(g)
+    gm = make_moralized_copy(gu, g)
+    #cliques, elimination_ordering = triangulate(gm, clique_priority_func)
+
+    # So now for our UndirectedModel we want
+    # to manually build something that
+    # looks like gm....
+
     # First we manually created the 'nodes'
+
     prize_door_node = UndirectedNode('prize_door')
     guest_door_node = UndirectedNode('guest_door')
     monty_door_node = UndirectedNode('monty_door')
 
     # Now attach the python functions to the nodes
+    # Actually what we really need here is
+    # the *potential* functions lets
+    # adopt the convention of defining
+    # these functions as p_*** to distinguish
+    # from factor functions.
+
     prize_door_node.func = f_u_prize_door
     guest_door_node.func = f_u_guest_door
     monty_door_node.func = f_u_monty_door
@@ -386,11 +457,22 @@ if __name__ == '__main__':
     guest_door_node.variable_name = 'u_guest_door'
     monty_door_node.variable_name = 'u_monty_door'
 
-    # And now set up the edges
+    # And now set up the edges, remember that
+    # we are creating the fully connected
+    # graph as in gm above. It is not
+    # possible to represent Monty as
+    # a 3 variable undirected graph
+    # that is NOT fully connected.
+    # This is because the conditional for
+    # Monty is a function of all 3
+    # nodes and thus we need a clique of
+    # all 3.
     prize_door_node.neighbours = [
-        monty_door_node ]
+        monty_door_node,
+        guest_door_node]
 
     guest_door_node.neighbours = [
+        prize_door_node,
         monty_door_node ]
 
     monty_door_node.neighbours = [
@@ -405,11 +487,62 @@ if __name__ == '__main__':
          monty_door_node])
 
     # Now how to proceed...
-    import ipdb; ipdb.set_trace()
     cliques, elimination_ordering = triangulate(ug)
     print cliques
     print elimination_ordering
     jt = build_join_tree_from_ug(ug)
+
+    # Now see page 400 and 401 of Bishop...
+    # To get to a factor graph we
+    # create variable nodes of all the
+    # original variables and factor
+    # nodes of the *CLUSTERS*
+    # (Its unclear at this point whether
+    # or not we also create factor nodes
+    # out of the sepsets.)
+
+    # Lets explicitely create the Factor
+    # Graph variable nodes here
+    import ipdb; ipdb.set_trace()
+    fg_variable_nodes = []
+    for node in ug.nodes:
+        variable_node = VariableNode(node.variable_name)
+        fg_variable_nodes.append(variable_node)
+
+
+    # Now lets create the factor nodes out
+    # of the junction tree cliques...
+    fg_factor_nodes = []
+    for clique in jt.nodes:
+        # Note we will go and fix the function later for
+        # now just set to unity.
+        fg_factor_node = FactorNode(clique.name, lambda x: 1)
+        fg_factor_nodes.append(fg_factor_node)
+
+    # Now we can build the factor graph
+    # for this particular case its easy
+    # since all the variables are just
+    # in one clique so we just connect
+    # every VariableNode to the one FactorNode
+    # and assign the potential func to
+    # the factor node....
+    for variable_node in fg_variable_nodes:
+        fg_connect(variable_node, fg_factor_nodes[0])
+
+    potential_func = make_product_func(
+        [n.func for n in ug.nodes])
+    fg_factor_nodes[0].func = potential_func
+
+    # This should work now!
+    import ipdb; ipdb.set_trace()
+    fg = FactorGraph(fg_variable_nodes, fg_factor_nodes)
+
+    # Almost there! Just need to fix up the domains....
+
+
+
+    assignments = jt.assign_clusters(ug)
+
     build_potential_functions(ug, jt)
 
 
@@ -440,3 +573,5 @@ if __name__ == '__main__':
     # seems likely...
     # From http://ai.stanford.edu/~paskin/gm-short-course/lec3.pdf
     # it seems that the sepsets ARE the factor nodes
+    dispatch_query(ug, fg)
+    dispatch_query(ug, fg, u_guest_door='A')

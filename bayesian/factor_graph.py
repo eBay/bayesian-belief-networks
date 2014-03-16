@@ -534,7 +534,11 @@ def make_product_func(factors):
                 # insert a dummy argument
                 # so that the unity function works.
                 factor_args.append('dummy')
-            result *= factor(*factor_args)
+            try:
+                result *= factor(*factor_args)
+            except:
+                import ipdb; ipdb.set_trace()
+                result *= factor(*factor_args)
 
         return result
 
