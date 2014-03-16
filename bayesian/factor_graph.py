@@ -515,7 +515,6 @@ def make_product_func(factors):
 
 
     def product_func(*product_func_args):
-        #import pytest; pytest.set_trace()
         #arg_dict = dict([(a.name, a) for a in product_func_args])
         arg_dict = dict(zip(args, product_func_args))
         #import pytest; pytest.set_trace()

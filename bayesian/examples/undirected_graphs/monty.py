@@ -406,7 +406,6 @@ if __name__ == '__main__':
 
 
     # These next 3 lines are from bbn.build_join_tree
-    import ipdb; ipdb.set_trace()
     gu = make_undirected_copy(g)
     gm = make_moralized_copy(gu, g)
     #cliques, elimination_ordering = triangulate(gm, clique_priority_func)
@@ -444,7 +443,7 @@ if __name__ == '__main__':
             u_guest_door=['A', 'B', 'C'],
             u_monty_door=['A', 'B', 'C'])
 
-    monty_door_node.func .domains = dict(
+    monty_door_node.func.domains = dict(
             u_prize_door=['A', 'B', 'C'],
             u_guest_door=['A', 'B', 'C'],
             u_monty_door=['A', 'B', 'C'])
@@ -503,10 +502,10 @@ if __name__ == '__main__':
 
     # Lets explicitely create the Factor
     # Graph variable nodes here
-    import ipdb; ipdb.set_trace()
     fg_variable_nodes = []
     for node in ug.nodes:
         variable_node = VariableNode(node.variable_name)
+        variable_node.domain = ['A', 'B', 'C']
         fg_variable_nodes.append(variable_node)
 
 
@@ -531,47 +530,20 @@ if __name__ == '__main__':
 
     potential_func = make_product_func(
         [n.func for n in ug.nodes])
+    potential_func.domains = dict(
+            u_prize_door=['A', 'B', 'C'],
+            u_guest_door=['A', 'B', 'C'],
+            u_monty_door=['A', 'B', 'C'])
+
     fg_factor_nodes[0].func = potential_func
 
     # This should work now!
-    import ipdb; ipdb.set_trace()
-    fg = FactorGraph(fg_variable_nodes, fg_factor_nodes)
 
-    # Almost there! Just need to fix up the domains....
+    fg = FactorGraph(fg_variable_nodes + fg_factor_nodes)
+    fg.q()
 
+    # Yes! This works properly now. Seems like we
+    # dont even need any of that query dispatch stuff...
+    # Now to test it with several others....
 
-
-    assignments = jt.assign_clusters(ug)
-
-    build_potential_functions(ug, jt)
-
-
-    # Now we have the jt which is essentially a factor graph...
-    # The only difference seems to be that the jt as originally
-    # coded works by constructing potential truth tables,
-    # while the factor graph just uses make_product_func.
-    # Still need to test more to ensure that they are
-    # equivalent. For now I will build a function
-    # that can take a junction tree with assigned
-    # potential functions and convert it into
-    # a factor graph...
-    fg = build_factor_graph_from_jt(jt)
-
-    # Ok doing more research I am certain this is the way
-    # to go:
-    # Step 1: Convert the undirected graph to
-    #         a cluster graph
-    # Step 2: Convert cluster graph to spanning tree
-    #         either using chords or using variable elimination
-    #         (I think chords are better see Rameshs' presentation)
-    # Step 3: Now each sepset and each clique correspond to
-    #         nodes in the factor graph
-    # Still unclear whether the sepsets themselves become
-    # the factor nodes or whether the entire junction
-    # tree is treated as input to the factor graph....
-    # given there are only 3 nodes in the jt the latter
-    # seems likely...
-    # From http://ai.stanford.edu/~paskin/gm-short-course/lec3.pdf
-    # it seems that the sepsets ARE the factor nodes
-    dispatch_query(ug, fg)
-    dispatch_query(ug, fg, u_guest_door='A')
+    # Monty is very simple though...
