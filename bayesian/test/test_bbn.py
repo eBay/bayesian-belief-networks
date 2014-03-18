@@ -4,6 +4,7 @@ import pytest
 import os
 
 from bayesian.bbn import *
+from bayesian.graph import construct_priority_queue
 from bayesian.utils import make_key
 
 

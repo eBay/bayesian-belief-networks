@@ -2,7 +2,26 @@ import pytest
 import os
 from itertools import product as xproduct
 
-from bayesian.bbn import *
+from bayesian.examples.bbns.huang_darwiche import *
+from bayesian.examples.undirected_graphs.monty_2 import *
+from bayesian.undirected_graphical_model import *
+
+
+def pytest_funcarg__huang_darwiche_factors(request):
+    return [
+        f_a, f_b, f_c, f_d,
+        f_e, f_f, f_g, f_h]
+
+
+def pytest_funcarg__undirected_monty_factors(request):
+    return [
+        f_u_prize_door, f_u_guest_door,
+        f_u_monty_door]
+
+
+def pytest_funcarg__undirected_monty_model(request):
+    ug = get_graph()
+    return ug
 
 
 def pytest_funcarg__sprinkler_graph(request):
@@ -106,10 +125,18 @@ def test_cluster_sepset_consistancy(f_monty_door):
     pot_M = p(g) * p(m|g, p)
     pot_GM = 1
 
-    Ok this doesnt
+    Ok this doesnt work either....
+    Third possibility is to move
+    the monty conditional into
+    one of the PM or GM clusters like this:
+
+    P -> PM
+    G -> GM
+    M -> PM
+    ie
+    pot_PM = p(p) * p(m|g, p)
 
     '''
-    import ipdb; ipdb.set_trace()
     pot_GM = lambda p, g, m: 1.0
     pot_PM = lambda p, g, m: 1.0 / 3
     pot_M = lambda p, g, m: 1.0 / 3 * f_monty_door(p, g, m)
@@ -131,3 +158,24 @@ def test_cluster_sepset_consistancy(f_monty_door):
         for m_door in ['A', 'B', 'C']:
             total += pot_GM(prize_door, guest_door, m_door)
         assert pot_M(prize_door, guest_door, monty_door) == total
+
+
+def test_build_graph(undirected_monty_factors):
+    ugm = build_graph(
+        undirected_monty_factors,
+        domains=dict(
+            prize_door=['A', 'B', 'C'],
+            guest_door=['A', 'B', 'C'],
+            monty_door=['A', 'B', 'C']))
+    assert len(ugm.nodes) == 3
+    for node in ugm.nodes:
+        assert len(node.neighbours) == 2
+
+
+def test_verify(undirected_monty_model):
+    assert verify(undirected_monty_model)
+
+
+def test_build_factor_graph(undirected_monty_model):
+    fg = undirected_monty_model.build_factor_graph()
+    fg.q()
