@@ -5,7 +5,7 @@ from bayesian.factor_graph import (
     build_graph as build_factor_graph)
 from bayesian.bbn import (
     JoinTreeSepSetNode, JoinTreeCliqueNode)
-from bayesian.bbn import Clique
+from bayesian.graph import Clique
 from bayesian.factor_graph import (
     make_product_func, make_not_sum_func, VariableNode,
     FactorNode, FactorGraph)

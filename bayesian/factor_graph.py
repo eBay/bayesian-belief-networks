@@ -1082,7 +1082,7 @@ class FactorGraph(object):
     def query_by_external_samples(self, **kwds):
         counts = defaultdict(int)
         samples = self.sample_db.get_samples(self.n_samples, **kwds)
-        if len(samples) == 0:
+        if len(samples) == 0 and not kwds:
             raise NoSamplesInDB(
                 'There are no samples in the database. '
                 'Generate some with graph.generate_samples(N).')
