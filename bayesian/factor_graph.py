@@ -284,6 +284,17 @@ def connect(a, b):
         b_.neighbours.append(a)
 
 
+def connected(a, b):
+    '''
+    Return True of a and
+    b are fully connected
+    False otherwise
+    '''
+    if a in b.neighbours:
+        if b in a.neighbours:
+            return True
+    return False
+
 
 def eliminate_var(f, var):
     '''
@@ -343,6 +354,7 @@ def eliminate_var(f, var):
             #v.value = val
             #call_args[pos] = v
             call_args[pos] = val
+            #print call_args, len(call_args)
             total += f(*call_args)
         return total
 
@@ -367,7 +379,11 @@ def memoize(f):
         #arg_vals = tuple([arg.value for arg in args])
         arg_vals = tuple(args)
         if not arg_vals in cache:
+            #print 'Cache Miss...size is %s ' % len(cache)
             cache[arg_vals] = f(*args)
+        else:
+            #print 'Cache Hit....'
+            pass
         return cache[arg_vals]
 
     if hasattr(f, 'domains'):
