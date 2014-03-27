@@ -10,6 +10,7 @@ import random
 from collections import defaultdict
 from itertools import product as iter_product
 from Queue import Queue
+from math import log, exp
 
 import sqlite3
 from prettytable import PrettyTable
@@ -18,7 +19,7 @@ from bayesian.persistance import SampleDB, ensure_data_dir_exists
 from bayesian.exceptions import *
 from bayesian.utils import get_args
 
-DEBUG = False
+DEBUG = True
 GREEN = '\033[92m'
 NORMAL = '\033[0m'
 
@@ -94,9 +95,10 @@ class VariableNode(Node):
         self.received_messages = {}
         self.value = None
 
-    def construct_message(self):
+    def construct_message(self, aggregator='sum'):
         target = self.get_target()
-        message = make_variable_node_message(self, target)
+        message = make_variable_node_message(
+            self, target, aggregator=aggregator)
         return message
 
     def __repr__(self):
@@ -141,9 +143,10 @@ class FactorNode(Node):
         self.func.value = None
         self.cached_functions = []
 
-    def construct_message(self):
+    def construct_message(self, aggregator='sum'):
         target = self.get_target()
-        message = make_factor_node_message(self, target)
+        message = make_factor_node_message(
+            self, target, aggregator=aggregator)
         return message
 
     def verify_neighbour_types(self):
@@ -295,6 +298,9 @@ def connected(a, b):
             return True
     return False
 
+def maximum(f, var):
+    arg_spec = get_args(f)
+
 
 def eliminate_var(f, var):
     '''
@@ -416,7 +422,97 @@ def make_not_sum_func(product_func, keep_var):
     return new_func
 
 
-def make_factor_node_message(node, target_node):
+def make_arg_max_func(node_func, factors, keep_var):
+    '''
+    This is the function to be
+    used inside messages for the
+    max-product(max-sum) algorithm.
+    Take advantage of distrib. law:
+    max(a + b, a + c) == a + max(b, c)
+    See https://www.cs.purdue.edu/homes/alanqi/Courses/ML-09/CS59000-ML-22.pdf
+
+
+    '''
+    args = get_args(node_func)
+    # We are going to construct a
+    # a new func which has args
+    # comprized of this nodes args
+    # plus the args of incoming
+    # variable messages.
+    # We then construct a list
+    # consisting of the following
+    # elements:
+    # 1) The ln of the not_sum of all the
+    # received messages from variable nodes
+    # 2) The ln of the application of this factor
+    # itself to the arguments.
+    # Finally we return the max of this
+    # list.
+
+    elements = []
+    var_messages = [m for m in factors if isinstance(m, VariableMessage)]
+    assert len(var_messages) == len(factors) - 1
+    # Now create new funcs each of which is the
+    # log of the var messages (Note in the
+    # above URL the author uses a slightly
+    # different methodology in which the
+    # leaf variable messages send a 0 (ln(1))
+    # however to keep consistant with
+    # the sum-product alg. we will apply
+    # the ln in this step instead.
+    for var_message in var_messages:
+        var_message_args = get_args(var_message)
+        def ln_var_message(*args):
+            return log(var_message(*args))
+        ln_var_message.argspec = var_message_args
+        elements.append(ln_var_message)
+    # Now we need to add the log of the
+    # application of this node itself to
+    # the args
+    def this_node_func(*this_node_args):
+        if len(this_node_args) != len(get_args(node_func)):
+            import ipdb; ipdb.set_trace()
+            print 'Args mismatch!'
+        return log(node_func(*this_node_args))
+    this_node_func.argspec = args
+    this_node_func.domains = node_func.domains
+    elements.append(this_node_func)
+    # Now we construct the final func
+    # which will return the max value
+    # of all the elements
+    def max_func(*max_func_args):
+        max_value = -1
+        max_func = None
+        arg_dict = dict(zip(args, max_func_args))
+        for func in elements:
+            func_args = []
+            for arg in get_args(func):
+                if arg in arg_dict:
+                    func_args.append(arg_dict[arg])
+            if not func_args:
+                # Since we always require
+                # at least one argument we
+                # insert a dummy argument
+                # so that the unity function works.
+                func_args.append('dummy')
+            result = func(*func_args)
+            if result > max_value:
+                max_value = result
+                max_func = func
+        return max_value
+    max_func.argspec = args
+    max_func.domains = node_func.domains
+    # Still to do is to
+    # add arg_specs to each and to
+    # ensure each func is called with
+    # approriate args...
+    # Test the max_func...
+    #x = max_func('NAME', 'NAME')
+    return max_func
+
+
+
+def make_factor_node_message(node, target_node, aggregator='sum'):
     '''
     The rules for a factor node are:
     take the product of all the incoming
@@ -433,7 +529,10 @@ def make_factor_node_message(node, target_node):
     '''
 
     if node.is_leaf():
-        not_sum_func = make_not_sum_func(node.func, target_node.name)
+        if aggregator == 'sum':
+            not_sum_func = make_not_sum_func(node.func, target_node.name)
+        else:
+            not_sum_func = make_arg_max_func(node.func, target_node.name)
         message = FactorMessage(node, target_node, [node.func], not_sum_func)
         return message
 
@@ -463,13 +562,18 @@ def make_factor_node_message(node, target_node):
             out_message = in_message
         factors.append(out_message)
 
-    product_func = make_product_func(factors)
-    not_sum_func = make_not_sum_func(product_func, target_node.name)
+
+
+    if aggregator == 'max':
+        not_sum_func = make_arg_max_func(node.func, factors, target_node.name)
+    else:
+        product_func = make_product_func(factors)
+        not_sum_func = make_not_sum_func(product_func, target_node.name)
     message = FactorMessage(node, target_node, factors, not_sum_func)
     return message
 
 
-def make_variable_node_message(node, target_node):
+def make_variable_node_message(node, target_node, aggregator='sum'):
     '''
     To construct the message from
     a variable node to a factor
@@ -533,7 +637,6 @@ def make_product_func(factors):
     def product_func(*product_func_args):
         #arg_dict = dict([(a.name, a) for a in product_func_args])
         arg_dict = dict(zip(args, product_func_args))
-        #import pytest; pytest.set_trace()
         result = 1
         for factor in factors:
             #domains.update(factor.domains)
@@ -954,7 +1057,35 @@ class FactorGraph(object):
                 eligible.append(node)
         return eligible
 
-    def propagate(self):
+    def propagate(self, aggregator='max'):
+        '''
+        This is the routing for sum-product:
+1. y0 ---> Clique_Y0Y1 <V-Message from y0 -> Clique_Y0Y1: 1 factors ([])>
+2. y5 ---> Clique_Y4Y5 <V-Message from y5 -> Clique_Y4Y5: 1 factors ([])>
+3. Clique_Y4Y5 ---> y4 <F-Message Clique_Y4Y5 -> y4: ~(['y4']) 2 factors.>
+4. Clique_Y0Y1 ---> y1 <F-Message Clique_Y0Y1 -> y1: ~(['y1']) 2 factors.>
+5. y1 ---> Clique_Y1Y2 <V-Message from y1 -> Clique_Y1Y2: 1 factors (['y1'])>
+6. y4 ---> Clique_Y3Y4 <V-Message from y4 -> Clique_Y3Y4: 1 factors (['y4'])>
+7. Clique_Y1Y2 ---> y2 <F-Message Clique_Y1Y2 -> y2: ~(['y2']) 2 factors.>
+8. Clique_Y3Y4 ---> y3 <F-Message Clique_Y3Y4 -> y3: ~(['y3']) 2 factors.>
+9. y3 ---> Clique_Y2Y3 <V-Message from y3 -> Clique_Y2Y3: 1 factors (['y3'])>
+10. y2 ---> Clique_Y2Y3 <V-Message from y2 -> Clique_Y2Y3: 1 factors (['y2'])>
+11. Clique_Y2Y3 ---> y2 <F-Message Clique_Y2Y3 -> y2: ~(['y2']) 2 factors.>
+12. y2 ---> Clique_Y1Y2 <V-Message from y2 -> Clique_Y1Y2: 1 factors (['y2'])>
+13. Clique_Y2Y3 ---> y3 <F-Message Clique_Y2Y3 -> y3: ~(['y3']) 2 factors.>
+14. y3 ---> Clique_Y3Y4 <V-Message from y3 -> Clique_Y3Y4: 1 factors (['y3'])>
+15. Clique_Y1Y2 ---> y1 <F-Message Clique_Y1Y2 -> y1: ~(['y1']) 2 factors.>
+16. y1 ---> Clique_Y0Y1 <V-Message from y1 -> Clique_Y0Y1: 1 factors (['y1'])>
+17. Clique_Y3Y4 ---> y4 <F-Message Clique_Y3Y4 -> y4: ~(['y4']) 2 factors.>
+18. y4 ---> Clique_Y4Y5 <V-Message from y4 -> Clique_Y4Y5: 1 factors (['y4'])>
+19. Clique_Y0Y1 ---> y0 <F-Message Clique_Y0Y1 -> y0: ~(['y0']) 2 factors.>
+20. Clique_Y4Y5 ---> y5 <F-Message Clique_Y4Y5 -> y5: ~(['y5']) 2 factors.>
+        Now for max we may not need to do the
+        entire routing see :
+        Also need to fix the make_arg_max_func
+        it seems it has to also eliminate a var...
+        '''
+
         '''
         This is the heart of the sum-product
         Message Passing Algorithm.
@@ -968,7 +1099,7 @@ class FactorGraph(object):
             if not eligible_senders:
                 break
             for node in eligible_senders:
-                message = node.construct_message()
+                message = node.construct_message(aggregator=aggregator)
                 node.send(message)
             step += 1
 
@@ -986,6 +1117,7 @@ class FactorGraph(object):
         return 1
 
     def status(self, omit=[False, 0]):
+        import ipdb; ipdb.set_trace()
         normalizer = self.get_normalizer()
         retval = dict()
         for node in self.variable_nodes():
@@ -1143,6 +1275,15 @@ class FactorGraph(object):
         for source, target in edges:
             fh.write('  %s -- %s;\n' % (source, target))
         fh.write('}\n')
+
+
+    def list(self):
+        '''Try to show a simple character based representation'''
+        for node in self.nodes:
+            print node
+            if node.neighbours:
+                for child in node.neighbours:
+                    print '  -> %s' % child
 
 
 def build_graph(*args, **kwds):
