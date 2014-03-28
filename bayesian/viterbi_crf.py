@@ -1,6 +1,13 @@
 '''From http://enterface10.science.uva.nl/pdf/lecture3_crfs.pdf'''
 from math import exp
 
+'''
+Note, this should really be called Forward-Backward
+which is a more general algorithm than viterbi.
+By changing between max and sum we can
+either compute the most likely labelling
+or the Z partition function.
+'''
 
 def make_g_func(w, feature_funcs, x_seq, t):
 
@@ -21,18 +28,53 @@ def make_G_func(g_func):
     return G_x
 
 
-def V(x_seq, t, g_, output_alphabet, partials):
+def propagate(x_seq, t, G_, output_alphabet, partials, aggregator):
+    '''
+    This is a generic propagation algorithm.
+    By suppling different 'aggregator' functions
+    one can use this for both viterbi and
+    message passing algorithms.
+    Note that in http://enterface10.science.uva.nl/pdf/lecture3_crfs.pdf
+    there are both lowercase g_ and uppercase G_ functions
+    defined the only difference being that
+    G_ is uppercased.
+    The only difference between finding the
+    Z function and the most likely labeling
+    is that for Z function we use 'sum'
+    as the aggregator and for labelling
+    we use max as the aggregator.
+    For performace we do not need to use
+    the exponentiated versions for
+    Viterbi, however for Z function we
+    do.
+
+    '''
+
+def sumlist(l, key):
+    '''
+    Works just like max over a list
+    i.e. it applies the key which
+    should be a function operating
+    on
+    '''
+    return sum(map(key, l))
+
+def viterbi(x_seq, t, g_, output_alphabet, partials):
+    '''
+    Use this to find the Z function for undirected
+    graphs. To find the most likely labelling use
+    viterbi which is just a special case of
+    forward. Note that g_ is not exponentiated.
+    '''
     vals = []
     if t == 0:
         for y_ in output_alphabet:
             vals.append(((y_, t), g_[t]('__START__', y_)))
             partials[(y_, t)] = vals[-1][1]
-        max_ = max(vals, key=lambda x:x[1])
-        return [max_[0][0]]
     else:
         for y_prev in output_alphabet:
             if not (y_prev, t - 1) in partials:
-                V(x_seq, t - 1, g_, output_alphabet, partials)
+                viterbi(x_seq, t - 1, g_, output_alphabet, partials)
         prevs = dict([(k, v) for k, v in partials.items() if k[1] == t - 1])
         currents = []
         for y in output_alphabet:
@@ -42,10 +84,8 @@ def V(x_seq, t, g_, output_alphabet, partials):
                 vals.append((
                     key,
                     v + g_[t](y_prev, y)))
-            partials[key] = sum([v[1] for v in vals])
+            partials[key] = max([v[1] for v in vals])
             currents.append((key, partials[key]))
-        #max_ = max(currents, key=lambda x:x[1])
-        #sum_ = sum([c[1] for c in currents])
     # Now we need to return the most likely lable...
     y_seq = []
     for i in range(t + 1):
@@ -53,33 +93,40 @@ def V(x_seq, t, g_, output_alphabet, partials):
         y_seq.append(max(candidates, key=lambda x: x[1])[0][0])
     return y_seq
 
-
-def partial_forward(G_, output_alphabet, x_seq, path, partial_forward, t):
-    if len(path) == 0:
-        max_val = -1000
+def forward(x_seq, t, G_, output_alphabet, partials):
+    '''
+    Use this to find the Z function for undirected
+    graphs. To find the most likely labelling use
+    viterbi which is just a special case of
+    forward.
+    '''
+    vals = []
+    if t == 0:
+        for y_ in output_alphabet:
+            vals.append(((y_, t), G_[t]('__START__', y_)))
+            partials[(y_, t)] = vals[-1][1]
+        return sumlist(vals, key=lambda x:x[1])
+    else:
+        for y_prev in output_alphabet:
+            if not (y_prev, t - 1) in partials:
+                forward(x_seq, t - 1, G_, output_alphabet, partials)
+        prevs = dict([(k, v) for k, v in partials.items() if k[1] == t - 1])
+        currents = []
         for y in output_alphabet:
-            partial_forward[(y, 0)] = G_[0]('__START__', y)
-            if partial_forward[(y, 0)] > max_val:
-                max_val = partial_forward[(y, 0)]
-                max_arg = y
-        # Now take the max so far and
-        # record it in the path...
-        path.append((max_arg, max_val))
-        return path, partial_forward
-    # Now for the recursion...
-    max_val = -1000
-    #for y in alphabet:
+            key = (y, t)
+            vals = []
+            for (y_prev, _), v in prevs.items():
+                vals.append((
+                    key,
+                    v + G_[t](y_prev, y)))
+            partials[key] = sumlist(vals, key=lambda x:x[1])
+            currents.append((key, partials[key]))
+    # Now we need to return the sum up to position t
+    candidates = [(k, v) for k, v in partials.items() if k[1] == t]
+    return sumlist(candidates, key=lambda x: x[1])
 
 
-
-
-
-
-
-
-
-
-def viterbi(x_seq, feature_funcs, output_alphabet):
+def PropagationEngine(x_seq, feature_funcs, output_alphabet):
 
     # Firstly we define the 'g_t' functions
     # These are functions from 1 to T where

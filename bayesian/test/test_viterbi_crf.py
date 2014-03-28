@@ -71,11 +71,21 @@ def test_make_G_func(g_):
     assert G_1('NAME', 'OTHER') == exp(g_[1]('NAME', 'OTHER'))
 
 
-def test_V_bail(G_):
+def test_viterbi_bail(g_):
     x_seq = ['John', 'said']
-    assert V(x_seq, 0, G_, ['NAME', 'OTHER'], {}) == ['NAME']
+    assert viterbi(x_seq, 0, g_, ['NAME', 'OTHER'], {}) == ['NAME']
 
 
-def test_V_recursion(G_):
+def test_viterbi_recursion(g_):
     x_seq = ['John', 'said']
-    assert V(x_seq, 1, G_, ['NAME', 'OTHER'], {}) == ['NAME', 'NAME']
+    assert viterbi(x_seq, 1, g_, ['NAME', 'OTHER'], {}) == ['NAME', 'NAME']
+
+
+def test_forward_bail(G_):
+    x_seq = ['John', 'said']
+    assert round(forward(x_seq, 0, G_, ['NAME', 'OTHER'], {}), 3) == 3.117
+
+
+def test_forward_recursion(G_):
+    x_seq = ['John', 'said']
+    assert round(forward(x_seq, 1, G_, ['NAME', 'OTHER'], {}), 3) == 9.447
