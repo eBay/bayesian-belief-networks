@@ -121,9 +121,6 @@ class VariableNode(Node):
             # This is the place where message functions
             # are actully run....
             res = message(val)
-            if message.func.func_name == 'eliminated_max':
-                import ipdb; ipdb.set_trace()
-                print message, self.name, self.value, res
             product *= res
         return product / normalizer
 
@@ -493,7 +490,7 @@ def eliminate_var_max(f, var):
             if result > max_ln_p:
                 max_ln_p = result
                 max_value = val
-        print '****** MAX FOR %s AT %s ******' % (var, max_value)
+        #print '****** MAX FOR %s AT %s ******' % (var, max_value)
         # Can we record the max_value on f?
         #import ipdb; ipdb.set_trace()
         # Lets try recording this in
