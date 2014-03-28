@@ -22,7 +22,8 @@ from bayesian.utils import get_args
 DEBUG = False
 GREEN = '\033[92m'
 NORMAL = '\033[0m'
-
+V = dict()
+PATH = dict()  # To save the paths for max-product alg.
 
 class Node(object):
 
@@ -117,7 +118,13 @@ class VariableNode(Node):
         '''
         product = 1
         for _, message in self.received_messages.iteritems():
-            product *= message(val)
+            # This is the place where message functions
+            # are actully run....
+            res = message(val)
+            if message.func.func_name == 'eliminated_max':
+                import ipdb; ipdb.set_trace()
+                print message, self.name, self.value, res
+            product *= res
         return product / normalizer
 
     def reset(self):
@@ -486,20 +493,26 @@ def eliminate_var_max(f, var):
             if result > max_ln_p:
                 max_ln_p = result
                 max_value = val
-        #print '****** MAX FOR %s AT %s ******' % (var, max_value)
+        print '****** MAX FOR %s AT %s ******' % (var, max_value)
         # Can we record the max_value on f?
         #import ipdb; ipdb.set_trace()
+        # Lets try recording this in
+        # the global V and path variables
+        # from Wiki V is a list but we
+        # will make it a dict...
 
-        if not hasattr(f, '_root'):
-            f._root = []
-        f._root.append((var, max_value, max_ln_p))
+        #if not hasattr(f, '_root'):
+        #    f._root = []
+        #f._root.append((var, max_value, max_ln_p))
         return max_ln_p
 
     eliminated_max.argspec = new_spec
     eliminated_max.domains = f.domains
     return eliminated_max
 
-def make_arg_max_func(product_func, keep_var):
+#def make_arg_max_func(product_func, keep_var):
+def make_arg_max_func(product_func, target_node):
+    keep_var = target_node.name
     args = get_args(product_func)
     new_func = copy.deepcopy(product_func)
     for arg in args:
@@ -626,7 +639,11 @@ def make_factor_node_message(node, target_node, aggregator='sum'):
         if aggregator == 'sum':
             not_sum_func = make_not_sum_func(node.func, target_node.name)
         else:
-            not_sum_func = make_arg_max_func(node.func, target_node.name)
+            #not_sum_func = make_arg_max_func(node.func, target_node.name)
+            # We are going to pass the source and target nodes in to
+            # try and better record the path...
+            #not_sum_func = make_arg_max_func(node.func, target_node.name)
+            not_sum_func = make_arg_max_func(node.func, target_node)
         message = FactorMessage(node, target_node, [node.func], not_sum_func)
         return message
 
@@ -661,7 +678,8 @@ def make_factor_node_message(node, target_node, aggregator='sum'):
     if aggregator == 'max':
         #not_sum_func = make_arg_max_func(node.func, factors, target_node.name)
         product_func = make_product_func(factors)
-        not_sum_func = make_arg_max_func(product_func, target_node.name)
+        #not_sum_func = make_arg_max_func(product_func, target_node.name)
+        not_sum_func = make_arg_max_func(product_func, target_node)
     else:
         product_func = make_product_func(factors)
         not_sum_func = make_not_sum_func(product_func, target_node.name)
@@ -683,6 +701,7 @@ def make_variable_node_message(node, target_node, aggregator='sum'):
     if node.is_leaf():
         message = VariableMessage(
             node, target_node, [1], unity)
+        V[(node.name, node.name)] = node.name
         return message
     factors = []
     neighbours = node.neighbours
