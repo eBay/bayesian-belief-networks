@@ -19,9 +19,10 @@ from bayesian.persistance import SampleDB, ensure_data_dir_exists
 from bayesian.exceptions import *
 from bayesian.utils import get_args
 
-DEBUG = True
+DEBUG = False
 GREEN = '\033[92m'
 NORMAL = '\033[0m'
+
 
 class Node(object):
 
@@ -386,6 +387,7 @@ def memoize(f):
         arg_vals = tuple(args)
         if not arg_vals in cache:
             #print 'Cache Miss...size is %s ' % len(cache)
+            result = f(*args)
             cache[arg_vals] = f(*args)
         else:
             #print 'Cache Hit....'
@@ -418,11 +420,97 @@ def make_not_sum_func(product_func, keep_var):
     for arg in args:
         if arg != keep_var:
             new_func = eliminate_var(new_func, arg)
-            new_func = memoize(new_func)
+            #new_func = memoize(new_func)
     return new_func
 
 
-def make_arg_max_func(node_func, factors, keep_var):
+def eliminate_var_max(f, var):
+    '''
+    This is for the max-product
+    version of inference.
+    '''
+    arg_spec = get_args(f)
+    pos = arg_spec.index(var)
+    new_spec = arg_spec[:]
+    new_spec.remove(var)
+    # Lets say the orginal argspec is
+    # ('a', 'b', 'c', 'd') and they
+    # are all Booleans
+    # Now lets say we want to eliminate c
+    # This means we want to sum over
+    # f(a, b, True, d) and f(a, b, False, d)
+    # Seems like all we have to do is know
+    # the positionn of c and thats it???
+    # Ok so its not as simple as that...
+    # this is because when the *call* is made
+    # to the eliminated function, as opposed
+    # to when its built then its only
+    # called with ('a', 'b', 'd')
+    eliminated_pos = arg_spec.index(var)
+
+    def eliminated_max(*args):
+        template = arg_spec[:]
+        total = 0
+        call_args = template[:]
+        i = 0
+        for arg in args:
+            # To be able to remove .value we
+            # first need to also be able to
+            # remove .name in fact .value is
+            # just a side effect of having to
+            # rely on .name. This means we
+            # probably need to construct a
+            # a list containing the names
+            # of the args based on the position
+            # they are being called.
+            if i == eliminated_pos:
+                # We need to increment i
+                # once more to skip over
+                # the variable being marginalized
+                call_args[i] = 'marginalize me!'
+                i += 1
+            call_args[i] = arg
+            i += 1
+        max_ln_p = -1000 # Since we are in the log domain
+        max_value = None
+        for val in f.domains[var]:
+            call_args[pos] = val
+            try:
+                result = f(*call_args)
+                assert result >= 0
+            except:
+                import ipdb; ipdb.set_trace()
+                print 'yikes!'
+                result = f(*call_args)
+                raise
+            if result > max_ln_p:
+                max_ln_p = result
+                max_value = val
+        #print '****** MAX FOR %s AT %s ******' % (var, max_value)
+        # Can we record the max_value on f?
+        #import ipdb; ipdb.set_trace()
+
+        if not hasattr(f, '_root'):
+            f._root = []
+        f._root.append((var, max_value, max_ln_p))
+        return max_ln_p
+
+    eliminated_max.argspec = new_spec
+    eliminated_max.domains = f.domains
+    return eliminated_max
+
+def make_arg_max_func(product_func, keep_var):
+    args = get_args(product_func)
+    new_func = copy.deepcopy(product_func)
+    for arg in args:
+        if arg != keep_var:
+            new_func = eliminate_var_max(new_func, arg)
+            #new_func = memoize(new_func)
+    return new_func
+
+
+
+def make_arg_max_func_old(node_func, factors, keep_var):
     '''
     This is the function to be
     used inside messages for the
@@ -448,6 +536,12 @@ def make_arg_max_func(node_func, factors, keep_var):
     # itself to the arguments.
     # Finally we return the max of this
     # list.
+
+    # Just like the make_not_sum_func we
+    # actually have to eliminate a var
+    # one by one with recursive max calls
+    # we can use this:
+    # max(a, b, c) == max(a, max(a, b))
 
     elements = []
     var_messages = [m for m in factors if isinstance(m, VariableMessage)]
@@ -565,7 +659,9 @@ def make_factor_node_message(node, target_node, aggregator='sum'):
 
 
     if aggregator == 'max':
-        not_sum_func = make_arg_max_func(node.func, factors, target_node.name)
+        #not_sum_func = make_arg_max_func(node.func, factors, target_node.name)
+        product_func = make_product_func(factors)
+        not_sum_func = make_arg_max_func(product_func, target_node.name)
     else:
         product_func = make_product_func(factors)
         not_sum_func = make_not_sum_func(product_func, target_node.name)
@@ -652,12 +748,18 @@ def make_product_func(factors):
                 # insert a dummy argument
                 # so that the unity function works.
                 factor_args.append('dummy')
-            result *= factor(*factor_args)
+            res = factor(*factor_args)
+            if res < 0:
+                import ipdb; ipdb.set_trace()
+                print 'negative result from product func...'
+                res = factor(*factor_args)
+            result *= res
         return result
 
     product_func.argspec = args
     product_func.factors = factors
     product_func.domains = domains
+    return product_func
     return memoize(product_func)
 
 
@@ -1091,7 +1193,16 @@ class FactorGraph(object):
         Message Passing Algorithm.
         '''
         step = 1
+        if aggregator == 'max':
+            # Select arbitrary variable node as root
+            self.root = self.variable_nodes()[0]
         while True:
+            #if aggregator == 'max':
+            #    if len(self.root.received_messages) == len(self.root.neighbours):
+            #        # We can stop now...
+            #        #import ipdb; ipdb.set_trace()
+            #        #print self.root
+            #        break
             eligible_senders = self.get_eligible_senders()
             #print 'Step: %s %s nodes can send.' \
             # % (step, len(eligible_senders))
@@ -1117,7 +1228,6 @@ class FactorGraph(object):
         return 1
 
     def status(self, omit=[False, 0]):
-        import ipdb; ipdb.set_trace()
         normalizer = self.get_normalizer()
         retval = dict()
         for node in self.variable_nodes():
