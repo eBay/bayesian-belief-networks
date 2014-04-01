@@ -140,7 +140,7 @@ def forward(x_seq, t, G_, output_alphabet, partials):
     return y_seq, partials, p_seq
 
 
-def forward(x_seq, t, G_, output_alphabet, partials, T_inv, T):
+def forward(x_seq, t, G_, partials, T, T_inv):
     '''
     Use this to find the Z function for undirected
     graphs. To find the most likely labelling use
@@ -152,20 +152,14 @@ def forward(x_seq, t, G_, output_alphabet, partials, T_inv, T):
     a state y to all possible previous states
     in the training set.
     '''
-    vals = []
-    if t == 0:
-        for y in list(T[-1]['__START__']):
-            vals.append(G_[t]('__START__', y))
-            partials[(y, t)] = G_[t]('__START__', y)
-    else:
-        for y, y_prevs in T_inv[t].items():
-            vals = []
-            key = (y, t)
-            for y_prev in y_prevs:
-                if (y_prev, t - 1) not in partials:
-                    forward(x_seq, t - 1, G_, output_alphabet, partials, T_inv, T)
-                vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y)))
-            partials[key] = sumlist(vals, key=lambda x:x[1])
+    for y, y_prevs in T_inv[t].items():
+        vals = []
+        key = (y, t)
+        for y_prev in y_prevs:
+            if (y_prev, t - 1) not in partials:
+                forward(x_seq, t - 1, G_, partials, T, T_inv)
+            vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y)))
+        partials[key] = sumlist(vals, key=lambda x:x[1])
     return partials
 
 
@@ -210,6 +204,28 @@ def backward(x_seq, t, G_, output_alphabet, partials):
         p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
     #candidates = [(k, v) for k, v in partials.items() if k[1] == t]
     return y_seq, partials, p_seq
+
+def backward(x_seq, t, G_, partials, T, T_inv):
+    '''
+    Use this to find the Z function for undirected
+    graphs. To find the most likely labelling use
+    viterbi which is just a special case of
+    forward. This is a modified version of the
+    usual forward algorithm.
+    T and T_inv are the possible transitions in
+    the training set. (i.e. T_inv is a mapping from
+    a state y to all possible previous states
+    in the training set.
+    '''
+    for y, y_nexts in T[t].items():
+        vals = []
+        key = (y, t)
+        for y_next in y_nexts:
+            if (y_next, t + 1) not in partials:
+                backward(x_seq, t + 1, G_, partials, T, T_inv)
+            vals.append((key, partials[y_next, t + 1] * G_[t](y, y_next)))
+            partials[key] = sumlist(vals, key=lambda x:x[1])
+    return partials
 
 
 def PropagationEngine(x_seq, feature_funcs, output_alphabet):
