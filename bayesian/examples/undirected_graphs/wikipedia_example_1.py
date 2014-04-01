@@ -15,6 +15,7 @@ from bayesian.graph import JoinTreeSepSetNode
 from bayesian.utils import make_key
 from bayesian.viterbi_crf import make_g_func, make_G_func
 from bayesian.viterbi_crf import viterbi as my_viterbi
+from bayesian.viterbi_crf import forward
 
 
 build_fg = build_graph
@@ -203,12 +204,6 @@ def f_1(yp, y, x_seq, j):
     return 0
 
 
-def f_9(yp, y, x_seq, j):
-    if yp == START and y == 'Healthy':
-        return 1
-    return 0
-
-
 def f_2(yp, y, x_seq, j):
     if yp == 'Healthy' and y == 'Fever':
         return 1
@@ -257,10 +252,43 @@ def f_8(yp, y, x, j):
     return 0
 
 
+def f_9(yp, y, x, j):
+    if yp == 'Healthy'and y == 'Healthy' and x[j] == 'normal':
+        return 1
+    return 0
+
+
+def f_10(yp, y, x, j):
+    if yp == 'Fever'and y == 'Fever' and x[j] == 'cold':
+        return 1
+    return 0
+
+def f_11(yp, y, x, j):
+    if yp == 'Fever'and y == 'Fever' and x[j] == 'cold' and x[j-1] == 'dizzy':
+        return 1
+    return 0
+
+
+def f_12(yp, y, x, j):
+    if x > 2 and yp == 'Fever'and y == 'Fever' and \
+       x[j] == 'dizzy' and x[j-1] == 'cold' and \
+       x[j-2] == 'dizzy':
+        return 1
+    return 0
+
+
+def f_13(yp, y, x, j):
+    if x < 3 and yp == 'Fever'and y == 'Fever' and \
+       x[j] == 'cold' and x[j+1] == 'dizzy':
+        return 1
+    return 0
+
+
 feature_functions = [
     f_0, f_1, f_2,
     f_3, f_4, f_5,
-    f_6, f_7, f_8]
+    f_6, f_7, f_8, f_9,
+    f_10, f_11, f_12, f_13]
 
 
 def lame_get_j(variable_names):
@@ -355,6 +383,47 @@ def build_potential_functions(X, fg, L, feature_funcs):
     #import ipdb; ipdb.set_trace()
 
 
+def total_expected_model(fg, L, indicator_func, training_examples, feature_funcs):
+    '''Calculate the total expected value
+    of the data according to the model.
+    This is what Manning and Klein's
+    presentation refers to as 'predicted count'.
+    (http://www.cs.berkeley.edu/~klein/papers/maxent-tutorial-slides.pdf)
+    It is just the models output probability
+    using the current weights.
+    '''
+    total = 0
+    for sequence, labels in training_examples:  # k
+        build_potential_functions(sequence, fg, L, feature_funcs)
+        F_j = make_big_F(indicator_func)
+        print indicator_func
+        print L
+        print sequence
+        result = fg.query()
+        print result
+        result = simple_normalize(result)
+        out_seq = crf_out(result)
+        p = 1
+        for label, var in zip(
+                out_seq, ['y0', 'y1', 'y2']):
+            p *= result[(var, label)]
+        total += p * F_j(sequence, out_seq)
+    return total
+
+
+def simple_normalize(r):
+    ''' r is a result from fg.query() '''
+    totals_by_variable = defaultdict(float)
+    for k, v in r.items():
+        totals_by_variable[k[0]] += v
+    # Now we create a new result
+    # normalized by the totals...
+    d = dict()
+    for k, v in r.items():
+        d[k] = v / totals_by_variable[k[0]]
+    return d
+
+
 def train_by_max_product(fg, training_examples, feature_funcs,
                          learning_rate=0.1, max_iterations=1000):
     '''Ok now after reading Manning and Klein
@@ -376,7 +445,25 @@ def train_by_max_product(fg, training_examples, feature_funcs,
             for sequence, label in training_examples:
                 F_j = make_big_F(feature_func)
                 exp_emp = F_j(sequence, label)
+                # exp_mdl is the 'brute force' version.
+                # We should use the actual model here...
                 exp_mdl = expected_model(sequence, L, j, alphabet, F_j)
+                import ipdb; ipdb.set_trace()
+                build_potential_functions(sequence, fg, L, feature_funcs)
+                exp_mdl_from_fg = total_expected_model(fg, L, feature_func,
+                                                       training_examples, feature_funcs)
+
+                # query the model by using forward..
+                # Note we have to build the G funcs...
+                g_ = {}
+                G_ = {}
+                for i in range(len(sequence)):
+                    g_[i] = make_g_func(L, feature_funcs, sequence, i)
+                    G_[i] = make_G_func(g_[i])
+
+                exp_mdl_from_forward = forward(sequence, len(sequence) - 1,
+                                G_, alphabet, {})
+                import ipdb; ipdb.set_trace()
                 delta = exp_emp - exp_mdl - L[j] / 10
                 total_error += delta * delta
 
@@ -406,7 +493,7 @@ def train_by_max_product(fg, training_examples, feature_funcs,
                 print y_seq, label
                 if y_seq == label:
                     correct += 1
-                print iterations, '****', total_error, sum([l**2 for l in L]), correct
+                print iterations, '****', total_error, sum([l**2 for l in L]), float(correct) / len(feature_funcs)
 
 
             # Lets try to do this one feature at a time...
@@ -418,8 +505,8 @@ def train_by_max_product(fg, training_examples, feature_funcs,
             #total_error += delta ** 2
             #L[j] = L[j] - delta * learning_rate #- L[j] / 10
             #print j, delta, L[j]
-        print iterations, '****', total_error, sum([l**2 for l in L]), correct
-        import ipdb; ipdb.set_trace()
+        print iterations, '****', total_error, sum([l**2 for l in L]), float(correct) / len(feature_funcs)
+        #raw_input('yo!')
         #for sequence, labels in training_examples:
         #    build_potential_functions(sequence, fg, L, feature_funcs)
         #    print labels, crf_out(fg.query())
@@ -466,11 +553,9 @@ if __name__ == '__main__':
     for y_a, y_b in zip(variable_nodes, variable_nodes[1:]):
         connect_ug(y_a, y_b)
 
-    import ipdb; ipdb.set_trace()
     ug = UndirectedGraph(variable_nodes)
     print ug
 
-    import ipdb; ipdb.set_trace()
     jt = ug.build_join_tree()
 
     fg_factor_nodes = {}

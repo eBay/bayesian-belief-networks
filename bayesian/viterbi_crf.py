@@ -50,6 +50,7 @@ def propagate(x_seq, t, G_, output_alphabet, partials, aggregator):
 
     '''
 
+
 def sumlist(l, key):
     '''
     Works just like max over a list
@@ -59,12 +60,11 @@ def sumlist(l, key):
     '''
     return sum(map(key, l))
 
+
 def viterbi(x_seq, t, g_, output_alphabet, partials):
     '''
-    Use this to find the Z function for undirected
-    graphs. To find the most likely labelling use
-    viterbi which is just a special case of
-    forward. Note that g_ is not exponentiated.
+    Use this to find the most likely output
+    sequence given an input.
     '''
     vals = []
     if t == 0:
@@ -88,10 +88,16 @@ def viterbi(x_seq, t, g_, output_alphabet, partials):
             currents.append((key, partials[key]))
     # Now we need to return the most likely lable...
     y_seq = []
+    p_seq = 1
+    #import ipdb; ipdb.set_trace()
     for i in range(t + 1):
         candidates = [(k, v) for k, v in partials.items() if k[1] == i]
-        y_seq.append(max(candidates, key=lambda x: x[1])[0][0])
-    return y_seq
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        if i == t:
+            p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
+    return y_seq, partials, p_seq
+
 
 def forward(x_seq, t, G_, output_alphabet, partials):
     '''
@@ -105,7 +111,7 @@ def forward(x_seq, t, G_, output_alphabet, partials):
         for y_ in output_alphabet:
             vals.append(((y_, t), G_[t]('__START__', y_)))
             partials[(y_, t)] = vals[-1][1]
-        return sumlist(vals, key=lambda x:x[1])
+        return sumlist(vals, key=lambda x:x[1]), partials
     else:
         for y_prev in output_alphabet:
             if not (y_prev, t - 1) in partials:
@@ -122,8 +128,88 @@ def forward(x_seq, t, G_, output_alphabet, partials):
             partials[key] = sumlist(vals, key=lambda x:x[1])
             currents.append((key, partials[key]))
     # Now we need to return the sum up to position t
-    candidates = [(k, v) for k, v in partials.items() if k[1] == t]
-    return sumlist(candidates, key=lambda x: x[1])
+    y_seq = []
+    p_seq = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        #if i == t:
+        p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
+    #candidates = [(k, v) for k, v in partials.items() if k[1] == t]
+    return y_seq, partials, p_seq
+
+
+def forward(x_seq, t, G_, output_alphabet, partials, T_inv, T):
+    '''
+    Use this to find the Z function for undirected
+    graphs. To find the most likely labelling use
+    viterbi which is just a special case of
+    forward. This is a modified version of the
+    usual forward algorithm.
+    T and T_inv are the possible transitions in
+    the training set. (i.e. T_inv is a mapping from
+    a state y to all possible previous states
+    in the training set.
+    '''
+    vals = []
+    if t == 0:
+        for y in list(T[-1]['__START__']):
+            vals.append(G_[t]('__START__', y))
+            partials[(y, t)] = G_[t]('__START__', y)
+    else:
+        for y, y_prevs in T_inv[t].items():
+            vals = []
+            key = (y, t)
+            for y_prev in y_prevs:
+                if (y_prev, t - 1) not in partials:
+                    forward(x_seq, t - 1, G_, output_alphabet, partials, T_inv, T)
+                vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y)))
+            partials[key] = sumlist(vals, key=lambda x:x[1])
+    return partials
+
+
+def backward(x_seq, t, G_, output_alphabet, partials):
+    '''
+    Same as forward but in reverse direction...
+    could we just reverse x_seq???
+    Use this to find the Z function for undirected
+    graphs. To find the most likely labelling use
+    viterbi which is just a special case of
+    forward.
+    '''
+    vals = []
+    if t == 0:
+        for y_ in output_alphabet:
+            vals.append(((y_, t), G_[t]('__START__', y_)))
+            partials[(y_, t)] = vals[-1][1]
+        return sumlist(vals, key=lambda x:x[1]), partials
+    else:
+        for y_prev in output_alphabet:
+            if not (y_prev, t - 1) in partials:
+                forward(x_seq, t - 1, G_, output_alphabet, partials)
+        prevs = dict([(k, v) for k, v in partials.items() if k[1] == t - 1])
+        currents = []
+        for y in output_alphabet:
+            key = (y, t)
+            vals = []
+            for (y_prev, _), v in prevs.items():
+                vals.append((
+                    key,
+                    v + G_[t](y_prev, y)))
+            partials[key] = sumlist(vals, key=lambda x:x[1])
+            currents.append((key, partials[key]))
+    # Now we need to return the sum up to position t
+    y_seq = []
+    p_seq = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        #if i == t:
+        p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
+    #candidates = [(k, v) for k, v in partials.items() if k[1] == t]
+    return y_seq, partials, p_seq
 
 
 def PropagationEngine(x_seq, feature_funcs, output_alphabet):

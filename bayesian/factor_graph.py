@@ -1175,7 +1175,7 @@ class FactorGraph(object):
                 eligible.append(node)
         return eligible
 
-    def propagate(self, aggregator='max'):
+    def propagate(self, aggregator='sum'):
         '''
         This is the routing for sum-product:
 1. y0 ---> Clique_Y0Y1 <V-Message from y0 -> Clique_Y0Y1: 1 factors ([])>

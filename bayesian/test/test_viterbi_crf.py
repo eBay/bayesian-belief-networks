@@ -73,11 +73,15 @@ def test_make_G_func(g_):
 
 def test_viterbi_bail(g_):
     x_seq = ['John', 'said']
+    import ipdb; ipdb.set_trace()
+    v = viterbi(x_seq, 0, g_, ['NAME', 'OTHER'], {})
     assert viterbi(x_seq, 0, g_, ['NAME', 'OTHER'], {}) == ['NAME']
 
 
 def test_viterbi_recursion(g_):
     x_seq = ['John', 'said']
+    import ipdb; ipdb.set_trace()
+    v = viterbi(x_seq, 1, g_, ['NAME', 'OTHER'], {})
     assert viterbi(x_seq, 1, g_, ['NAME', 'OTHER'], {}) == ['NAME', 'NAME']
 
 

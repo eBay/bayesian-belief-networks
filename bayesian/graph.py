@@ -121,6 +121,14 @@ class UndirectedGraph(object):
             cliques)
         return jt
 
+    @staticmethod
+    def connect(a, b):
+        if not isinstance(b, list):
+            b = [ b ]
+        for b_ in b:
+            a.neighbours.append(b_)
+            b_.neighbours.append(a)
+
 
 def connect(parent, child):
     '''
