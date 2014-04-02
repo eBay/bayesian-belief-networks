@@ -1,5 +1,6 @@
 '''From http://enterface10.science.uva.nl/pdf/lecture3_crfs.pdf'''
 from math import exp
+from itertools import product as xproduct
 
 '''
 Note, this should really be called Forward-Backward
@@ -26,6 +27,29 @@ def make_G_func(g_func):
         return exp(g_func(y_prev, y))
 
     return G_x
+
+
+def make_g_func_3(w, feature_funcs, x_seq, t):
+    '''Resuseable Potential funcs that
+    also take x_seq as a param.
+    We will use the ordering y_prev, y, x_sea
+    '''
+
+    def g_x_3(y_prev, y, x_seq):
+        total = 0
+        for j, (w_, f_) in enumerate(zip(w, feature_funcs)):
+            total += w_ * f_(y_prev, y, x_seq, t)
+        return total
+
+    return g_x_3
+
+
+def make_G_func_3(g_func_3):
+
+    def G_x_3(y_prev, y, x_seq):
+        return exp(g_func_3(y_prev, y, x_seq))
+
+    return G_x_3
 
 
 def propagate(x_seq, t, G_, output_alphabet, partials, aggregator):
@@ -89,17 +113,21 @@ def viterbi(x_seq, t, g_, output_alphabet, partials):
     # Now we need to return the most likely lable...
     y_seq = []
     p_seq = 1
-    #import ipdb; ipdb.set_trace()
     for i in range(t + 1):
         candidates = [(k, v) for k, v in partials.items() if k[1] == i]
         max_ = max(candidates, key=lambda x: x[1])
         y_seq.append(max_[0][0])
         if i == t:
-            p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
+            try:
+                p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
+            except:
+                import ipdb; ipdb.set_trace()
+                print y_seq, 'div by 0!'
+                raise
     return y_seq, partials, p_seq
 
 
-def forward(x_seq, t, G_, output_alphabet, partials):
+def old_forward(x_seq, t, G_, output_alphabet, partials):
     '''
     Use this to find the Z function for undirected
     graphs. To find the most likely labelling use
@@ -115,7 +143,7 @@ def forward(x_seq, t, G_, output_alphabet, partials):
     else:
         for y_prev in output_alphabet:
             if not (y_prev, t - 1) in partials:
-                forward(x_seq, t - 1, G_, output_alphabet, partials)
+                old_forward(x_seq, t - 1, G_, output_alphabet, partials)
         prevs = dict([(k, v) for k, v in partials.items() if k[1] == t - 1])
         currents = []
         for y in output_alphabet:
@@ -140,6 +168,33 @@ def forward(x_seq, t, G_, output_alphabet, partials):
     return y_seq, partials, p_seq
 
 
+def new_vit(x_seq, t, G_, partials, T, T_inv):
+    '''
+    My old vit was getting a slightly lower
+    probability than expected.
+    Also in order to reuse the G_ funcs
+    it would be better to have them in
+    a form that takes x_seq as a parameter.
+    '''
+    for y, y_prevs in T_inv[t].items():
+        vals = []
+        key = (y, t)
+        for y_prev in y_prevs:
+            if (y_prev, t - 1) not in partials:
+                new_vit(x_seq, t - 1, G_, partials, T, T_inv)
+            vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y, x_seq)))
+        partials[key] = max(vals, key=lambda x:x[1])[1]
+    # Now extract the output tokens...
+    y_seq = []
+    p = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        p = max_[1]
+    return y_seq, partials, p
+
+
 def forward(x_seq, t, G_, partials, T, T_inv):
     '''
     Use this to find the Z function for undirected
@@ -161,6 +216,69 @@ def forward(x_seq, t, G_, partials, T, T_inv):
             vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y)))
         partials[key] = sumlist(vals, key=lambda x:x[1])
     return partials
+
+
+def new_forward(x_seq, t, G_, partials, T, T_inv):
+    '''
+    My old vit was getting a slightly lower
+    probability than expected.
+    Also in order to reuse the G_ funcs
+    it would be better to have them in
+    a form that takes x_seq as a parameter.
+    '''
+    if t == 0:
+        y_prevs = ['__START__']
+    else:
+        y_prevs = ['NAME', 'OTHER']
+    for y in ['NAME', 'OTHER']:
+        vals = []
+        for y_prev in y_prevs:
+            key = (y, t)
+            if (y_prev, t - 1) not in partials:
+                new_forward(x_seq, t - 1, G_, partials, T, T_inv)
+            vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y, x_seq)))
+        partials[key] = sumlist(vals, key=lambda x:x[1])
+    # Now extract the output tokens...
+    y_seq = []
+    p = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        p = max_[1]
+    return y_seq, partials, p
+
+
+def new_backward(x_seq, t, G_, partials, T, T_inv):
+    '''
+    My old vit was getting a slightly lower
+    probability than expected.
+    Also in order to reuse the G_ funcs
+    it would be better to have them in
+    a form that takes x_seq as a parameter.
+    '''
+    if t == len(x_seq):
+        y_nexts = ['__STOP__']
+    else:
+        y_nexts = ['NAME', 'OTHER']
+    for y in ['NAME', 'OTHER']:
+        vals = []
+        for y_next in y_nexts:
+            key = (y, t)
+            if (y_next, t + 1) not in partials:
+                new_backward(x_seq, t + 1, G_, partials, T, T_inv)
+            import ipdb; ipdb.set_trace()
+            vals.append((key, partials[y_next, t + 1] * G_[t](y, y_next, x_seq)))
+        partials[key] = sumlist(vals, key=lambda x:x[1])
+    # Now extract the output tokens...
+    y_seq = []
+    p = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        p = max_[1]
+    return y_seq, partials, p
 
 
 def backward(x_seq, t, G_, output_alphabet, partials):
@@ -226,6 +344,58 @@ def backward(x_seq, t, G_, partials, T, T_inv):
             vals.append((key, partials[y_next, t + 1] * G_[t](y, y_next)))
             partials[key] = sumlist(vals, key=lambda x:x[1])
     return partials
+
+
+def make_beta_func(G2_func, alphabet, l):
+
+    betas = {
+        ('__STOP__', l): 1
+        }
+
+    def beta_func(y, t):
+        if t == l:
+            return 1
+        if (y, t) in betas:
+            return betas[y, t]
+        y_nexts = alphabet
+        if t == l - 1:
+            y_nexts = ['__STOP__']
+        vals = []
+        for y_ in y_nexts:
+            vals.append(beta_func(y_, t + 1))
+        if t == -1:
+            betas[y, t] = sum(vals)
+        else:
+            betas[y, t] = sum(vals) * G2_func[t](y_, y)
+        return betas[y, t]
+
+    return beta_func
+
+
+def make_alpha_func(G2_func, alphabet, l):
+
+    alphas = {
+        ('__START__', -1): 1
+        }
+
+    def alpha_func(y, t):
+        if t == -1:
+            return 1
+        if (y, t) in alphas:
+            return alphas[y, t]
+        y_prevs = alphabet
+        if t == 0:
+            y_prevs = ['__START__']
+        vals = []
+        for y_ in y_prevs:
+            vals.append(alpha_func(y_, t - 1))
+        if t == l:
+            alphas[y, t] = sum(vals)
+        else:
+            alphas[y, t] = sum(vals) * G2_func[t](y_, y)
+        return alphas[y, t]
+
+    return alpha_func
 
 
 def PropagationEngine(x_seq, feature_funcs, output_alphabet):
