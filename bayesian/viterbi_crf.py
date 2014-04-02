@@ -195,6 +195,33 @@ def new_vit(x_seq, t, G_, partials, T, T_inv):
     return y_seq, partials, p
 
 
+def new_vit_G3(x_seq, t, G3_funcs, partials, T, T_inv):
+    '''
+    My old vit was getting a slightly lower
+    probability than expected.
+    Also in order to reuse the G_ funcs
+    it would be better to have them in
+    a form that takes x_seq as a parameter.
+    '''
+    for y, y_prevs in T_inv[t].items():
+        vals = []
+        key = (y, t)
+        for y_prev in y_prevs:
+            if (y_prev, t - 1) not in partials:
+                new_vit(x_seq, t - 1, G_, partials, T, T_inv)
+            vals.append((key, partials[y_prev, t - 1] * G_[t](y_prev, y, x_seq)))
+        partials[key] = max(vals, key=lambda x:x[1])[1]
+    # Now extract the output tokens...
+    y_seq = []
+    p = 1
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        p = max_[1]
+    return y_seq, partials, p
+
+
 def forward(x_seq, t, G_, partials, T, T_inv):
     '''
     Use this to find the Z function for undirected
@@ -371,6 +398,32 @@ def make_beta_func(G2_func, alphabet, l):
 
     return beta_func
 
+def make_beta3_func(G3_func, alphabet, l):
+
+    betas = {
+        ('__STOP__', l): 1
+        }
+
+    def beta_func(y, t):
+        if t == l:
+            return 1
+        if (y, t) in betas:
+            return betas[y, t]
+        y_nexts = alphabet
+        if t == l - 1:
+            y_nexts = ['__STOP__']
+        vals = []
+        for y_ in y_nexts:
+            vals.append(beta_func(y_, t + 1))
+        if t == -1:
+            betas[y, t] = sum(vals)
+        else:
+            betas[y, t] = sum(vals) * G2_func[t](y_, y)
+        return betas[y, t]
+
+    return beta_func
+
+
 
 def make_alpha_func(G2_func, alphabet, l):
 
@@ -397,6 +450,31 @@ def make_alpha_func(G2_func, alphabet, l):
 
     return alpha_func
 
+
+def make_viterbi_func(G2_func, alphabet, l):
+
+    alphas = {
+        ('__START__', -1): 1
+        }
+
+    def viterbi_func(y, t):
+        if t == -1:
+            return 1
+        if (y, t) in alphas:
+            return alphas[y, t]
+        y_prevs = alphabet
+        if t == 0:
+            y_prevs = ['__START__']
+        vals = []
+        for y_ in y_prevs:
+            vals.append(viterbi_func(y_, t - 1))
+        if t == l:
+            alphas[y, t] = max(vals)
+        else:
+            alphas[y, t] = max(vals) * G2_func[t](y_, y)
+        return alphas[y, t]
+
+    return viterbi_func
 
 def PropagationEngine(x_seq, feature_funcs, output_alphabet):
 
