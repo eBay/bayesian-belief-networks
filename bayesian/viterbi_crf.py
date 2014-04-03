@@ -2,6 +2,9 @@
 from math import exp
 from itertools import product as xproduct
 
+
+START = '__START__'
+
 '''
 Note, this should really be called Forward-Backward
 which is a more general algorithm than viterbi.
@@ -29,17 +32,6 @@ def make_G_func(g_func):
     return G_x
 
 
-def make_g_func_3(w, feature_funcs, x_seq, t):
-    '''Resuseable Potential funcs that
-    also take x_seq as a param.
-    We will use the ordering y_prev, y, x_sea
-    '''
-
-    def g_x_3(y_prev, y, x_seq):
-        total = 0
-        for j, (w_, f_) in enumerate(zip(w, feature_funcs)):
-            total += w_ * f_(y_prev, y, x_seq, t)
-        return total
 
     return g_x_3
 
@@ -93,7 +85,7 @@ def viterbi(x_seq, t, g_, output_alphabet, partials):
     vals = []
     if t == 0:
         for y_ in output_alphabet:
-            vals.append(((y_, t), g_[t]('__START__', y_)))
+            vals.append(((y_, t), g_[t]('__START__', y_, x_seq)))
             partials[(y_, t)] = vals[-1][1]
     else:
         for y_prev in output_alphabet:
@@ -107,7 +99,7 @@ def viterbi(x_seq, t, g_, output_alphabet, partials):
             for (y_prev, _), v in prevs.items():
                 vals.append((
                     key,
-                    v + g_[t](y_prev, y)))
+                    v + g_[t](y_prev, y, x_seq)))
             partials[key] = max([v[1] for v in vals])
             currents.append((key, partials[key]))
     # Now we need to return the most likely lable...
@@ -475,6 +467,36 @@ def make_viterbi_func(G2_func, alphabet, l):
         return alphas[y, t]
 
     return viterbi_func
+
+
+def viterbi_decoder(x_seq, t, G_funcs, output_alphabet,
+                    partials={(START, -1):1}):
+    if t == -1:
+        return 1
+    y_prevs = output_alphabet
+    if t == 0:
+        y_prevs = [START]
+    for y_prev in y_prevs:
+        for y in output_alphabet:
+
+            vals = []
+            key = (y, t)
+            if (y_prev, t - 1) not in partials:
+                viterbi_decoder(x_seq, t - 1, G_funcs, output_alphabet, partials)
+            vals.append(partials[y_prev, t - 1] * G_funcs[t](y_prev, y, x_seq))
+    import ipdb; ipdb.set_trace()
+    partials[key] = max(vals)
+    # Now extract the output tokens...
+    y_seq = []
+    p = 1
+
+    for i in range(t + 1):
+        candidates = [(k, v) for k, v in partials.items() if k[1] == i]
+        max_ = max(candidates, key=lambda x: x[1])
+        y_seq.append(max_[0][0])
+        p = max_[1]
+    return y_seq, partials, p
+
 
 def PropagationEngine(x_seq, feature_funcs, output_alphabet):
 
