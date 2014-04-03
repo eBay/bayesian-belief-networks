@@ -1,4 +1,4 @@
-'''From http://enterface10.science.uva.nl/pdf/lecture3_crfs.pdf'''
+import sys
 from math import exp
 from itertools import product as xproduct
 
@@ -110,12 +110,11 @@ def viterbi(x_seq, t, g_, output_alphabet, partials):
         max_ = max(candidates, key=lambda x: x[1])
         y_seq.append(max_[0][0])
         if i == t:
-            try:
-                p_seq *= partials[(y_seq[-1], i)] / sum([x[1] for x in candidates])
-            except:
-                import ipdb; ipdb.set_trace()
-                print y_seq, 'div by 0!'
-                raise
+            denom = sum([x[1] for x in candidates])
+            if denom == 0:
+                print >> sys.stderr, '***WARNING: LOW PROBABILITIES ***'
+                continue
+            p_seq *= partials[(y_seq[-1], i)] / denom
     return y_seq, partials, p_seq
 
 
