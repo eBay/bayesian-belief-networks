@@ -62,11 +62,13 @@ def fD(C, D):
     return table[key]
 
 
+g = build_graph(
+    fP, fS, fC, fX, fD,
+    domains={
+        'P': ['low', 'high']})
+
+
 if __name__ == '__main__':
-    g = build_graph(
-        fP, fS, fC, fX, fD,
-        domains={
-            'P': ['low', 'high']})
     g.q()
     g.q(P='high')
     g.q(D=True)

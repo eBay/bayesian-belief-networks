@@ -1,4 +1,4 @@
-'''This is the earthquake example from 2.5.1 in BAI'''
+'''This is the earthquake example from 2.5.1 in BAI as a Factor Graph'''
 from bayesian.factor_graph import *
 
 
@@ -55,11 +55,13 @@ def f_marycalls(alarm, marycalls):
     return table[key]
 
 
+g = build_graph(
+    f_burglary,
+    f_earthquake,
+    f_alarm,
+    f_johncalls,
+    f_marycalls)
+
+
 if __name__ == '__main__':
-    g = build_graph(
-        f_burglary,
-        f_earthquake,
-        f_alarm,
-        f_johncalls,
-        f_marycalls)
     g.q()

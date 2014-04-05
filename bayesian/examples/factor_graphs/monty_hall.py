@@ -48,17 +48,18 @@ def f_monty_door(prize_door, guest_door, monty_door):
         return 0
     return 1
 
+g = build_graph(
+    f_prize_door,
+    f_guest_door,
+    f_monty_door,
+    domains=dict(
+        prize_door=['A', 'B', 'C'],
+        guest_door=['A', 'B', 'C'],
+        monty_door=['A', 'B', 'C']))
+
 
 if __name__ == '__main__':
 
-    g = build_graph(
-        f_prize_door,
-        f_guest_door,
-        f_monty_door,
-        domains=dict(
-            prize_door=['A', 'B', 'C'],
-            guest_door=['A', 'B', 'C'],
-            monty_door=['A', 'B', 'C']))
     # Initial Marginals without any knowledge.
     # Observe that the likelihood for
     # all three doors is 1/3.

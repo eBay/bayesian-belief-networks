@@ -1,6 +1,6 @@
 '''Unit tests for the examples in the examples dir.'''
 from bayesian.factor_graph import build_graph
-from bayesian.examples.factor_graphs.cancer import fP, fS, fC, fX, fD
+from bayesian.examples.factor_graphs.cancer import g as cancer_fg, fP, fS, fC, fX, fD
 
 
 '''
@@ -20,11 +20,7 @@ the examples directory.
 
 
 def pytest_funcarg__cancer_graph(request):
-    g = build_graph(
-        fP, fS, fC, fX, fD,
-        domains={
-            'P': ['low', 'high']})
-    return g
+    return cancer_fg
 
 
 class TestCancerGraph():

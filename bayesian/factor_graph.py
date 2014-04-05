@@ -122,6 +122,13 @@ class VariableNode(Node):
             # are actully run....
             res = message(val)
             product *= res
+        if product == 0:
+            # Avoid division by zero if
+            # numerator is 0
+            # We need to write tests for
+            # this to check that this is
+            # a valid assumption.
+            return 0
         return product / normalizer
 
     def reset(self):
@@ -1066,7 +1073,8 @@ class FactorGraph(object):
             if current_node.name in discovered_nodes:
                 # We have a cycle!
                 if DEBUG:
-                    print 'Dequeued node already processed: %s', current_node
+                    print 'Dequeued node already processed: %s' % (
+                        current_node.name)
                 return True
             discovered_nodes.add(current_node.name)
             if DEBUG:
@@ -1388,14 +1396,17 @@ class FactorGraph(object):
         fh.write('graph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
-        for node in self.nodes:
+        for i, node in enumerate(self.nodes):
+            gv_nodename = 'Node%s' % node.name.replace('-','_')
             if isinstance(node, FactorNode):
-                fh.write('  %s [ shape="rectangle" color="red"];\n' % node.name)
+                fh.write('  %s [ shape="rectangle" color="red"];\n' % gv_nodename)
             else:
-                fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
+                fh.write('  %s [ shape="ellipse" color="blue"];\n' % gv_nodename)
         for node in self.nodes:
+            gv_nodename = 'Node%s' % node.name.replace('-','_')
             for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
+                gv_neighbourname = 'Node%s' % neighbour.name.replace('-','_')
+                edge = [gv_nodename, gv_neighbourname]
                 edge = tuple(sorted(edge))
                 edges.add(edge)
         for source, target in edges:

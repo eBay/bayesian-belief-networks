@@ -2,10 +2,15 @@ from __future__ import division
 import pytest
 
 import os
+from itertools import product as xproduct
 
 from bayesian.bbn import *
 from bayesian.graph import construct_priority_queue
 from bayesian.utils import make_key
+#from bayesian.examples.factor_graphs.earthquake import g as earthquake_fg
+from bayesian.examples.bbns.monty_hall import g as monty_bbn
+from bayesian.examples.bbns.earthquake import g as earthquake_bbn
+from bayesian.examples.bbns.cancer import g as cancer_bbn
 
 
 def r3(x):
@@ -148,6 +153,57 @@ def pytest_funcarg__huang_darwiche_jt(request):
     dag = pytest_funcarg__huang_darwiche_dag(request)
     jt = build_join_tree(dag, priority_func_override)
     return jt
+
+
+def pytest_funcarg__monty_bbn(request):
+    return monty_bbn
+
+
+def pytest_funcarg__earthquake_bbn(request):
+    return earthquake_bbn
+
+
+def pytest_funcarg__cancer_bbn(request):
+    return cancer_bbn
+
+
+def all_configurations_equal(bbn, fg):
+    '''We want to make sure that our
+    conversion to factor graph is identical
+    for all results to the BBN version.
+    This is so that we can eventually
+    switch out the old BBN inference engine
+    that constructs truth tables as this
+    takes too long.'''
+
+    # Now we will test all combinations
+    # of variable assignments including
+    # some non-observations which
+    # we will represent by a '-'
+    vals = []
+    for variable, domain in bbn.domains.items():
+        vals.append(list(xproduct([variable], domain + ['-'])))
+    permutations = xproduct(*vals)
+
+    # Now we have every possible combination
+    # including unobserved variables.
+    # We will construct the queries and
+    # then compare the results...
+    for permutation in permutations:
+        bbn_query = dict([p for p in permutation if p[1] != '-'])
+        # Now construct the fg query with the
+        # slightly different fg variable names...
+        fg_query = dict([p for p in permutation if p[1] != '-'])
+        # Now execute the two queries...
+        bbn_result = bbn.query(**bbn_query)
+        fg_result = fg.query(**fg_query)
+
+        assert len(bbn_result) == 9
+        assert len(fg_result) == 9
+        for (variable_name, value), v in bbn_result.items():
+            assert round(v, 8) == (
+                round(fg_result[(variable_name, value)], 8))
+    return True
 
 
 class TestBBN():
@@ -402,6 +458,35 @@ class TestBBN():
         # TODO: Need additional tests here especially for
         # clique nodes.
 
+    def test_build_join_tree_cancer_bbn(self, cancer_bbn):
+        def priority_func_override(node):
+            introduced_arcs = 0
+            cluster = [node] + node.neighbours
+            for node_a, node_b in combinations(cluster, 2):
+                if node_a not in node_b.neighbours:
+                    assert node_b not in node_a.neighbours
+                    introduced_arcs += 1
+            if node.name == 'f_h':
+                return [introduced_arcs, 0]  # Force f_h tie breaker
+            if node.name == 'f_g':
+                return [introduced_arcs, 1]  # Force f_g tie breaker
+            if node.name == 'f_c':
+                return [introduced_arcs, 2]  # Force f_c tie breaker
+            if node.name == 'f_b':
+                return [introduced_arcs, 3]
+            if node.name == 'f_d':
+                return [introduced_arcs, 4]
+            if node.name == 'f_e':
+                return [introduced_arcs, 5]
+            return [introduced_arcs, 10]
+
+        jt = build_join_tree(cancer_bbn, priority_func_override)
+        for node in jt.sepset_nodes:
+            assert set([n.clique for n in node.neighbours]) == \
+                set([node.sepset.X, node.sepset.Y])
+        # TODO: Need additional tests here especially for
+        # clique nodes.
+
     def test_initialize_potentials(
             self, huang_darwiche_jt, huang_darwiche_dag):
         # Seems like there can be multiple assignments so
@@ -581,3 +666,66 @@ class TestBBN():
         p_H = huang_darwiche_jt.marginal(bbn_nodes['f_h'])
         assert r3(p_H[(('h', True), )]) == 0.823
         assert r3(p_H[(('h', False), )]) == 0.177
+
+    def test_monty_convert_to_factor_graph(self, monty_bbn):
+        monty_converted = monty_bbn.convert_to_factor_graph()
+
+        # Now we will test all combinations
+        # of the converted factor graph with
+        # the original graph.
+        assert all_configurations_equal(monty_bbn, monty_converted)
+
+    def te1st_earthquake_convert_to_factor_graph(
+            self, earthquake_bbn):
+        earthquake_converted = earthquake_bbn.convert_to_factor_graph()
+        import ipdb; ipdb.set_trace()
+        earthquake_converted.q()
+
+        # Now we will test all combinations
+        # of the converted factor graph with
+        # the original graph.
+        assert all_configurations_equal(earthquake_bbn, earthquake_converted)
+
+    def test_huang_darwiche_convert_to_factor_graph(
+            self, huang_darwiche_dag):
+        huang_darwiche_converted = huang_darwiche_dag.convert_to_factor_graph()
+
+        # Now we will test all combinations
+        # of the converted factor graph with
+        # the original graph.
+        assert all_configurations_equal(
+            huang_darwiche_dag, huang_darwiche_converted)
+
+    def te1st_cancer_convert_to_factor_graph(
+            self, cancer_bbn):
+        cancer_converted = cancer_bbn.convert_to_factor_graph()
+
+        # Now we will test all combinations
+        # of the converted factor graph with
+        # the original graph.
+        assert all_configurations_equal(
+            cancer_bbn, cancer_converted)
+
+
+def test_expand_domains():
+    original_variables = ['A', 'B', 'C']
+    domains = dict(
+        A = (True, False),
+        B = (True, False),
+        C = (True, False))
+    expanded = expand_domains(
+        original_variables,
+        domains, 'ABC')
+    assert 'ABC' in expanded
+    assert len(expanded['ABC']) == 8
+    for val in [
+            [True, True, True],
+            [True, True, False],
+            [True, False, True],
+            [True, False, False],
+            [False, True, True],
+            [False, True, False],
+            [False, False, True],
+            [False, False, False]]:
+        assert val in expanded['ABC']
+    assert len(expanded) == 1

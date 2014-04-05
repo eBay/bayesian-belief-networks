@@ -79,15 +79,16 @@ class UndirectedGraph(object):
         self.name = name
 
     def get_graphviz_source(self):
-        import ipdb; ipdb.set_trace()
         fh = StringIO()
         fh.write('graph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
         for node in self.nodes:
-            fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
+            fh.write('  %s [ shape="ellipse" color="blue"];\n' % (
+                node.name.replace('-','_')))
             for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
+                edge = [node.name.replace('-', '_'),
+                        neighbour.name.replace('-','_')]
                 edges.add(tuple(sorted(edge)))
         for source, target in edges:
             fh.write('  %s -- %s;\n' % (source, target))
@@ -282,7 +283,8 @@ class Clique(object):
 
     def __init__(self, cluster):
         self.nodes = cluster
-
+        self.name = '[%s]' % ','.join(
+            [node.name for node in list(cluster)])
 
     def __repr__(self):
         if self.nodes and hasattr(list(self.nodes)[0], 'variable_name'):
@@ -341,11 +343,14 @@ class JoinTree(UndirectedGraph):
         edges = set()
         for node in self.nodes:
             if isinstance(node, JoinTreeSepSetNode):
-                fh.write('  %s [ shape="box" color="blue"];\n' % node.name)
+                fh.write('  %s [ shape="box" color="blue"];\n' % (
+                    node.name.replace('-','_')))
             else:
-                fh.write('  %s [ shape="ellipse" color="red"];\n' % node.name)
+                fh.write('  %s [ shape="ellipse" color="red"];\n' % (
+                    node.name.replace('-', '_')))
             for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
+                edge = [node.name.name.replace('-','_'),
+                        neighbour.name.replace('-','_')]
                 edges.add(tuple(sorted(edge)))
         for source, target in edges:
             fh.write('  %s -- %s;\n' % (source, target))

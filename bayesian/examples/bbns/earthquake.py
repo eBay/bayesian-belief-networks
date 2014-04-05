@@ -55,11 +55,13 @@ def f_marycalls(alarm, marycalls):
     return table[key]
 
 
+g = build_bbn(
+    f_burglary,
+    f_earthquake,
+    f_alarm,
+    f_johncalls,
+    f_marycalls)
+
+
 if __name__ == '__main__':
-    g = build_bbn(
-        f_burglary,
-        f_earthquake,
-        f_alarm,
-        f_johncalls,
-        f_marycalls)
     g.q()

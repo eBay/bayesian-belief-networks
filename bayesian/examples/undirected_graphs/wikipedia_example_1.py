@@ -180,13 +180,13 @@ def example():
                    emission_probability,
                    end_state)
 
-def forward_backward(x_seq):
-    return fwd_bkw(x_seq,
-                   states,
-                   start_probability,
-                   transition_probability,
-                   emission_probability,
-                   end_state)
+def forward_backward(x_seq):  #x, states, a_0, a, e, end_st):
+    return fwd_bkw(x_seq,                    # x
+                   states,                   # states
+                   start_probability,        # a_0
+                   transition_probability,   # a
+                   emission_probability,     # e
+                   end_state)                # end_st
 
 '''
 ------------------------------------------

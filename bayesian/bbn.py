@@ -13,6 +13,10 @@ from bayesian import GREEN, NORMAL
 from bayesian.graph import Node, UndirectedNode, connect
 from bayesian.graph import Graph, UndirectedGraph, priority_func
 from bayesian.graph import triangulate
+from bayesian.factor_graph import VariableNode, FactorNode
+from bayesian.factor_graph import connect as fg_connect
+from bayesian.factor_graph import FactorGraph, unity, make_unity
+from bayesian.factor_graph import make_product_func
 
 from bayesian.utils import get_args, named_base_type_factory
 from bayesian.utils import get_original_factors
@@ -58,9 +62,11 @@ class BBN(Graph):
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
         for node in sorted(self.nodes, key=lambda x:x.name):
-            fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
+            fh.write('  %s [ shape="ellipse" color="blue"];\n' % (
+                node.name.replace('-','_')))
             for child in node.children:
-                edge = (node.name, child.name)
+                edge = (node.name.replace('-','_'),
+                        child.name.replace('-','_'))
                 edges.add(edge)
         for source, target in sorted(edges, key=lambda x:(x[0], x[1])):
             fh.write('  %s -> %s;\n' % (source, target))
@@ -118,6 +124,127 @@ class BBN(Graph):
                 tab.add_row([node, value, '%8.6f' % prob])
         print tab
 
+    def convert_to_factor_graph(self):
+        '''Convert to a factor graph
+        representation. '''
+        jt = build_join_tree(self, clique_priority_func=priority_func)
+
+        # First lets create the variable nodes...
+        # Mmm maybe the variable nodes are the SepSet nodes???
+        # Lets try that...
+        fg_variable_nodes = {}
+        #for node in self.nodes:
+        #    variable_node = VariableNode(node.variable_name)
+        #    variable_node.domain = self.domains.get(
+        #        node.variable_name, [True, False])
+        #    fg_variable_nodes[node.variable_name] = variable_node
+
+        assigned = set()
+        # We should record for each variable
+        # the clique nodes that invole it
+        # as we will need these later to
+        # make the edges
+        variable_index = defaultdict(set)
+        factor_index = defaultdict(set)
+        # Now for the factor nodes...
+        fg_factor_nodes = {}
+        for clique in jt.nodes:
+            # The original variables from the BBN
+            # are recorded in list(clique.clique.nodes)[0].variable_name
+            # lets attach them as well as this will
+            # be useful for assigning the variable nodes...
+
+            # Alternately what if we made *every* clique
+            # a variable? Then we can easily build a factor
+            # graph and assign potentials to the factors???
+
+            if isinstance(clique, JoinTreeSepSetNode):
+                variable_node = VariableNode(clique.name)
+                variable_node.original_nodes = clique.sepset.label
+                variable_node.domain = expand_domains(
+                    self.domains, clique.name)
+                fg_variable_nodes[str(clique.name)] = variable_node
+            else:
+                original_nodes = clique.clique.nodes
+                factor_node = FactorNode(clique.name, make_unity([clique.name]))
+
+                factor_node.original_nodes = original_nodes
+                # Track which clique this node
+                # came from
+                factor_node.clique = clique
+                # Track which factor node was
+                # created from this clique
+                clique.factor_node = factor_node
+                fg_factor_nodes[clique.name] = factor_node
+
+        # We will use the original graph neighbours to
+        # connect them...
+        for sepset in jt.sepset_nodes:
+            for neighbour in sepset.neighbours:
+                fg_connect(
+                    fg_factor_nodes[neighbour.name],
+                    fg_variable_nodes[str(sepset.name)])
+
+
+        # TODO: We need to create the potential functions
+        # and assign them. We also need to attach the
+        # original variables.
+        # We may nned to modify the algorithm to
+        # prevent assignment to SepSet nodes.
+        assignments = jt.assign_clusters(self)
+
+        # Now  for each assignment we want to build
+        # the potentional functions.
+        for node, assignments in assignments.items():
+            bbn_funcs = [bbn_node.func for bbn_node in assignments]
+            # Since the factor nodes created above
+            # were assigned the function unity()
+            # we do not need to include them
+            # in the new potential func.
+            # TODO: We should perform a check here
+            # to make sure that the assignments
+            # are all within the family (F(v))
+            if len(bbn_funcs) > 1:
+                new_potential = make_product_func(bbn_funcs)
+                new_potential.domains = {}
+                for func in bbn_funcs:
+                    new_potential.domains.update(func.domains)
+            else:
+                new_potential = bbn_funcs[0]
+            node.factor_node.func = new_potential
+
+            # Now we need to add back the
+            # original bbn variables into
+            # the factor graph.
+            # WARNING: This is unchartered territory
+            # not appearing in the literature,
+            # however it seems an obvious extension
+            # to the inference algorithm.
+            # We will thus have *two* types
+            # of variable nodes in the factor graph.
+            # 1) Those arising from the sepsets
+            # 2) Those arising from the BBN variables
+            for bbn_node in assignments:
+                variable_node = VariableNode(
+                    bbn_node.variable_name)
+                variable_node.domain = self.domains.get(
+                    variable_node.name, [True, False])
+                fg_variable_nodes[variable_node.name] = variable_node
+                fg_connect(variable_node, node.factor_node)
+
+        # Now create the factor graph...
+        fg = FactorGraph(
+            fg_variable_nodes.values() +
+            fg_factor_nodes.values())
+
+        # Maintain a link to the jt and the BBN
+        fg.jt = jt
+        fg.bbn = self
+
+        return fg
+
+
+
 
 class JoinTree(UndirectedGraph):
 
@@ -140,11 +267,14 @@ class JoinTree(UndirectedGraph):
         edges = set()
         for node in self.nodes:
             if isinstance(node, JoinTreeSepSetNode):
-                fh.write('  %s [ shape="box" color="blue"];\n' % node.name)
+                fh.write('  %s [ shape="box" color="blue"];\n' % (
+                    node.name.replace('-','_')))
             else:
-                fh.write('  %s [ shape="ellipse" color="red"];\n' % node.name)
+                fh.write('  %s [ shape="ellipse" color="red"];\n' % (
+                    node.name.replace('-','_')))
             for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
+                edge = [node.name.replace('-','_'),
+                        neighbour.name.replace('-','_')]
                 edges.add(tuple(sorted(edge)))
         for source, target in edges:
             fh.write('  %s -- %s;\n' % (source, target))
@@ -597,7 +727,8 @@ class SepSet(object):
                   [n.clique for n in t.clique_nodes]][0]
 
         # Now create and insert a sepset node into the Xtree
-        ss_node = JoinTreeSepSetNode(self, self)
+        sepset_name = '%s-%s' % (self.X.node.name, self.Y.node.name)
+        ss_node = JoinTreeSepSetNode(sepset_name, self)
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -692,6 +823,10 @@ def build_bbn(*args, **kwds):
                    factor_args if original_factors[arg] != factor_node]
         for parent in parents:
             connect(parent, factor_node)
+        if not hasattr(factor_node.func, 'domains'):
+            factor_node.func.domains = dict()
+            for arg in factor_args:
+                factor_node.func.domains[arg] = domains.get(arg, [True, False])
     bbn = BBN(original_factors, name=name)
     bbn.domains = domains
 
@@ -803,3 +938,17 @@ def build_join_tree(dag, clique_priority_func=priority_func):
     assert len(forest) == 1
     jt = list(forest)[0]
     return jt
+
+
+def expand_domains(variable_names, domains, new_variable_name):
+    vals = []
+    variable_names.sort()
+    for variable in variable_names:
+        domain = domains.get(variable, [True, False])
+        vals.append(list(product([variable], domain)))
+    permutations = product(*vals)
+    new_domain = defaultdict(list)
+    for permutation in permutations:
+        new_domain[new_variable_name].append(
+            [p[1] for p in permutation])
+    return new_domain

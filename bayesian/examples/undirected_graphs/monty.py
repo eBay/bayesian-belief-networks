@@ -366,54 +366,10 @@ def dispatch_query(ug, fg, **query_kwds):
     print 'Yes!!!!'
 
 
-
-
-if __name__ == '__main__':
-
-    g = build_bbn(
-        f_prize_door,
-        f_guest_door,
-        f_monty_door,
-        domains=dict(
-            prize_door=['A', 'B', 'C'],
-            guest_door=['A', 'B', 'C'],
-            monty_door=['A', 'B', 'C']))
-    # Initial Marginals without any knowledge.
-    # Observe that the likelihood for
-    # all three doors is 1/3.
-    print 'Initial Marginal Probabilities:'
-    g.q()
-
-    # Now we will initially manually
-    # create the Undirected Graph until we have a
-    # build_graph method. We will start off
-    # by directly building the moralized
-    # undirected version of the BBN monty
-    # as its unclear if there is any
-    # alternative Undirected representation
-    # of Monty. Remember that there
-    # are several steps of conversions
-    # from BBN to Junction Tree
-    # - Removal of arrows
-    # - Moralization
-    # - Triangulation
-    # - Transform to JT
-    # See Bishop page 391 for notes on
-    # converting directed to undirected.
-    # The Triangulation step is
-    # really part of the JT conversion so
-    # we can start off with the moralized version...
-
-
+def build_monty_factor_graph_from_bbn(g):
     # These next 3 lines are from bbn.build_join_tree
     gu = make_undirected_copy(g)
     gm = make_moralized_copy(gu, g)
-    #cliques, elimination_ordering = triangulate(gm, clique_priority_func)
-
-    # So now for our UndirectedModel we want
-    # to manually build something that
-    # looks like gm....
-
     # First we manually created the 'nodes'
 
     prize_door_node = UndirectedNode('prize_door')
@@ -540,10 +496,28 @@ if __name__ == '__main__':
     # This should work now!
 
     fg = FactorGraph(fg_variable_nodes + fg_factor_nodes)
-    fg.q()
 
     # Yes! This works properly now. Seems like we
     # dont even need any of that query dispatch stuff...
     # Now to test it with several others....
 
     # Monty is very simple though...
+    return fg
+
+
+if __name__ == '__main__':
+
+    g = build_bbn(
+        f_prize_door,
+        f_guest_door,
+        f_monty_door,
+        domains=dict(
+            prize_door=['A', 'B', 'C'],
+            guest_door=['A', 'B', 'C'],
+            monty_door=['A', 'B', 'C']))
+
+    fg = build_monty_factor_graph_from_bbn(g)
+    fg2 = g.convert_to_factor_graph()
+    fg.q()
+    import ipdb; ipdb.set_trace()
+    fg2.q()
