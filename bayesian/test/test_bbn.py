@@ -181,15 +181,34 @@ def all_configurations_equal(bbn, fg):
     # some non-observations which
     # we will represent by a '-'
     vals = []
+
+    # Firstly if the bbn does not have domains
+    # we will build it here...
+    if not bbn.domains:
+        for node in bbn.nodes:
+            if node.func.domains:
+                bbn.domains.update(node.func.domains)
+    for node in bbn.nodes:
+        if node.variable_name not in bbn.domains:
+            bbn.domains[node.variable_name] = [True, False]
+
+    assert len(bbn.domains) == len(bbn.nodes)
+
+    # TODO: We should ensure that the converted fg
+    # has the correct .domains.
+    fg.domains = bbn.domains
+
     for variable, domain in bbn.domains.items():
         vals.append(list(xproduct([variable], domain + ['-'])))
     permutations = xproduct(*vals)
 
+    assert permutations
     # Now we have every possible combination
     # including unobserved variables.
     # We will construct the queries and
     # then compare the results...
     for permutation in permutations:
+        assert permutation
         bbn_query = dict([p for p in permutation if p[1] != '-'])
         # Now construct the fg query with the
         # slightly different fg variable names...
@@ -198,9 +217,9 @@ def all_configurations_equal(bbn, fg):
         bbn_result = bbn.query(**bbn_query)
         fg_result = fg.query(**fg_query)
 
-        assert len(bbn_result) == 9
-        assert len(fg_result) == 9
+        assert len(bbn_result) == len(fg_result)
         for (variable_name, value), v in bbn_result.items():
+            print round(v, 8), round(fg_result[(variable_name, value)], 8)
             assert round(v, 8) == (
                 round(fg_result[(variable_name, value)], 8))
     return True
@@ -675,11 +694,39 @@ class TestBBN():
         # the original graph.
         assert all_configurations_equal(monty_bbn, monty_converted)
 
-    def te1st_earthquake_convert_to_factor_graph(
+    def test_stat_535_lecture_8(self):
+        '''Example From http://www.stat.washington.edu/courses/stat535/fall10/Handouts/l8-jt-variants.pdf'''
+
+        def f_c(c):
+            return 1
+
+        def f_b(b):
+            return 1
+
+        def f_a(c, b, a):
+            return 1
+
+        def f_d(c, b, d):
+            return 1
+
+        def f_e(b, e):
+            return 1
+
+        bbn = build_bbn(
+            f_a,
+            f_b,
+            f_c,
+            f_d,
+            f_e)
+
+        fg = bbn.convert_to_factor_graph()
+        # Note there are multiple ways the
+        # junction tree assignments could have gone
+        # TODO: Make the assignments deterministic.
+
+    def test_earthquake_convert_to_factor_graph(
             self, earthquake_bbn):
         earthquake_converted = earthquake_bbn.convert_to_factor_graph()
-        import ipdb; ipdb.set_trace()
-        earthquake_converted.q()
 
         # Now we will test all combinations
         # of the converted factor graph with
@@ -696,7 +743,7 @@ class TestBBN():
         assert all_configurations_equal(
             huang_darwiche_dag, huang_darwiche_converted)
 
-    def te1st_cancer_convert_to_factor_graph(
+    def test_cancer_convert_to_factor_graph(
             self, cancer_bbn):
         cancer_converted = cancer_bbn.convert_to_factor_graph()
 
@@ -729,3 +776,23 @@ def test_expand_domains():
             [False, False, False]]:
         assert val in expanded['ABC']
     assert len(expanded) == 1
+
+
+def test_make_potential():
+    def product_func(c, b, a):
+        return c, b, a
+    product_func.domains = dict(
+        a = (True, False),
+        b = (True, False),
+        c = (True, False))
+    domains = expand_domains(
+        ('c', 'b', 'a'),
+        product_func.domains,
+        'a_b_c')
+    potential_func = make_potential_func(
+        ('a', 'b', 'c'),
+        domains,
+        product_func)
+    for k, vals in domains.items():
+        for v in vals:
+            assert product_func(v[2], v[1], v[0]) == potential_func(v)

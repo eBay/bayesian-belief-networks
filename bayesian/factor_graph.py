@@ -327,7 +327,12 @@ def eliminate_var(f, var):
     arg_spec = get_args(f)
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
-    new_spec.remove(var)
+    try:
+        new_spec.remove(var)
+    except:
+        import ipdb; ipdb.set_trace()
+        print 'remove'
+        raise
     # Lets say the orginal argspec is
     # ('a', 'b', 'c', 'd') and they
     # are all Booleans
@@ -712,8 +717,13 @@ def make_variable_node_message(node, target_node, aggregator='sum'):
     for neighbour in neighbours:
         if neighbour == target_node:
             continue
-        factors.append(
-            node.received_messages[neighbour.name])
+        try:
+            factors.append(
+                node.received_messages[neighbour.name])
+        except:
+            import ipdb; ipdb.set_trace()
+            print node.received_messages
+            raise
 
     product_func = make_product_func(factors)
     message = VariableMessage(
@@ -1397,15 +1407,27 @@ class FactorGraph(object):
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
         for i, node in enumerate(self.nodes):
-            gv_nodename = 'Node%s' % node.name.replace('-','_')
+            gv_nodename = '%s' % node.name.replace('-','_')
             if isinstance(node, FactorNode):
-                fh.write('  %s [ shape="rectangle" color="red"];\n' % gv_nodename)
+                if hasattr(node, 'label'):
+                    fh.write('  %s [ shape="rectangle" color="red" label="%s"];\n' % (
+                        gv_nodename, node.label + '\nFactor Node'))
+                else:
+                    fh.write('  %s [ shape="rectangle" color="red"];\n' % (
+                        gv_nodename))
+
             else:
-                fh.write('  %s [ shape="ellipse" color="blue"];\n' % gv_nodename)
+                if hasattr(node, 'label'):
+                    fh.write('  %s [ shape="ellipse" color="blue" label="%s"];\n' % (
+                        gv_nodename, node.label + '\nVariable Node'))
+                else:
+                    fh.write('  %s [ shape="ellipse" color="blue"];\n' % (
+                    gv_nodename))
+
         for node in self.nodes:
-            gv_nodename = 'Node%s' % node.name.replace('-','_')
+            gv_nodename = '%s' % node.name.replace('-','_')
             for neighbour in node.neighbours:
-                gv_neighbourname = 'Node%s' % neighbour.name.replace('-','_')
+                gv_neighbourname = '%s' % neighbour.name.replace('-','_')
                 edge = [gv_nodename, gv_neighbourname]
                 edge = tuple(sorted(edge))
                 edges.add(edge)

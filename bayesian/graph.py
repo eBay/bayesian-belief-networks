@@ -283,10 +283,11 @@ class Clique(object):
 
     def __init__(self, cluster):
         self.nodes = cluster
-        self.name = '[%s]' % ','.join(
-            [node.name for node in list(cluster)])
+        self.name = '%s' % '_'.join(
+            [node.name for node in sorted(list(cluster))])
 
     def __repr__(self):
+        return '<Clique: %s>' % self.name
         if self.nodes and hasattr(list(self.nodes)[0], 'variable_name'):
             # TODO: Fix this!
             vars = sorted([n.variable_name for n in self.nodes])
@@ -721,6 +722,9 @@ class SepSet(object):
         self.X = X
         self.Y = Y
         self.label = list(X.nodes.intersection(Y.nodes))
+        self.intersection = list(X.nodes.intersection(Y.nodes))
+        self.name = '%s__%s' % (
+            X.name, Y.name)
 
     @property
     def mass(self):
@@ -805,6 +809,7 @@ class SepSet(object):
         forest.remove(Y_tree)
 
     def __repr__(self):
+        return '<Sepset: %s>' % self.name
         return 'SepSet_%s' % ''.join(
             #[x.name[2:].upper() for x in list(self.label)])
             [x.variable_name.upper() for x in list(self.label)])

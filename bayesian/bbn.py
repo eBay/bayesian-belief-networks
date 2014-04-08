@@ -17,6 +17,7 @@ from bayesian.factor_graph import VariableNode, FactorNode
 from bayesian.factor_graph import connect as fg_connect
 from bayesian.factor_graph import FactorGraph, unity, make_unity
 from bayesian.factor_graph import make_product_func
+from bayesian.factor_graph import build_graph as build_factor_graph
 
 from bayesian.utils import get_args, named_base_type_factory
 from bayesian.utils import get_original_factors
@@ -125,14 +126,21 @@ class BBN(Graph):
         print tab
 
     def convert_to_factor_graph(self):
-        '''Convert to a factor graph
-        representation. '''
+        """
+        Convert to a factor graph
+        representation.
+        """
         jt = build_join_tree(self, clique_priority_func=priority_func)
 
         # First lets create the variable nodes...
-        # Mmm maybe the variable nodes are the SepSet nodes???
-        # Lets try that...
-        fg_variable_nodes = {}
+        # Since in http://www.cs.helsinki.fi/u/
+        # bmmalone/probabilistic-models-spring-2014/
+        # JunctionTreeWilliams.pdf
+        # The *SepSet* nodes are initialized to 1 and
+        # the *Clique* Nodes are assigned potentials
+        # it seems logical that the Clique Nodes should
+        # be factor nodes and the sepset nodes should
+        # be variable nodes.
         #for node in self.nodes:
         #    variable_node = VariableNode(node.variable_name)
         #    variable_node.domain = self.domains.get(
@@ -148,42 +156,63 @@ class BBN(Graph):
         factor_index = defaultdict(set)
         # Now for the factor nodes...
         fg_factor_nodes = {}
-        for clique in jt.nodes:
+        for clique_node in jt.clique_nodes:
             # The original variables from the BBN
             # are recorded in list(clique.clique.nodes)[0].variable_name
             # lets attach them as well as this will
             # be useful for assigning the variable nodes...
+            original_nodes = clique_node.clique.nodes
+            #import ipdb; ipdb.set_trace()
+            original_node_vars = [n.variable_name for n in original_nodes]
+            #represented_variable_names, domains = (
+            #    get_represented_variables(
+            #        original_nodes))
+            factor_node = FactorNode(clique_node.name,
+                                     make_unity(original_node_vars))
+            domains = {}
+            for variable_name in original_node_vars:
+                domains[variable_name] = self.domains.get(
+                    variable_name, [True, False])
+            factor_node.domains = domains
+            factor_node.original_domains = domains
+            factor_node.original_vars = original_node_vars
+            factor_node.original_nodes = original_nodes
+            # Track which clique this node
+            # came from
+            factor_node.clique_node = clique_node
+            factor_node.label = '\n'.join([
+                'Original Nodes: %s ' % str(original_nodes),
+                'Name: %s' % factor_node.name])
+            # Track which factor node was
+            # created from this clique
+            clique_node.factor_node = factor_node
+            fg_factor_nodes[clique_node.name] = factor_node
 
-            # Alternately what if we made *every* clique
-            # a variable? Then we can easily build a factor
-            # graph and assign potentials to the factors???
-
-            if isinstance(clique, JoinTreeSepSetNode):
-                variable_node = VariableNode(clique.name)
-                variable_node.original_nodes = clique.sepset.label
-                variable_node.domain = expand_domains(
-                    self.domains, clique.name)
-                fg_variable_nodes[str(clique.name)] = variable_node
+        fg_variable_nodes = {}
+        for sepset_node in jt.sepset_nodes:
+            original_variable_names = [n.variable_name for n in
+                                       sepset_node.sepset.intersection]
+            variable_node_name = '_'.join(original_variable_names)
+            if variable_node_name not in fg_variable_nodes:
+                variable_node = VariableNode(variable_node_name)
+                variable_node.original_nodes = sepset_node.sepset.intersection
+                variable_node.domain = self.domains.get(
+                    variable_node, [True, False])
+                variable_node.sepset_node = sepset_node
+                variable_node.label = '\n'.join([
+                    'Name: %s' % variable_node.name,
+                    #'Represented Variable Names: %s ' % (
+                    #    str(represented_variable_names)),
+                    #'X: %s; ' % sepset_node.sepset.X.name,
+                    #'Y: %s; ' % sepset_node.sepset.Y.name,
+                    'Intersection: %s' % str(sepset_node.sepset.intersection)])
+                #'SepSet: %s' % sepset_node.name])
+                fg_variable_nodes[variable_node.name] = variable_node
             else:
-                original_nodes = clique.clique.nodes
-                factor_node = FactorNode(clique.name, make_unity([clique.name]))
-
-                factor_node.original_nodes = original_nodes
-                # Track which clique this node
-                # came from
-                factor_node.clique = clique
-                # Track which factor node was
-                # created from this clique
-                clique.factor_node = factor_node
-                fg_factor_nodes[clique.name] = factor_node
-
-        # We will use the original graph neighbours to
-        # connect them...
-        for sepset in jt.sepset_nodes:
-            for neighbour in sepset.neighbours:
-                fg_connect(
-                    fg_factor_nodes[neighbour.name],
-                    fg_variable_nodes[str(sepset.name)])
+                variable_node = fg_variable_nodes[variable_node.name]
+            for neighbour in sepset_node.neighbours:
+                if fg_factor_nodes[neighbour.name] not in variable_node.neighbours:
+                    fg_connect(variable_node, fg_factor_nodes[neighbour.name])
 
 
         # TODO: We need to create the potential functions
@@ -191,6 +220,7 @@ class BBN(Graph):
         # original variables.
         # We may nned to modify the algorithm to
         # prevent assignment to SepSet nodes.
+
         assignments = jt.assign_clusters(self)
 
         # Now  for each assignment we want to build
@@ -205,13 +235,14 @@ class BBN(Graph):
             # to make sure that the assignments
             # are all within the family (F(v))
             if len(bbn_funcs) > 1:
-                new_potential = make_product_func(bbn_funcs)
-                new_potential.domains = {}
-                for func in bbn_funcs:
-                    new_potential.domains.update(func.domains)
+                product_func = make_product_func(bbn_funcs)
             else:
-                new_potential = bbn_funcs[0]
-            node.factor_node.func = new_potential
+                product_func = bbn_funcs[0]
+
+            node.factor_node.func = product_func
+            node.factor_node.label += '\nProduct func args: %s' % str(get_args(product_func))
+            node.factor_node.label += '\nBBN Funcs: %s' % str(bbn_funcs)
+            node.factor_node.label += '\nBBN Func args: %s' % str([get_args(f) for f in bbn_funcs])
 
             # Now we need to add back the
             # original bbn variables into
@@ -224,18 +255,20 @@ class BBN(Graph):
             # of variable nodes in the factor graph.
             # 1) Those arising from the sepsets
             # 2) Those arising from the BBN variables
-            for bbn_node in assignments:
-                variable_node = VariableNode(
-                    bbn_node.variable_name)
-                variable_node.domain = self.domains.get(
-                    variable_node.name, [True, False])
-                fg_variable_nodes[variable_node.name] = variable_node
-                fg_connect(variable_node, node.factor_node)
+            for factor_node_name, factor_node in fg_factor_nodes.items():
+                args = get_args(factor_node.func)
+                for arg in args:
+                    if arg not in fg_variable_nodes:
+                        variable_node = VariableNode(arg)
+                        fg_connect(factor_node, variable_node)
+                        fg_variable_nodes[arg] = variable_node
 
         # Now create the factor graph...
         fg = FactorGraph(
             fg_variable_nodes.values() +
             fg_factor_nodes.values())
+        #fg = build_factor_graph(
+        #    [n.func for n in fg_factor_nodes.values()])
 
         # Maintain a link to the jt and the BBN
         fg.jt = jt
@@ -547,6 +580,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         super(JoinTreeCliqueNode, self).__init__(
             clique.__repr__())
         self.clique = clique
+        self.name = clique.name
         # Now we create a pointer to
         # this clique node as the "parent" clique
         # node of each node in the cluster.
@@ -659,16 +693,24 @@ class JoinTreeCliqueNode(UndirectedNode):
         target.potential_tt = tt
 
     def __repr__(self):
-        return '<JoinTreeCliqueNode: %s>' % self.clique
+        return '<JoinTreeCliqueNode: %s>' % self.name
 
 
 class SepSet(object):
+
+    """
+    TODO: Merge this class with JoinTreeSepSetNode
+    there is really no need to separate them.
+    """
 
     def __init__(self, X, Y):
         '''X and Y are cliques represented as sets.'''
         self.X = X
         self.Y = Y
         self.label = list(X.nodes.intersection(Y.nodes))
+        self.intersection = self.label
+        self.name = '%s_%s' % (
+            X.name, Y.name)
 
     @property
     def mass(self):
@@ -727,8 +769,7 @@ class SepSet(object):
                   [n.clique for n in t.clique_nodes]][0]
 
         # Now create and insert a sepset node into the Xtree
-        sepset_name = '%s-%s' % (self.X.node.name, self.Y.node.name)
-        ss_node = JoinTreeSepSetNode(sepset_name, self)
+        ss_node = JoinTreeSepSetNode(self)
         X_tree.nodes.append(ss_node)
 
         # And connect them
@@ -753,16 +794,15 @@ class SepSet(object):
         forest.remove(Y_tree)
 
     def __repr__(self):
-        return 'SepSet_%s' % ''.join(
-            #[x.name[2:].upper() for x in list(self.label)])
-            [x.variable_name.upper() for x in list(self.label)])
+        return '<SepSet: %s>' %  self.name
 
 
 class JoinTreeSepSetNode(UndirectedNode):
 
-    def __init__(self, name, sepset):
-        super(JoinTreeSepSetNode, self).__init__(name)
+    def __init__(self, sepset):
+        super(JoinTreeSepSetNode, self).__init__(sepset.name)
         self.sepset = sepset
+        self.name = sepset.name
 
     @property
     def variable_names(self):
@@ -778,7 +818,7 @@ class JoinTreeSepSetNode(UndirectedNode):
         return sorted([x.variable_name for x in self.sepset.label])
 
     def __repr__(self):
-        return '<JoinTreeSepSetNode: %s>' % self.sepset
+        return '<JoinTreeSepSetNode: %s>' % self.name
 
 
 def build_bbn(*args, **kwds):
@@ -942,7 +982,7 @@ def build_join_tree(dag, clique_priority_func=priority_func):
 
 def expand_domains(variable_names, domains, new_variable_name):
     vals = []
-    variable_names.sort()
+    variable_names = sorted(variable_names)
     for variable in variable_names:
         domain = domains.get(variable, [True, False])
         vals.append(list(product([variable], domain)))
@@ -952,3 +992,71 @@ def expand_domains(variable_names, domains, new_variable_name):
         new_domain[new_variable_name].append(
             [p[1] for p in permutation])
     return new_domain
+
+
+class Potential(object):
+
+    def __init__(self, f):
+        self.f = f
+
+    def __call__(self, *args):
+        return self.f(*args)
+
+
+def make_potential_func(arg_names, domains, func):
+    """
+    Create a wrapper function that
+    proxies a list of arguments
+    into a product of functions
+    each of which takes as arguments
+    a subset of the supplied arguments
+
+    Arguments:
+    arg_names -- an iterable with
+                 the order in which the arguments
+                 represent argument names.
+    domains -- The expanded domains of
+               the wrapper
+    func -- the function takeing multiple
+            args to be wrapped.
+
+    """
+    original_arg_names = get_args(func)
+
+    def potential_func(arg):
+        args = []
+        args_dict = dict(zip(arg_names, arg))
+        for arg_name in original_arg_names:
+            args.append(args_dict[arg_name])
+        return func(*args)
+
+
+    potential_func.argspec = ['_'.join(arg_names)]
+    potential_func.domains = domains
+    pot = Potential(potential_func)
+    pot.__name__ = 'p_%s' % '_'.join(arg_names)
+    pot.argspec = potential_func.argspec
+    pot.domains = potential_func.domains
+    return pot
+    return potential_func
+
+
+def get_represented_variables(ug_nodes):
+    """
+    Build list and dict of combined
+    variable names and domains
+    for the set of original variables
+
+    TODO: Change this to use
+    an OrderedDict instead, which
+    would require only one return
+    data structure.
+    """
+    domains = {}
+    var_names = set()
+    for original_node in ug_nodes:
+        var_names = (
+            var_names.union(
+                set(get_args(original_node))))
+        domains.update(original_node.func.domains)
+    return sorted(list(var_names)), domains
