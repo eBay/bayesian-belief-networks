@@ -154,6 +154,8 @@ class FactorNode(Node):
         self.received_messages = {}
         self.func.value = None
         self.cached_functions = []
+        if hasattr(func, 'domains'):
+            self.domains = self.func.domains
 
     def construct_message(self, aggregator='sum'):
         target = self.get_target()
@@ -241,17 +243,19 @@ class Message(object):
         for factor in self.factors:
             print factor
 
-    def __call__(self, var):
+    def __call__(self, *args):
         '''
         Evaluate the message as a function
         '''
         if getattr(self.func, '__name__', None) == 'unity':
             return 1
-        assert not isinstance(var, VariableNode)
+        if getattr(self.func, '__name__', None) == '1':
+            return 1
+        #assert not isinstance(var, VariableNode)
         # Now check that the name of the
         # variable matches the argspec...
         #assert var.name == self.argspec[0]
-        return self.func(var)
+        return self.func(*args)
 
 
 class VariableMessage(Message):
@@ -372,7 +376,7 @@ def eliminate_var(f, var):
             call_args[i] = arg
             i += 1
 
-        for val in f.domains[var]:
+        for val in f.domains.get(var, [True, False]):
             #v = VariableNode(name=var)
             #v.value = val
             #call_args[pos] = v
@@ -417,7 +421,7 @@ def memoize(f):
     return memoized
 
 
-def make_not_sum_func(product_func, keep_var):
+def make_not_sum_func(product_func, keep_vars):
     '''
     Given a function with some set of
     arguments, and a single argument to keep,
@@ -434,7 +438,7 @@ def make_not_sum_func(product_func, keep_var):
     args = get_args(product_func)
     new_func = copy.deepcopy(product_func)
     for arg in args:
-        if arg != keep_var:
+        if arg not in keep_vars:
             new_func = eliminate_var(new_func, arg)
             #new_func = memoize(new_func)
     return new_func
@@ -646,7 +650,14 @@ def make_factor_node_message(node, target_node, aggregator='sum'):
 
     if node.is_leaf():
         if aggregator == 'sum':
-            not_sum_func = make_not_sum_func(node.func, target_node.name)
+            #not_sum_func = make_not_sum_func(node.func, [target_node.name])
+            if hasattr(target_node, 'original_variable_names') and (
+                len(target_node.original_variable_names) > 1):
+                not_sum_func = make_not_sum_func(
+                    node.func, target_node.original_variable_names)
+            else:
+                not_sum_func = make_not_sum_func(node.func, [target_node.name])
+
         else:
             #not_sum_func = make_arg_max_func(node.func, target_node.name)
             # We are going to pass the source and target nodes in to
@@ -691,7 +702,12 @@ def make_factor_node_message(node, target_node, aggregator='sum'):
         not_sum_func = make_arg_max_func(product_func, target_node)
     else:
         product_func = make_product_func(factors)
-        not_sum_func = make_not_sum_func(product_func, target_node.name)
+        if hasattr(target_node, 'original_variable_names') and (
+                len(target_node.original_variable_names) > 1):
+            not_sum_func = make_not_sum_func(
+                product_func, target_node.original_variable_names)
+        else:
+            not_sum_func = make_not_sum_func(product_func, [target_node.name])
     message = FactorMessage(node, target_node, factors, not_sum_func)
     return message
 
@@ -707,6 +723,11 @@ def make_variable_node_message(node, target_node, aggregator='sum'):
     If the source node is a leaf node
     then send the unity function.
     '''
+    if hasattr(node, 'original_variable_names') and (
+            len(node.original_variable_names) > 1):
+        #import ipdb; ipdb.set_trace()
+        print node
+
     if node.is_leaf():
         message = VariableMessage(
             node, target_node, [1], unity)
@@ -724,7 +745,9 @@ def make_variable_node_message(node, target_node, aggregator='sum'):
             import ipdb; ipdb.set_trace()
             print node.received_messages
             raise
-
+    if node.name == 'b_c':
+        import ipdb; ipdb.set_trace()
+        print node
     product_func = make_product_func(factors)
     message = VariableMessage(
         node, target_node, factors, product_func)
@@ -781,7 +804,11 @@ def make_product_func(factors):
                 # insert a dummy argument
                 # so that the unity function works.
                 factor_args.append('dummy')
-            res = factor(*factor_args)
+            try:
+                res = factor(*factor_args)
+            except:
+                import ipdb; ipdb.set_trace()
+                res = factor(*factor_args)
             if res < 0:
                 import ipdb; ipdb.set_trace()
                 print 'negative result from product func...'
@@ -797,7 +824,7 @@ def make_product_func(factors):
 
 
 def make_unity(argspec):
-    def unity(x):
+    def unity(*x):
         return 1
     unity.argspec = argspec
     unity.__name__ = '1'
@@ -1474,6 +1501,11 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor)
         variables.update(factor_args)
         factor_node = FactorNode(factor.__name__, factor)
+        if hasattr(factor_node, 'domains') and factor_node.domains:
+            # Domains specified at the
+            # factor node level override
+            # those at the graph level.
+            domains.update(factor_node.domains)
         #factor_node.func.domains = domains
         # Bit of a hack for now we should actually exclude variables that
         # are not parameters of this function

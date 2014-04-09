@@ -167,6 +167,19 @@ def pytest_funcarg__cancer_bbn(request):
     return cancer_bbn
 
 
+def variable_domains_match_function_domains(fg):
+    """
+    Ensure that all factor node functions
+    domains match the variable domains.
+    """
+    variable_domains = dict()
+    for variable_node in fg.variable_nodes():
+        variable_domains[variable_node.name] = variable_node.domain
+    for factor_node in fg.factor_nodes():
+        for k, v in factor_node.domains.items():
+            assert v == variable_domains[k]
+
+
 def all_configurations_equal(bbn, fg):
     '''We want to make sure that our
     conversion to factor graph is identical
@@ -200,8 +213,7 @@ def all_configurations_equal(bbn, fg):
 
     for variable, domain in bbn.domains.items():
         vals.append(list(xproduct([variable], domain + ['-'])))
-    permutations = xproduct(*vals)
-
+    permutations = list(xproduct(*vals))
     assert permutations
     # Now we have every possible combination
     # including unobserved variables.
@@ -219,7 +231,11 @@ def all_configurations_equal(bbn, fg):
 
         assert len(bbn_result) == len(fg_result)
         for (variable_name, value), v in bbn_result.items():
-            print round(v, 8), round(fg_result[(variable_name, value)], 8)
+            try:
+                print round(v, 8), round(fg_result[(variable_name, value)], 8)
+            except:
+                import ipdb; ipdb.set_trace()
+                print variable_name, value, v
             assert round(v, 8) == (
                 round(fg_result[(variable_name, value)], 8))
     return True
@@ -688,6 +704,7 @@ class TestBBN():
 
     def test_monty_convert_to_factor_graph(self, monty_bbn):
         monty_converted = monty_bbn.convert_to_factor_graph()
+        assert not monty_converted.has_cycles()
 
         # Now we will test all combinations
         # of the converted factor graph with
@@ -727,7 +744,7 @@ class TestBBN():
     def test_earthquake_convert_to_factor_graph(
             self, earthquake_bbn):
         earthquake_converted = earthquake_bbn.convert_to_factor_graph()
-
+        assert not earthquake_converted.has_cycles()
         # Now we will test all combinations
         # of the converted factor graph with
         # the original graph.
@@ -736,6 +753,10 @@ class TestBBN():
     def test_huang_darwiche_convert_to_factor_graph(
             self, huang_darwiche_dag):
         huang_darwiche_converted = huang_darwiche_dag.convert_to_factor_graph()
+        import ipdb; ipdb.set_trace()
+        huang_darwiche_converted.propagate()
+        #assert variable_domains_match_function_domains(huang_darwiche_converted)
+        assert not huang_darwiche_converted.has_cycles()
 
         # Now we will test all combinations
         # of the converted factor graph with
@@ -747,6 +768,8 @@ class TestBBN():
             self, cancer_bbn):
         cancer_converted = cancer_bbn.convert_to_factor_graph()
 
+        # Make sure that the domains have been
+        # set on all
         # Now we will test all combinations
         # of the converted factor graph with
         # the original graph.

@@ -132,21 +132,6 @@ class BBN(Graph):
         """
         jt = build_join_tree(self, clique_priority_func=priority_func)
 
-        # First lets create the variable nodes...
-        # Since in http://www.cs.helsinki.fi/u/
-        # bmmalone/probabilistic-models-spring-2014/
-        # JunctionTreeWilliams.pdf
-        # The *SepSet* nodes are initialized to 1 and
-        # the *Clique* Nodes are assigned potentials
-        # it seems logical that the Clique Nodes should
-        # be factor nodes and the sepset nodes should
-        # be variable nodes.
-        #for node in self.nodes:
-        #    variable_node = VariableNode(node.variable_name)
-        #    variable_node.domain = self.domains.get(
-        #        node.variable_name, [True, False])
-        #    fg_variable_nodes[node.variable_name] = variable_node
-
         assigned = set()
         # We should record for each variable
         # the clique nodes that invole it
@@ -164,9 +149,6 @@ class BBN(Graph):
             original_nodes = clique_node.clique.nodes
             #import ipdb; ipdb.set_trace()
             original_node_vars = [n.variable_name for n in original_nodes]
-            #represented_variable_names, domains = (
-            #    get_represented_variables(
-            #        original_nodes))
             factor_node = FactorNode(clique_node.name,
                                      make_unity(original_node_vars))
             domains = {}
@@ -189,6 +171,7 @@ class BBN(Graph):
             fg_factor_nodes[clique_node.name] = factor_node
 
         fg_variable_nodes = {}
+        bbn_variables_used = set()
         for sepset_node in jt.sepset_nodes:
             original_variable_names = [n.variable_name for n in
                                        sepset_node.sepset.intersection]
@@ -196,8 +179,22 @@ class BBN(Graph):
             if variable_node_name not in fg_variable_nodes:
                 variable_node = VariableNode(variable_node_name)
                 variable_node.original_nodes = sepset_node.sepset.intersection
-                variable_node.domain = self.domains.get(
-                    variable_node, [True, False])
+                variable_node.original_variable_names = (
+                    original_variable_names)
+                domains = {}
+                for sepset_variable_node in sepset_node.sepset.intersection:
+                    bbn_variables_used.add(sepset_variable_node.variable_name)
+                    if hasattr(sepset_variable_node, 'domain'):
+                        domains[sepset_variable_node.variable_name] = (
+                            sepset_variable_node.domain)
+                    else:
+                        domains[sepset_variable_node.variable_name] = (
+                            self.domains.get(
+                                sepset_variable_node.variable_name, [True, False]))
+                expanded_domain = expand_domains(
+                    original_variable_names, domains, variable_node_name)
+                variable_node.domain = expanded_domain[variable_node_name]
+                variable_node.domain = domains
                 variable_node.sepset_node = sepset_node
                 variable_node.label = '\n'.join([
                     'Name: %s' % variable_node.name,
@@ -237,12 +234,27 @@ class BBN(Graph):
             if len(bbn_funcs) > 1:
                 product_func = make_product_func(bbn_funcs)
             else:
-                product_func = bbn_funcs[0]
+                product_func = make_product_func(bbn_funcs)
 
-            node.factor_node.func = product_func
-            node.factor_node.label += '\nProduct func args: %s' % str(get_args(product_func))
-            node.factor_node.label += '\nBBN Funcs: %s' % str(bbn_funcs)
-            node.factor_node.label += '\nBBN Func args: %s' % str([get_args(f) for f in bbn_funcs])
+            assert hasattr(product_func, 'domains')
+            new_nodes = []
+            for neighbour in node.factor_node.neighbours:
+                if hasattr(neighbour, 'sepset_node'):
+                    new_nodes.append((
+                        neighbour.name,
+                        neighbour.sepset_node.sepset.intersection))
+                else:
+                    new_nodes.append((
+                        neighbour.name, neighbour.original_nodes))
+            print new_nodes
+            import ipdb; ipdb.set_trace()
+            node.factor_node.func = make_dispatcher(new_nodes, product_func)
+            node.factor_node.label += '\nProduct func args: %s' % (
+                str(get_args(product_func)))
+            node.factor_node.label += '\nBBN Funcs: %s' % (
+                str(bbn_funcs))
+            node.factor_node.label += '\nBBN Func args: %s' % (
+                str([get_args(f) for f in bbn_funcs]))
 
             # Now we need to add back the
             # original bbn variables into
@@ -258,10 +270,38 @@ class BBN(Graph):
             for factor_node_name, factor_node in fg_factor_nodes.items():
                 args = get_args(factor_node.func)
                 for arg in args:
-                    if arg not in fg_variable_nodes:
+                    if arg not in bbn_variables_used and arg in [
+                            n.variable_name for n in self.nodes]:
                         variable_node = VariableNode(arg)
+                        variable_node.domain = self.domains.get(
+                            arg, [True, False])
+                        try:
+                            variable_node.original_nodes = [n for n in self.nodes if
+                                                        n.variable_name == arg]
+                        except:
+                            import ipdb; ipdb.set_trace()
+                            print variable_node
                         fg_connect(factor_node, variable_node)
                         fg_variable_nodes[arg] = variable_node
+                        bbn_variables_used.add(arg)
+        # Now for variable nodes that are the result
+        # of sepsets having more than one original
+        # variable in the intersection, we need to
+        # change all factor function parameters
+        # to co-incide with the intersection.
+        for _, variable_node in fg_variable_nodes.items():
+            if not hasattr(variable_node, 'original_nodes'):
+                continue
+            if len(variable_node.original_nodes) == 1:
+                continue
+            #import ipdb; ipdb.set_trace()
+            for factor_node_name, factor_node in fg_factor_nodes.items():
+                if set(variable_node.original_variable_names).intersection(
+                        get_args(factor_node.func)):
+                    print variable_node
+                    #dispatcher = make_dispatcher(
+                    #    fg_variable_nodes.values(), factor_node.func)
+
 
         # Now create the factor graph...
         fg = FactorGraph(
@@ -273,10 +313,7 @@ class BBN(Graph):
         # Maintain a link to the jt and the BBN
         fg.jt = jt
         fg.bbn = self
-
         return fg
-
-
 
 
 class JoinTree(UndirectedGraph):
@@ -981,6 +1018,9 @@ def build_join_tree(dag, clique_priority_func=priority_func):
 
 
 def expand_domains(variable_names, domains, new_variable_name):
+    if len(variable_names) == 1:
+        return dict([(k, v) for k, v in domains.items() if
+                     k==new_variable_name])
     vals = []
     variable_names = sorted(variable_names)
     for variable in variable_names:
@@ -990,7 +1030,7 @@ def expand_domains(variable_names, domains, new_variable_name):
     new_domain = defaultdict(list)
     for permutation in permutations:
         new_domain[new_variable_name].append(
-            [p[1] for p in permutation])
+            tuple([p[1] for p in permutation]))
     return new_domain
 
 
@@ -1038,7 +1078,76 @@ def make_potential_func(arg_names, domains, func):
     pot.argspec = potential_func.argspec
     pot.domains = potential_func.domains
     return pot
+    import ipdb; ipdb.set_trace()
     return potential_func
+
+
+def make_dispatcher(
+        variable_nodes, func):
+    """
+    For a function having parameters
+    that have been combined into
+    a sepset we want to call the
+    original function with the
+    arguments split.
+
+    E.g. lets say we have f1(a, b, c)
+    and a, b have formed a sepset and
+    thus a new variable: ab
+    We want to build a wrapper that
+    splits ab into individual values
+    for a and b such that f2(ab, c)
+    correctly returns f1(a, b, c)
+
+    Arguments:
+    combined_name -- The name of the variable
+    that has been built from the SepSet
+    combined_nodes -- The original variable nodes
+    that now form the SepSet
+    combined_variable_node -- The variable node
+    representing the combined variables from
+    the SepSet.
+    func -- the original function takeing
+    uncombined arguments.
+    """
+
+    # Make a copy of the func args
+    original_arg_names = get_args(func)[:]
+    old_to_new = dict()
+    new_nodes = dict(variable_nodes)
+    sepset_vars = set()
+    for k, v in new_nodes.items():
+        for i, node in enumerate(v):
+            # TODO: What if an old variable
+            # appears in more than one?
+            # The sepset potentials should
+            # fix this, we will test!
+            old_to_new[node.variable_name] = (k, i)
+            sepset_vars.add(k)
+
+    arg_spec = list(sepset_vars)
+    for old_arg in original_arg_names:
+        if old_arg not in old_to_new:
+            arg_spec.append(old_arg)
+
+    def dispatcher(*new_args):
+        """Call original potentials
+        with combined sepset nodes."""
+        old_args = original_arg_names[:]
+        print new_args
+        for j, arg_name in enumerate(original_arg_names):
+            if arg_name in old_to_new:
+                k, i = old_to_new[arg_name]
+                pos = arg_spec.index(k)
+                old_args[j] = new_args[pos][i]
+            else:
+                pos = arg_spec.index(arg_name)
+                old_args[j] = new_args[pos]
+        return func(*old_args)
+
+    dispatcher.wrapped = func
+    dispatcher.argspec = arg_spec
+    return dispatcher
 
 
 def get_represented_variables(ug_nodes):
