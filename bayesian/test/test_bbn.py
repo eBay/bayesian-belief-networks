@@ -753,6 +753,12 @@ class TestBBN():
     def test_huang_darwiche_convert_to_factor_graph(
             self, huang_darwiche_dag):
         huang_darwiche_converted = huang_darwiche_dag.convert_to_factor_graph()
+
+        # Check that the domain for variable nodes, if it exists
+        # is always a list...
+        for variable_node in huang_darwiche_converted.variable_nodes():
+            if hasattr(variable_node, 'domain'):
+                assert isinstance(variable_node.domain, list)
         import ipdb; ipdb.set_trace()
         huang_darwiche_converted.propagate()
         #assert variable_domains_match_function_domains(huang_darwiche_converted)

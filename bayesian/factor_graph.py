@@ -199,6 +199,7 @@ class FactorNode(Node):
         for arg in get_args(self.func):
             call_args.append(val_dict[arg])
         if not call_args:
+            import ipdb; ipdb.set_trace()
             call_args.append('dummy')
         product *= self.func(*call_args)
         return product
@@ -746,7 +747,6 @@ def make_variable_node_message(node, target_node, aggregator='sum'):
             print node.received_messages
             raise
     if node.name == 'b_c':
-        import ipdb; ipdb.set_trace()
         print node
     product_func = make_product_func(factors)
     message = VariableMessage(
@@ -807,7 +807,6 @@ def make_product_func(factors):
             try:
                 res = factor(*factor_args)
             except:
-                import ipdb; ipdb.set_trace()
                 res = factor(*factor_args)
             if res < 0:
                 import ipdb; ipdb.set_trace()

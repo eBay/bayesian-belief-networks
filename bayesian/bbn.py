@@ -147,7 +147,6 @@ class BBN(Graph):
             # lets attach them as well as this will
             # be useful for assigning the variable nodes...
             original_nodes = clique_node.clique.nodes
-            #import ipdb; ipdb.set_trace()
             original_node_vars = [n.variable_name for n in original_nodes]
             factor_node = FactorNode(clique_node.name,
                                      make_unity(original_node_vars))
@@ -194,7 +193,7 @@ class BBN(Graph):
                 expanded_domain = expand_domains(
                     original_variable_names, domains, variable_node_name)
                 variable_node.domain = expanded_domain[variable_node_name]
-                variable_node.domain = domains
+                #variable_node.domain = domains
                 variable_node.sepset_node = sepset_node
                 variable_node.label = '\n'.join([
                     'Name: %s' % variable_node.name,
@@ -246,9 +245,8 @@ class BBN(Graph):
                 else:
                     new_nodes.append((
                         neighbour.name, neighbour.original_nodes))
-            print new_nodes
-            import ipdb; ipdb.set_trace()
-            node.factor_node.func = make_dispatcher(new_nodes, product_func)
+            node.factor_node.func = make_dispatcher(
+                new_nodes, product_func)
             node.factor_node.label += '\nProduct func args: %s' % (
                 str(get_args(product_func)))
             node.factor_node.label += '\nBBN Funcs: %s' % (
@@ -1139,7 +1137,10 @@ def make_dispatcher(
             if arg_name in old_to_new:
                 k, i = old_to_new[arg_name]
                 pos = arg_spec.index(k)
-                old_args[j] = new_args[pos][i]
+                if hasattr(new_args[pos], '__iter__'):
+                    old_args[j] = new_args[pos][i]
+                else:
+                    old_args[j] = new_args[pos]
             else:
                 pos = arg_spec.index(arg_name)
                 old_args[j] = new_args[pos]
