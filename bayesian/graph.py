@@ -24,6 +24,11 @@ class UndirectedNode(object):
         self.name = name
         self.neighbours = neighbours[:]
 
+    def is_leaf(self):
+        if len(self.neighbours) == 1:
+            return True
+        return False
+
     def __repr__(self):
         return '<UndirectedNode %s>' % self.name
 

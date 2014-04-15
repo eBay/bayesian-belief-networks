@@ -16,7 +16,7 @@ from bayesian.graph import triangulate
 from bayesian.factor_graph import VariableNode, FactorNode
 from bayesian.factor_graph import connect as fg_connect
 from bayesian.factor_graph import FactorGraph, unity, make_unity
-from bayesian.factor_graph import make_product_func
+from bayesian.factor_graph import make_product_func, make_not_sum_func
 from bayesian.factor_graph import build_graph as build_factor_graph
 
 from bayesian.utils import get_args, named_base_type_factory
@@ -56,6 +56,7 @@ class BBN(Graph):
         # is only one argument)
         for variable_name, node in nodes_dict.items():
             node.variable_name = variable_name
+        self.inference_method = 'huang_darwiche'
 
     def get_graphviz_source(self):
         fh = StringIO()
@@ -79,6 +80,16 @@ class BBN(Graph):
         return jt
 
     def query(self, **kwds):
+        #if not hasattr(self, '_jt'):
+        #    self._jt = self.build_join_tree()
+        # TODO: We should be able to cache the jt...
+        jt = self.build_join_tree()
+
+        if self.inference_method == 'clique_tree_sum_product':
+            return clique_tree_sum_product(jt, self, kwds)
+        elif self.inference_method != 'huang_darwiche':
+            raise "NotImplemented"
+
         jt = self.build_join_tree()
         assignments = jt.assign_clusters(self)
         jt.initialize_potentials(assignments, self, kwds)
@@ -125,10 +136,14 @@ class BBN(Graph):
                 tab.add_row([node, value, '%8.6f' % prob])
         print tab
 
-    def convert_to_factor_graph(self):
+    def convert_to_factor_graph(self, assignments=None):
         """
         Convert to a factor graph
         representation.
+        In order to override the default assignments
+        you can pass in a dict with the assignments
+        to want, however this is not necessary.
+
         """
         jt = build_join_tree(self, clique_priority_func=priority_func)
 
@@ -193,7 +208,7 @@ class BBN(Graph):
                 expanded_domain = expand_domains(
                     original_variable_names, domains, variable_node_name)
                 variable_node.domain = expanded_domain[variable_node_name]
-                #variable_node.domain = domains
+                #variable_node.domain = domains[variable_node_name]
                 variable_node.sepset_node = sepset_node
                 variable_node.label = '\n'.join([
                     'Name: %s' % variable_node.name,
@@ -217,6 +232,7 @@ class BBN(Graph):
         # We may nned to modify the algorithm to
         # prevent assignment to SepSet nodes.
 
+        #if not assignments:
         assignments = jt.assign_clusters(self)
 
         # Now  for each assignment we want to build
@@ -237,16 +253,17 @@ class BBN(Graph):
 
             assert hasattr(product_func, 'domains')
             new_nodes = []
-            for neighbour in node.factor_node.neighbours:
-                if hasattr(neighbour, 'sepset_node'):
-                    new_nodes.append((
-                        neighbour.name,
-                        neighbour.sepset_node.sepset.intersection))
-                else:
-                    new_nodes.append((
-                        neighbour.name, neighbour.original_nodes))
-            node.factor_node.func = make_dispatcher(
-                new_nodes, product_func)
+            #for neighbour in node.factor_node.neighbours:
+            #    if hasattr(neighbour, 'sepset_node'):
+            #        new_nodes.append((
+            #            neighbour.name,
+            #            neighbour.sepset_node.sepset.intersection))
+            #    else:
+            #        new_nodes.append((
+            #            neighbour.name, neighbour.original_nodes))
+            #node.factor_node.func = make_dispatcher(
+            #    new_nodes, product_func)
+            node.factor_node.func = product_func
             node.factor_node.label += '\nProduct func args: %s' % (
                 str(get_args(product_func)))
             node.factor_node.label += '\nBBN Funcs: %s' % (
@@ -437,6 +454,45 @@ class JoinTree(UndirectedGraph):
     def assign_clusters(self, bbn):
         assignments_by_family = dict()
         assignments_by_clique = defaultdict(list)
+
+        ##### THIS CODE FOR REMOVAL TESTING ONLY ######
+        # IT BASICALLY CREATES THE ASSIGNMENTS AS IN
+        # SLIDE 25 / KF
+        #clique_nodes = sorted(self.clique_nodes,
+        #                key=lambda x: x.name)
+        #cd_clique = [clique for clique in clique_nodes if clique.name == 'f_difficulty_f_coherence'][0]
+        #gid_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_difficulty_f_intelligence'][0]
+        #hgj_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_job_f_happy'][0]
+        #gsi_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_intelligence_f_sat'][0]
+        #gjsl_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_sat_f_job_f_letter'][0]
+
+        # Since there are multiple valid
+        # assignments we will manually
+        # set the assignments here to
+        # correspond to the assignments
+        # in the example on page 23.
+        # Actually we have to assign the
+        # BBN nodes, not the functions!!!
+
+        #assignments_by_clique[cd_clique] = [
+        #    bbn.vars_to_nodes['c'],
+        #    bbn.vars_to_nodes['d']]
+        #assignments_by_clique[gid_clique] = [
+        #    bbn.vars_to_nodes['g']]
+        #assignments_by_clique[gsi_clique] = [
+        #    bbn.vars_to_nodes['i'],
+        #    bbn.vars_to_nodes['s']]
+        #assignments_by_clique[gjsl_clique] = [
+        #    bbn.vars_to_nodes['l'],
+        #    bbn.vars_to_nodes['j']]
+        #assignments_by_clique[hgj_clique] = [
+        #    bbn.vars_to_nodes['h']]
+
+        #return assignments_by_clique
+        ##########REMOVE UP TO TOP OF THIS SECTION######
+        assignments_by_clique = defaultdict(list)
+
+
         assigned = set()
         for node in bbn.nodes:
             args = get_args(node.func)
@@ -585,6 +641,8 @@ class JoinTree(UndirectedGraph):
         # TODO: It will be safer to copy the defaultdict to a regular dict
         return tt
 
+    def ready_nodes(self):
+        return [node for node in self.clique_nodes if node.ready()]
 
 
 
@@ -625,6 +683,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         # parent cluster as defined by H&D
         # is *a* cluster than is a superset
         # of Family(v)
+        self.received_messages = dict()
 
     @property
     def variable_names(self):
@@ -727,8 +786,168 @@ class JoinTreeCliqueNode(UndirectedNode):
                                                   sepset.potential_tt_old[entry])
         target.potential_tt = tt
 
+    def send(self, message):
+        """Deposit the message in the
+        recipients inbox..."""
+        message.destination.received_messages[self.name] = message
+
     def __repr__(self):
         return '<JoinTreeCliqueNode: %s>' % self.name
+
+
+    def get_eliminate_vars(self, target):
+        """Get a list of the
+        vars to be eliminated when passing
+        a message to target.
+        These should be the vars in this
+        clique that are *not* in the target.
+        ie the vars in the sepset seperating
+        the target."""
+        # First we need to determine
+        # which sepset separates this
+        # node from the target as
+        # it may be connected to more
+        # than one neighbour.
+        sepset_to_target = None
+        for sepset_node in self.neighbours:
+            if target in sepset_node.neighbours and self in sepset_node.neighbours:
+                sepset_to_target = sepset_node.sepset
+                break
+        vars = self.clique.nodes.difference(
+            sepset_to_target.intersection)
+        return vars
+
+    def initialize_factors(self, bbn_nodes):
+        """From the BBN nodes in this
+        clique, build the initial potential
+        function from the factor functions."""
+        factors = [node.func for node in bbn_nodes]
+        self.potential_func = make_product_func(factors)
+
+    def ready(self):
+        """Are we ready to send?
+        TODO: Fix this so that it
+        keeps a count and doesnt call
+        get_target again..."""
+        target = self.get_target()
+        if target:
+            return True
+        return False
+
+    def get_target(self):
+        '''
+        A node can only send to a neighbour if
+        it has not already sent to that neighbour
+        and it has received messages from all other
+        neighbours.
+        '''
+        neighbours = self.clique_neighbours
+        #if len(neighbours) - len(self.received_messages) > 1:
+        #    return None
+        needed_to_send = defaultdict(int)
+        for target in neighbours:
+            needed_to_send[target] = len(neighbours) - 1
+        for _, message in self.received_messages.items():
+            for target in neighbours:
+                if message.source != target:
+                    needed_to_send[target] -= 1
+        for k, v in needed_to_send.items():
+            if v == 0 and not self.name in k.received_messages:
+                return k
+
+    @property
+    def clique_neighbours(self):
+        """Return the neighbouring cliques.
+        These are the neighbours of the
+        sepset neighbours other than
+        this clique"""
+        neighbours = set()
+        for sepset_node in self.neighbours:
+            for clique_node in sepset_node.neighbours:
+                if not self == clique_node:
+                    neighbours.add(clique_node)
+        return neighbours
+
+    def make_message(self, target_node, aggregator='sum'):
+        '''
+        To construct the message from
+        a variable node to a factor
+        node we take the product of
+        all messages received from
+        neighbours except for any
+        message received from the target.
+        If the source node is a leaf node
+        then send the unity function.
+        '''
+        sepset = set(self.variable_names).intersection(target_node.variable_names)
+        keep_vars = sepset.difference(self.variable_names)
+        if self.is_leaf():
+            """The only difference when a node
+            is a leaf is that there is no
+            product func to be made"""
+            message = CliqueMessage(self, target_node, [],
+                              make_not_sum_func(self.potential_func, sepset))
+
+            return message
+        factors = [self.potential_func]
+        neighbours = self.clique_neighbours
+        for neighbour in neighbours:
+            if neighbour == target_node:
+                continue
+            try:
+                factors.append(
+                    self.received_messages[neighbour.name])
+            except:
+                import ipdb; ipdb.set_trace()
+                print node.received_messages
+                raise
+        product_func = make_product_func(factors)
+        not_sum_func = make_not_sum_func(product_func, sepset)
+        message = CliqueMessage(
+            self, target_node, factors, not_sum_func)
+        return message
+
+
+class Message(object):
+
+    def list_factors(self):
+        print '---------------------------'
+        print 'Factors in message %s -> %s' % \
+            (self.source.name, self.destination.name)
+        print '---------------------------'
+        for factor in self.factors:
+            print factor
+
+    def __call__(self, *args):
+        '''
+        Evaluate the message as a function
+        '''
+        if getattr(self.func, '__name__', None) == 'unity':
+            return 1
+        if getattr(self.func, '__name__', None) == '1':
+            return 1
+        #assert not isinstance(var, VariableNode)
+        # Now check that the name of the
+        # variable matches the argspec...
+        #assert var.name == self.argspec[0]
+        return self.func(*args)
+
+
+class CliqueMessage(Message):
+
+    def __init__(self, source, destination, factors, func):
+        self.source = source
+        self.destination = destination
+        self.factors = factors
+        self.argspec = get_args(func)
+        self.func = func
+
+    def __repr__(self):
+        return '<V-Message from %s -> %s: %s factors (%s)>' % \
+            (self.source.name, self.destination.name,
+             len(self.factors), self.argspec)
+
+
 
 
 class SepSet(object):
@@ -1170,3 +1389,82 @@ def get_represented_variables(ug_nodes):
                 set(get_args(original_node))))
         domains.update(original_node.func.domains)
     return sorted(list(var_names)), domains
+
+
+def make_evidence_func(func, args, pos, value):
+
+    def evidence_func(*args):
+        if args[pos] != value:
+            return 0
+        return func(*args)
+    evidence_func.argspec = args
+    evidence_func.domains = func.domains
+
+    return evidence_func
+
+
+def clique_tree_sum_product(clique_tree, bbn, evidence={}):
+    """Implements the sum-product algorithm on
+    the induced clique tree formed from the bbn."""
+
+    # First get the original BBN factor assignments...
+    assignments = clique_tree.assign_clusters(bbn)
+
+    # Now initialize the potentials on each of
+    # the clique nodes...
+    for clique_node in clique_tree.clique_nodes:
+        clique_node.initialize_factors(
+            assignments[clique_node])
+        # Now if we have an observation for
+        # any variables in the potential function
+        # we simply multiply the indicator function...
+        args = get_args(clique_node.potential_func)
+        for i, arg in enumerate(args):
+            if arg in evidence:
+                clique_node.potential_func = make_evidence_func(
+                    clique_node.potential_func, args,
+                    i, evidence[arg])
+                #clique_node.potential_func(True, True)
+                #clique_node.potential_func(False, True)
+
+
+
+    # Now we propaget the messages up and down
+    # the clique tree...
+    while True:
+        ready_nodes = clique_tree.ready_nodes()
+        if not ready_nodes:
+            """This (should) mean that all
+            nodes have passed messages both 'up'
+            and 'down' so we are done."""
+            break
+        for clique_node in ready_nodes:
+            target = clique_node.get_target()
+            message = clique_node.make_message(target)
+            clique_node.send(message)
+    # Now we can return all the marginals...
+    result = dict()
+    marginalized = set()
+    for bbn_node in bbn.nodes:
+        # Find a clique that contains this node
+        # as a parameter in its updated
+        # potential function...
+        if bbn_node.variable_name not in marginalized:
+            for clique_node in clique_tree.clique_nodes:
+                if bbn_node.variable_name not in (
+                        [n.variable_name for n in clique_node.clique.nodes]):
+                    continue
+                product_func = make_product_func(
+                    [clique_node.potential_func] +
+                    clique_node.received_messages.values())
+                not_sum_func = make_not_sum_func(product_func, bbn_node.variable_name)
+
+                # Todo: fix this to iterate over the whole domain...
+                normalizer = not_sum_func(True) + not_sum_func(False)
+                result[(bbn_node.variable_name, True)] = (
+                    not_sum_func(True) / normalizer)
+                result[(bbn_node.variable_name, False)] = (
+                    not_sum_func(False) / normalizer)
+                marginalized.add(bbn_node.variable_name)
+                break
+    return result

@@ -118,3 +118,24 @@ def test_send_message(huang_darwiche_dag):
     assert len([n for n in fg.factor_nodes() if n.name == 'f_c_f_a_f_b']) == 1
     destination = [n for n in fg.factor_nodes() if n.name == 'f_c_f_a_f_b'][0]
     assert destination.recieved_messages['a'] == message
+
+
+def test_send_message(huang_darwiche_dag):
+    """Test constructed messages on
+    converted huang_darwiche bbn"""
+    import ipdb; ipdb.set_trace()
+    fg = huang_darwiche_dag.convert_to_factor_graph()
+    node_a = fg.variable_nodes()[0]
+    assert node_a.name == 'a'
+    message = node_a.construct_message()
+    import ipdb; ipdb.set_trace()
+    assert len([n for n in fg.factor_nodes() if n.name == 'f_c_f_a_f_b']) == 1
+    destination = [n for n in fg.factor_nodes() if n.name == 'f_c_f_a_f_b'][0]
+    assert destination.recieved_messages['a'] == message
+
+
+def test_eliminate_var_converted_graph():
+
+    eliminated = eliminate_var(eliminate_var_factor, 'x2')
+    assert eliminated.argspec == ['x1', 'x3']
+    assert eliminated(True, True) == 0.07

@@ -11,6 +11,7 @@ from bayesian.utils import make_key
 from bayesian.examples.bbns.monty_hall import g as monty_bbn
 from bayesian.examples.bbns.earthquake import g as earthquake_bbn
 from bayesian.examples.bbns.cancer import g as cancer_bbn
+from bayesian.examples.bbns.happiness import g as happiness_bbn
 
 
 def r3(x):
@@ -167,6 +168,10 @@ def pytest_funcarg__cancer_bbn(request):
     return cancer_bbn
 
 
+def pytest_funcarg__happiness_bbn(request):
+    return happiness_bbn
+
+
 def variable_domains_match_function_domains(fg):
     """
     Ensure that all factor node functions
@@ -232,12 +237,12 @@ def all_configurations_equal(bbn, fg):
         assert len(bbn_result) == len(fg_result)
         for (variable_name, value), v in bbn_result.items():
             try:
-                print round(v, 8), round(fg_result[(variable_name, value)], 8)
+                print round(v, 6), round(fg_result[(variable_name, value)], 6)
             except:
                 import ipdb; ipdb.set_trace()
                 print variable_name, value, v
-            assert round(v, 8) == (
-                round(fg_result[(variable_name, value)], 8))
+            assert round(v, 6) == (
+                round(fg_result[(variable_name, value)], 6))
     return True
 
 
@@ -825,3 +830,19 @@ def test_make_potential():
     for k, vals in domains.items():
         for v in vals:
             assert product_func(v[2], v[1], v[0]) == potential_func(v)
+
+
+def test_clique_tree_sum_product(happiness_bbn):
+    """For this test we will ensure that we get
+    the same results from the sum product algorithm
+    and the older more reliable (but slower)
+    Huang Darwiche method ."""
+    #result = clique_tree_sum_product(clique_tree, happiness_bbn)
+    #print result
+    # Make a copy so that we can compare results...
+    happiness_bbn_copy = copy.deepcopy(happiness_bbn)
+    happiness_bbn.inference_method = 'clique_tree_sum_product'
+    import ipdb; ipdb.set_trace()
+    happiness_bbn.q()
+    happiness_bbn_copy.q()
+    assert all_configurations_equal(happiness_bbn, happiness_bbn_copy)

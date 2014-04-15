@@ -330,6 +330,7 @@ def eliminate_var(f, var):
 
     '''
     arg_spec = get_args(f)
+    assert var in arg_spec
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
     try:
@@ -374,6 +375,10 @@ def eliminate_var(f, var):
                 # the variable being marginalized
                 call_args[i] = 'marginalize me!'
                 i += 1
+            if i >= len(call_args):
+                #import ipdb; ipdb.set_trace()
+                print call_args, arg_spec, args
+                raise
             call_args[i] = arg
             i += 1
 
@@ -383,12 +388,20 @@ def eliminate_var(f, var):
             #call_args[pos] = v
             call_args[pos] = val
             #print call_args, len(call_args)
+            try:
+                res = f(*call_args)
+            except:
+                import ipdb; ipdb.set_trace()
+                print 'Error!'
+                res = f(*call_args)
             total += f(*call_args)
         return total
 
     eliminated.argspec = new_spec
     eliminated.domains = f.domains
     #eliminated.__name__ = f.__name__
+    #test_args = [True] * len(new_spec)
+    #eliminated(*test_args)
     return eliminated
 
 
@@ -441,7 +454,7 @@ def make_not_sum_func(product_func, keep_vars):
     for arg in args:
         if arg not in keep_vars:
             new_func = eliminate_var(new_func, arg)
-            #new_func = memoize(new_func)
+            new_func = memoize(new_func)
     return new_func
 
 
@@ -610,12 +623,13 @@ def make_arg_max_func_old(node_func, factors, keep_var):
             for arg in get_args(func):
                 if arg in arg_dict:
                     func_args.append(arg_dict[arg])
-            if not func_args:
-                # Since we always require
-                # at least one argument we
-                # insert a dummy argument
-                # so that the unity function works.
-                func_args.append('dummy')
+            #if not func_args:
+            #    # Since we always require
+            #    # at least one argument we
+            #    # insert a dummy argument
+            #    # so that the unity function works.
+            #    import ipdb; ipdb.set_trace()
+            #    func_args.append('dummy')
             result = func(*func_args)
             if result > max_value:
                 max_value = result
@@ -818,6 +832,13 @@ def make_product_func(factors):
     product_func.argspec = args
     product_func.factors = factors
     product_func.domains = domains
+    # Test the product func...
+    #test_args = [True] * len(args)
+    #try:
+    #    product_func(*test_args)
+    #except:
+    #    print
+    #    raise
     return product_func
     return memoize(product_func)
 
@@ -827,6 +848,12 @@ def make_unity(argspec):
         return 1
     unity.argspec = argspec
     unity.__name__ = '1'
+    test_args = [True] * len(argspec)
+    try:
+        unity(*test_args)
+    except:
+        print
+        raise
     return unity
 
 

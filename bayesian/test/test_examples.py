@@ -1,7 +1,16 @@
 '''Unit tests for the examples in the examples dir.'''
 from bayesian.factor_graph import build_graph
-from bayesian.examples.factor_graphs.cancer import g as cancer_fg, fP, fS, fC, fX, fD
+from bayesian.factor_graph import make_product_func, make_not_sum_func
+from bayesian.examples.factor_graphs.cancer import g as cancer_fg
+from bayesian.examples.factor_graphs.cancer import (
+    fP, fS, fC, fX, fD)
+from bayesian.examples.bbns.happiness import g as happiness_bbn
+from bayesian.examples.bbns.happiness import (
+    f_coherence, f_difficulty, f_intelligence,
+    f_grade, f_sat, f_letter, f_job, f_happy)
+from bayesian.bbn import clique_tree_sum_product
 
+from pprint import pprint
 
 '''
 Since one of the goals of this package
@@ -21,6 +30,10 @@ the examples directory.
 
 def pytest_funcarg__cancer_graph(request):
     return cancer_fg
+
+
+def pytest_funcarg__happiness_bbn(request):
+    return happiness_bbn
 
 
 class TestCancerGraph():
@@ -114,3 +127,88 @@ class TestCancerGraph():
         assert round(result[('X', False)], 3) == 0.753
         assert round(result[('D', True)], 3) == 1
         assert round(result[('D', False)], 3) == 0
+
+
+class TestHappinessGraph(object):
+
+    def test_get_join_tree(self, happiness_bbn):
+        jt = happiness_bbn.build_join_tree()
+        # Great! The default jt seems
+        # to be the same one that is on page 21
+        # of http://webdocs.cs.ualberta.ca/~greiner/
+        # C-651/SLIDES/MB03_CliqueTrees.pdf
+
+        # Now if we want to compute the
+        # marginal for only one variable,
+        # in the example this is J (job)
+        # then we choose as root node, a
+        # clique that contains J. In the
+        # example they choose GJSL as the
+        # 'root' clique.
+
+        # Since there are multiple valid
+        # assignments we will manually
+        # set the assignments here to
+        # correspond to the assignments
+        # in the example on page 23.
+        # Actually we have to assign the
+        # BBN nodes, not the functions!!!
+        clique_nodes = sorted(jt.clique_nodes, key=lambda x: sorted(x.clique.nodes, key=lambda x:x.name))
+        cd_clique = [clique for clique in clique_nodes if clique.name == 'f_difficulty_f_coherence'][0]
+        gid_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_difficulty_f_intelligence'][0]
+        hgj_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_job_f_happy'][0]
+        gsi_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_intelligence_f_sat'][0]
+        gjsl_clique = [clique for clique in clique_nodes if clique.name == 'f_grade_f_sat_f_job_f_letter'][0]
+
+
+
+        fg = happiness_bbn.convert_to_factor_graph()
+        #import ipdb; ipdb.set_trace()
+        # Check that the eliminated
+        # var from cd to gid is c...
+        elim_vars = cd_clique.get_eliminate_vars(gid_clique)
+        assignments = jt.assign_clusters(happiness_bbn)
+        cd_clique.initialize_factors(assignments[cd_clique])
+        import ipdb; ipdb.set_trace()
+        # Now we need to construct a message
+        # to the target...
+        # Step 1 slide 25
+        target = cd_clique.get_target()
+        message = cd_clique.make_message(target)
+        target.received_messages[cd_clique.name] = message
+
+        # Step 2
+        target = gid_clique.get_target()
+        gid_clique.initialize_factors(assignments[gid_clique])
+        message = gid_clique.make_message(target)
+        target.received_messages[gid_clique.name] = message
+
+        # Step 3
+        target = gsi_clique.get_target()
+        gsi_clique.initialize_factors(assignments[gsi_clique])
+        message = gsi_clique.make_message(target)
+        target.received_messages[gsi_clique.name] = message
+
+        # Step 4
+        target = hgj_clique.get_target()
+        hgj_clique.initialize_factors(assignments[hgj_clique])
+        message = hgj_clique.make_message(target)
+        target.received_messages[hgj_clique.name] = message
+
+        # Step 5
+        gjsl_clique.initialize_factors(assignments[gjsl_clique])
+        final_func = make_product_func(
+            [gjsl_clique.potential_func] +
+            gjsl_clique.received_messages.values())
+        import ipdb; ipdb.set_trace()
+        final_func = make_not_sum_func(final_func, 'j')
+        #### YESSSSSS!!!!!! ######
+        # Now to complete the full propagation....
+
+def test_clique_tree_sum_product(happiness_bbn):
+    clique_tree = happiness_bbn.build_join_tree()
+    import ipdb; ipdb.set_trace()
+    #result = clique_tree_sum_product(clique_tree, happiness_bbn)
+    #print result
+    happiness_bbn.inference_method = 'clique_tree_sum_product'
+    happiness_bbn.q()
