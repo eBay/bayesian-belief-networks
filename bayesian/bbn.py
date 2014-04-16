@@ -80,12 +80,15 @@ class BBN(Graph):
         return jt
 
     def query(self, **kwds):
-        #if not hasattr(self, '_jt'):
-        #    self._jt = self.build_join_tree()
-        # TODO: We should be able to cache the jt...
-        jt = self.build_join_tree()
 
         if self.inference_method == 'clique_tree_sum_product':
+            if not hasattr(self, '_jt'):
+                self._jt = self.build_join_tree()
+            # TODO: We should be able to cache the jt...
+            jt = self._jt #build_join_tree()
+            # We need to clear out all
+            # nodes received messages...
+            jt.reset()
             return clique_tree_sum_product(jt, self, kwds)
         elif self.inference_method != 'huang_darwiche':
             raise "NotImplemented"
@@ -644,6 +647,10 @@ class JoinTree(UndirectedGraph):
     def ready_nodes(self):
         return [node for node in self.clique_nodes if node.ready()]
 
+    def reset(self):
+        """Empty out clique node message boxes"""
+        for clique in self.clique_nodes:
+            clique.received_messages = {}
 
 
 def transform(x, X, R):
@@ -823,6 +830,8 @@ class JoinTreeCliqueNode(UndirectedNode):
         function from the factor functions."""
         factors = [node.func for node in bbn_nodes]
         self.potential_func = make_product_func(factors)
+        self.original_potential_func = make_product_func(factors)
+
 
     def ready(self):
         """Are we ready to send?
@@ -1424,12 +1433,11 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
                 clique_node.potential_func = make_evidence_func(
                     clique_node.potential_func, args,
                     i, evidence[arg])
-                #clique_node.potential_func(True, True)
-                #clique_node.potential_func(False, True)
+                # We also need to update the 'original' potential
+                # func to have this evidence.
+                clique_node.original_potential_func = clique_node.potential_func
 
-
-
-    # Now we propaget the messages up and down
+    # Now we propagate the messages up and down
     # the clique tree...
     while True:
         ready_nodes = clique_tree.ready_nodes()
@@ -1455,16 +1463,23 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
                         [n.variable_name for n in clique_node.clique.nodes]):
                     continue
                 product_func = make_product_func(
-                    [clique_node.potential_func] +
+                    #### This is where the error is!!!! We need to use
+                    # the *original* potential func!!!!
+                    [clique_node.original_potential_func] +
                     clique_node.received_messages.values())
                 not_sum_func = make_not_sum_func(product_func, bbn_node.variable_name)
 
                 # Todo: fix this to iterate over the whole domain...
-                normalizer = not_sum_func(True) + not_sum_func(False)
-                result[(bbn_node.variable_name, True)] = (
-                    not_sum_func(True) / normalizer)
-                result[(bbn_node.variable_name, False)] = (
-                    not_sum_func(False) / normalizer)
+                normalizer = 0 # not_sum_func(True) + not_sum_func(False)
+                domain = bbn_node.func.domains.get(
+                    bbn_node.variable_name, [True, False])
+                for val in domain:
+                    result[(bbn_node.variable_name, val)] = (
+                        not_sum_func(val))
+                    normalizer += result[(bbn_node.variable_name, val)]
+                if normalizer:
+                    for val in domain:
+                        result[(bbn_node.variable_name, val)] /= normalizer
                 marginalized.add(bbn_node.variable_name)
                 break
     return result

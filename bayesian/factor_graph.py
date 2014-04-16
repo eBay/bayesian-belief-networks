@@ -450,11 +450,12 @@ def make_not_sum_func(product_func, keep_vars):
     eliminate var...
     '''
     args = get_args(product_func)
-    new_func = copy.deepcopy(product_func)
+    #new_func = copy.deepcopy(product_func)
+    new_func = product_func
     for arg in args:
         if arg not in keep_vars:
             new_func = eliminate_var(new_func, arg)
-            new_func = memoize(new_func)
+    new_func = memoize(new_func)
     return new_func
 
 
@@ -541,7 +542,8 @@ def eliminate_var_max(f, var):
 def make_arg_max_func(product_func, target_node):
     keep_var = target_node.name
     args = get_args(product_func)
-    new_func = copy.deepcopy(product_func)
+    #new_func = copy.deepcopy(product_func)
+    new_func = product_func
     for arg in args:
         if arg != keep_var:
             new_func = eliminate_var_max(new_func, arg)
@@ -1547,5 +1549,4 @@ def build_graph(*args, **kwds):
         factor_args = get_args(factor_node.func)
         connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes, name=name)
-    #print domains
     return graph

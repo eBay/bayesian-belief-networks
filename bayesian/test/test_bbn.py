@@ -233,16 +233,12 @@ def all_configurations_equal(bbn, fg):
         # Now execute the two queries...
         bbn_result = bbn.query(**bbn_query)
         fg_result = fg.query(**fg_query)
-
         assert len(bbn_result) == len(fg_result)
         for (variable_name, value), v in bbn_result.items():
-            try:
-                print round(v, 6), round(fg_result[(variable_name, value)], 6)
-            except:
-                import ipdb; ipdb.set_trace()
-                print variable_name, value, v
-            assert round(v, 6) == (
-                round(fg_result[(variable_name, value)], 6))
+            print round(v, 6), round(fg_result[(variable_name, value)], 6)
+            #assert round(v, 6) == (
+            #    round(fg_result[(variable_name, value)], 6))
+            assert abs(v - fg_result[(variable_name, value)]) < 0.0001
     return True
 
 
@@ -832,17 +828,56 @@ def test_make_potential():
             assert product_func(v[2], v[1], v[0]) == potential_func(v)
 
 
-def test_clique_tree_sum_product(happiness_bbn):
+def test_clique_tree_sum_product_happiness(happiness_bbn):
     """For this test we will ensure that we get
     the same results from the sum product algorithm
     and the older more reliable (but slower)
     Huang Darwiche method ."""
-    #result = clique_tree_sum_product(clique_tree, happiness_bbn)
-    #print result
+
     # Make a copy so that we can compare results...
     happiness_bbn_copy = copy.deepcopy(happiness_bbn)
     happiness_bbn.inference_method = 'clique_tree_sum_product'
-    import ipdb; ipdb.set_trace()
-    happiness_bbn.q()
-    happiness_bbn_copy.q()
     assert all_configurations_equal(happiness_bbn, happiness_bbn_copy)
+
+
+def test_clique_tree_sum_product_monty(monty_bbn):
+    """For this test we will ensure that we get
+    the same results from the sum product algorithm
+    and the older more reliable (but slower)
+    Huang Darwiche method ."""
+
+    # Make a copy so that we can compare results...
+    monty_bbn_copy = copy.deepcopy(monty_bbn)
+    monty_bbn.inference_method = 'clique_tree_sum_product'
+    assert all_configurations_equal(monty_bbn, monty_bbn_copy)
+
+
+def test_clique_tree_sum_product_cancer(cancer_bbn):
+        cancer_copy = copy.deepcopy(cancer_bbn)
+        cancer_copy.inference_method = 'clique_tree_sum_product'
+        assert all_configurations_equal(
+            cancer_bbn, cancer_copy)
+
+
+def test_clique_tree_sum_product_with_evidence(happiness_bbn):
+    happiness_bbn_copy = copy.deepcopy(happiness_bbn)
+    happiness_bbn.inference_method = 'clique_tree_sum_product'
+    # For the following evidence I was getting different
+    # values for sum product and Huang Darwiche.
+    result = happiness_bbn.query(g=True, i=True, h=True, j=True, l=True)
+    assert result[('l', True)] == 1.0
+    assert result[('h', False)] == 0.0
+    assert result[('h', True)] == 1.0
+    assert result[('s', False)] == 0.04000000000000001
+    assert result[('i', True)] == 1.0
+    assert result[('g', True)] == 1.0
+    assert result[('i', False)] == 0.0
+    assert result[('g', False)] == 0.0
+    assert result[('c', True)] == 0.5510204081632653
+    assert result[('j', False)] == 0.0
+    assert result[('c', False)] == 0.44897959183673475
+    assert result[('j', True)] == 1.0
+    assert result[('s', True)] == 0.96
+    assert result[('d', False)] == 0.5510204081632653
+    assert result[('d', True)] == 0.44897959183673475
+    assert result[('l', False)] == 0.0
