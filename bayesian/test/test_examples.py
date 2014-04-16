@@ -1,4 +1,8 @@
 '''Unit tests for the examples in the examples dir.'''
+import copy
+from random import randint
+from collections import Counter
+from itertools import product as xproduct
 from bayesian.factor_graph import build_graph
 from bayesian.factor_graph import make_product_func, make_not_sum_func
 from bayesian.examples.factor_graphs.cancer import g as cancer_fg
@@ -34,6 +38,75 @@ def pytest_funcarg__cancer_graph(request):
 
 def pytest_funcarg__happiness_bbn(request):
     return happiness_bbn
+
+
+def all_configurations_equal(bbn, fg):
+    '''We want to make sure that our
+    conversion to factor graph is identical
+    for all results to the BBN version.
+    This is so that we can eventually
+    switch out the old BBN inference engine
+    that constructs truth tables as this
+    takes too long.'''
+
+    # Now we will test all combinations
+    # of variable assignments including
+    # some non-observations which
+    # we will represent by a '-'
+    vals = []
+
+    # Firstly if the bbn does not have domains
+    # we will build it here...
+    if not bbn.domains:
+        for node in bbn.nodes:
+            if node.func.domains:
+                bbn.domains.update(node.func.domains)
+    for node in bbn.nodes:
+        if node.variable_name not in bbn.domains:
+            bbn.domains[node.variable_name] = [True, False]
+
+    assert len(bbn.domains) == len(bbn.nodes)
+
+    # TODO: We should ensure that the converted fg
+    # has the correct .domains.
+    fg.domains = bbn.domains
+
+    for variable, domain in bbn.domains.items():
+        vals.append(list(xproduct([variable], ['-'] + domain)))
+    #permutations = list(xproduct(*vals))
+    #assert permutations
+    # Now we have every possible combination
+    # including unobserved variables.
+    # We will construct the queries and
+    # then compare the results up to
+    # a max of 10000.
+    # TODO: We need a better way to
+    # generate randomized configurations to
+    # test this.
+    counter = Counter()
+    for i, permutation in enumerate(xproduct(*vals)):
+
+        if counter["combos"] > 100:
+            break
+        if i % randint(1, 100) != 0:
+            continue
+        counter["combos"] += 1
+        print i, permutation
+        assert permutation
+        bbn_query = dict([p for p in permutation if p[1] != '-'])
+        # Now construct the fg query with the
+        # slightly different fg variable names...
+        fg_query = dict([p for p in permutation if p[1] != '-'])
+        # Now execute the two queries...
+        bbn_result = bbn.query(**bbn_query)
+        fg_result = fg.query(**fg_query)
+        assert len(bbn_result) == len(fg_result)
+        for (variable_name, value), v in bbn_result.items():
+            print round(v, 6), round(fg_result[(variable_name, value)], 6)
+            #assert round(v, 6) == (
+            #    round(fg_result[(variable_name, value)], 6))
+            assert abs(v - fg_result[(variable_name, value)]) < 0.0001
+    return True
 
 
 class TestCancerGraph():
@@ -200,15 +273,30 @@ class TestHappinessGraph(object):
         final_func = make_product_func(
             [gjsl_clique.potential_func] +
             gjsl_clique.received_messages.values())
-        import ipdb; ipdb.set_trace()
         final_func = make_not_sum_func(final_func, 'j')
         #### YESSSSSS!!!!!! ######
         # Now to complete the full propagation....
 
-def test_clique_tree_sum_product(happiness_bbn):
-    clique_tree = happiness_bbn.build_join_tree()
-    import ipdb; ipdb.set_trace()
-    #result = clique_tree_sum_product(clique_tree, happiness_bbn)
-    #print result
-    happiness_bbn.inference_method = 'clique_tree_sum_product'
-    happiness_bbn.q()
+
+class TestAlarmMonitoringSystem(object):
+
+    def test_results_same(self):
+        """Since we dont have published
+        results for the Alarm network
+        we will simply test that two
+        different algorithms get the
+        same results. This is not sufficient
+        to know that the results are correct
+        but reduces the likelihood that
+        they are wrong."""
+
+        from bayesian.examples.bif.alarm_bn import create_bbn
+        g = create_bbn()
+
+        # Make sure every factor has domains attached...
+        for node in g.nodes:
+            assert hasattr(node.func, 'domains')
+        g_copy = copy.deepcopy(g)
+        g_copy.inference_method = 'clique_tree_sum_product'
+        import ipdb; ipdb.set_trace()
+        assert all_configurations_equal(g, g_copy)

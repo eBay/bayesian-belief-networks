@@ -383,17 +383,14 @@ def eliminate_var(f, var):
             i += 1
 
         for val in f.domains.get(var, [True, False]):
-            #v = VariableNode(name=var)
-            #v.value = val
-            #call_args[pos] = v
             call_args[pos] = val
-            #print call_args, len(call_args)
             try:
                 res = f(*call_args)
             except:
                 import ipdb; ipdb.set_trace()
                 print 'Error!'
                 res = f(*call_args)
+                raise
             total += f(*call_args)
         return total
 
@@ -447,13 +444,9 @@ def make_not_sum_func(product_func, keep_vars):
     construct a new function only of the
     keep_var, summarized over all the other
     variables.
-
-    For this branch we are trying to
-    get rid of the requirement to have
-    to use .value on arguments....
-    Looks like its actually in the
-    eliminate var...
     '''
+    if isinstance(keep_vars, str):
+        keep_vars = set([keep_vars])
     args = get_args(product_func)
     #new_func = copy.deepcopy(product_func)
     new_func = product_func

@@ -951,6 +951,8 @@ class CliqueMessage(Message):
         self.argspec = get_args(func)
         self.func = func
         self.call_count = func.call_count
+        if hasattr(func, 'domains'):
+            self.domains = func.domains
 
     def __repr__(self):
         return '<V-Message from %s -> %s: %s factors (%s)>' % \
@@ -1225,6 +1227,7 @@ def build_join_tree(dag, clique_priority_func=priority_func):
             S.add(SepSet(X, Y))
     sepsets_inserted = 0
     while sepsets_inserted < (len(cliques) - 1):
+        print 'Sepsets inserted: %s' % sepsets_inserted
         # Adding in name to make this sort deterministic
         deco = [(s, -1 * s.mass, s.cost, s.__repr__()) for s in S]
         deco.sort(key=lambda x: x[1:])
@@ -1472,6 +1475,7 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
                 normalizer = 0 # not_sum_func(True) + not_sum_func(False)
                 domain = bbn_node.func.domains.get(
                     bbn_node.variable_name, [True, False])
+
                 for val in domain:
                     result[(bbn_node.variable_name, val)] = (
                         not_sum_func(val))
