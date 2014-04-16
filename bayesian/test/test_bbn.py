@@ -881,3 +881,23 @@ def test_clique_tree_sum_product_with_evidence(happiness_bbn):
     assert result[('d', False)] == 0.5510204081632653
     assert result[('d', True)] == 0.44897959183673475
     assert result[('l', False)] == 0.0
+
+def test_memoization_potential_funcs(happiness_bbn):
+    """Test that each factor is called at most once for
+    every argument combination."""
+    happiness_bbn.inference_method = 'clique_tree_sum_product'
+    happiness_bbn.q()
+    for clique_node in happiness_bbn._jt.clique_nodes:
+        assert len(clique_node.potential_func.call_count) <= (
+            2 ** len(get_args(clique_node.potential_func)))
+        print clique_node.potential_func.call_count
+
+
+def test_memoization_on_messages(happiness_bbn):
+    """Test that each factor is called at most once for
+    every argument combination."""
+    happiness_bbn.inference_method = 'clique_tree_sum_product'
+    happiness_bbn.q()
+    for clique_node in happiness_bbn._jt.clique_nodes:
+        for source, message in clique_node.received_messages.items():
+            assert len(message.call_count) <= (2 ** len(message.argspec))

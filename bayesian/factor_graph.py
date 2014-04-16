@@ -7,7 +7,7 @@ import copy
 import inspect
 import random
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 from itertools import product as iter_product
 from Queue import Queue
 from math import log, exp
@@ -415,6 +415,7 @@ def memoize(f):
     the variables themselves.
     '''
     cache = {}
+    call_count = Counter()
 
     def memoized(*args):
         #arg_vals = tuple([arg.value for arg in args])
@@ -422,6 +423,7 @@ def memoize(f):
         if not arg_vals in cache:
             #print 'Cache Miss...size is %s ' % len(cache)
             result = f(*args)
+            call_count[args] += 1
             cache[arg_vals] = f(*args)
         else:
             #print 'Cache Hit....'
@@ -432,6 +434,9 @@ def memoize(f):
         memoized.domains = f.domains
     if hasattr(f, 'argspec'):
         memoized.argspec = f.argspec
+    if hasattr(f, 'factors'):
+        memoized.factors = f.factors
+    memoized.call_count = call_count
     return memoized
 
 
@@ -834,14 +839,6 @@ def make_product_func(factors):
     product_func.argspec = args
     product_func.factors = factors
     product_func.domains = domains
-    # Test the product func...
-    #test_args = [True] * len(args)
-    #try:
-    #    product_func(*test_args)
-    #except:
-    #    print
-    #    raise
-    return product_func
     return memoize(product_func)
 
 

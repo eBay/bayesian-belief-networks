@@ -950,13 +950,12 @@ class CliqueMessage(Message):
         self.factors = factors
         self.argspec = get_args(func)
         self.func = func
+        self.call_count = func.call_count
 
     def __repr__(self):
         return '<V-Message from %s -> %s: %s factors (%s)>' % \
             (self.source.name, self.destination.name,
              len(self.factors), self.argspec)
-
-
 
 
 class SepSet(object):
