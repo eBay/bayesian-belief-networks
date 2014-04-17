@@ -298,5 +298,4 @@ class TestAlarmMonitoringSystem(object):
             assert hasattr(node.func, 'domains')
         g_copy = copy.deepcopy(g)
         g_copy.inference_method = 'clique_tree_sum_product'
-        import ipdb; ipdb.set_trace()
         assert all_configurations_equal(g, g_copy)
