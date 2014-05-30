@@ -706,6 +706,40 @@ def build_bbn(*args, **kwds):
     return bbn
 
 
+def make_node_func(variable_name, conditions):
+    # We will enforce the following
+    # convention.
+    # The ordering of arguments will
+    # be firstly the parent variables
+    # in alphabetical order, followed
+    # always by the child variable
+    tt = dict()
+    for givens, conditionals in conditions:
+        key = []
+        for parent_name, val in sorted(givens):
+            key.append((parent_name, val))
+        # Now we will sort the
+        # key before we add the child
+        # node.
+        #key.sort(key=lambda x: x[0])
+
+        # Now for each value in
+        # the conditional probabilities
+        # we will add a new key
+        for value, prob in conditionals.items():
+            key_ = tuple(key + [(variable_name, value)])
+            tt[key_] = prob
+
+    argspec = [k[0] for k in key_]
+    def node_func(*args):
+        key = []
+        for arg, val in zip(argspec, args):
+            key.append((arg, val))
+        return tt[tuple(key)]
+    node_func.argspec = argspec
+    return node_func
+
+
 def make_undirected_copy(dag):
     '''Returns an exact copy of the dag
     except that direction of edges are dropped.'''

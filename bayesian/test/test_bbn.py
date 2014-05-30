@@ -580,3 +580,69 @@ class TestBBN():
         p_H = huang_darwiche_jt.marginal(bbn_nodes['f_h'])
         assert r3(p_H[(('h', True), )]) == 0.823
         assert r3(p_H[(('h', False), )]) == 0.177
+
+
+def test_make_node_func():
+    UPDATE = {
+        "prize_door": [
+            # For nodes that have no parents
+            # use the empty list to specify
+            # the conditioned upon variables
+            # ie conditioned on the empty set
+            [[], {"A": 1/3, "B": 1/3, "C": 1/3}]],
+        "guest_door": [
+            [[], {"A": 1/3, "B": 1/3, "C": 1/3}]],
+        "monty_door": [
+            [[["prize_door", "A"], ["guest_door", "A"]], {"A": 0, "B": 0.5, "C": 0.5}],
+            [[["prize_door", "A"], ["guest_door", "B"]], {"A": 0, "B": 0, "C": 1}],
+            [[["prize_door", "A"], ["guest_door", "C"]], {"A": 0, "B": 1, "C": 0}],
+            [[["prize_door", "B"], ["guest_door", "A"]], {"A": 0, "B": 0, "C": 1}],
+            [[["prize_door", "B"], ["guest_door", "B"]], {"A": 0.5, "B": 0, "C": 0.5}],
+            [[["prize_door", "B"], ["guest_door", "C"]], {"A": 1, "B": 0, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "A"]], {"A": 0, "B": 1, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "B"]], {"A": 1, "B": 0, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "C"]], {"A": 0.5, "B": 0.5, "C": 0}],
+        ]
+    }
+
+    node_func = make_node_func("prize_door", UPDATE["prize_door"])
+    assert get_args(node_func) == ['prize_door']
+    assert node_func('A') == 1/3
+    assert node_func('B') == 1/3
+    assert node_func('C') == 1/3
+
+    node_func = make_node_func("guest_door", UPDATE["guest_door"])
+    assert get_args(node_func) == ['guest_door']
+    assert node_func('A') == 1/3
+    assert node_func('B') == 1/3
+    assert node_func('C') == 1/3
+
+    node_func = make_node_func("monty_door", UPDATE["monty_door"])
+    assert get_args(node_func) == ['guest_door', 'prize_door', 'monty_door']
+    assert node_func('A', 'A', 'A') == 0
+    assert node_func('A', 'A', 'B') == 0.5
+    assert node_func('A', 'A', 'C') == 0.5
+    assert node_func('A', 'B', 'A') == 0
+    assert node_func('A', 'B', 'B') == 0
+    assert node_func('A', 'B', 'C') == 1
+    assert node_func('A', 'C', 'A') == 0
+    assert node_func('A', 'C', 'B') == 1
+    assert node_func('A', 'C', 'C') == 0
+    assert node_func('B', 'A', 'A') == 0
+    assert node_func('B', 'A', 'B') == 0
+    assert node_func('B', 'A', 'C') == 1
+    assert node_func('B', 'B', 'A') == 0.5
+    assert node_func('B', 'B', 'B') == 0
+    assert node_func('B', 'B', 'C') == 0.5
+    assert node_func('B', 'C', 'A') == 1
+    assert node_func('B', 'C', 'B') == 0
+    assert node_func('B', 'C', 'C') == 0
+    assert node_func('C', 'A', 'A') == 0
+    assert node_func('C', 'A', 'B') == 1
+    assert node_func('C', 'A', 'C') == 0
+    assert node_func('C', 'B', 'A') == 1
+    assert node_func('C', 'B', 'B') == 0
+    assert node_func('C', 'B', 'C') == 0
+    assert node_func('C', 'C', 'A') == 0.5
+    assert node_func('C', 'C', 'B') == 0.5
+    assert node_func('C', 'C', 'C') == 0
