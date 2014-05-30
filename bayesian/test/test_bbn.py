@@ -646,3 +646,53 @@ def test_make_node_func():
     assert node_func('C', 'C', 'A') == 0.5
     assert node_func('C', 'C', 'B') == 0.5
     assert node_func('C', 'C', 'C') == 0
+
+
+def close_enough(x, y, r=3):
+    return round(x, r) == round(y, r)
+
+
+def test_build_bbn_from_conditionals():
+    UPDATE = {
+        "prize_door": [
+            # For nodes that have no parents
+            # use the empty list to specify
+            # the conditioned upon variables
+            # ie conditioned on the empty set
+            [[], {"A": 1/3, "B": 1/3, "C": 1/3}]],
+        "guest_door": [
+            [[], {"A": 1/3, "B": 1/3, "C": 1/3}]],
+        "monty_door": [
+            [[["prize_door", "A"], ["guest_door", "A"]], {"A": 0, "B": 0.5, "C": 0.5}],
+            [[["prize_door", "A"], ["guest_door", "B"]], {"A": 0, "B": 0, "C": 1}],
+            [[["prize_door", "A"], ["guest_door", "C"]], {"A": 0, "B": 1, "C": 0}],
+            [[["prize_door", "B"], ["guest_door", "A"]], {"A": 0, "B": 0, "C": 1}],
+            [[["prize_door", "B"], ["guest_door", "B"]], {"A": 0.5, "B": 0, "C": 0.5}],
+            [[["prize_door", "B"], ["guest_door", "C"]], {"A": 1, "B": 0, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "A"]], {"A": 0, "B": 1, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "B"]], {"A": 1, "B": 0, "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "C"]], {"A": 0.5, "B": 0.5, "C": 0}],
+        ]
+    }
+    g = build_bbn_from_conditionals(UPDATE)
+    result = g.query()
+    assert close_enough(result[('guest_door', 'A')], 0.333)
+    assert close_enough(result[('guest_door', 'B')], 0.333)
+    assert close_enough(result[('guest_door', 'C')], 0.333)
+    assert close_enough(result[('monty_door', 'A')], 0.333)
+    assert close_enough(result[('monty_door', 'B')], 0.333)
+    assert close_enough(result[('monty_door', 'C')], 0.333)
+    assert close_enough(result[('prize_door', 'A')], 0.333)
+    assert close_enough(result[('prize_door', 'B')], 0.333)
+    assert close_enough(result[('prize_door', 'C')], 0.333)
+
+    result = g.query(guest_door='A', monty_door='B')
+    assert close_enough(result[('guest_door', 'A')], 1)
+    assert close_enough(result[('guest_door', 'B')], 0)
+    assert close_enough(result[('guest_door', 'C')], 0)
+    assert close_enough(result[('monty_door', 'A')], 0)
+    assert close_enough(result[('monty_door', 'B')], 1)
+    assert close_enough(result[('monty_door', 'C')], 0)
+    assert close_enough(result[('prize_door', 'A')], 0.333)
+    assert close_enough(result[('prize_door', 'B')], 0)
+    assert close_enough(result[('prize_door', 'C')], 0.667)

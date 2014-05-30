@@ -714,6 +714,7 @@ def make_node_func(variable_name, conditions):
     # in alphabetical order, followed
     # always by the child variable
     tt = dict()
+    domain = set()
     for givens, conditionals in conditions:
         key = []
         for parent_name, val in sorted(givens):
@@ -728,6 +729,7 @@ def make_node_func(variable_name, conditions):
         # we will add a new key
         for value, prob in conditionals.items():
             key_ = tuple(key + [(variable_name, value)])
+            domain.add(value)
             tt[key_] = prob
 
     argspec = [k[0] for k in key_]
@@ -737,7 +739,19 @@ def make_node_func(variable_name, conditions):
             key.append((arg, val))
         return tt[tuple(key)]
     node_func.argspec = argspec
+    node_func._domain = domain
+    node_func.__name__ = 'f_' + variable_name
     return node_func
+
+
+def build_bbn_from_conditionals(conds):
+    node_funcs = []
+    domains = dict()
+    for variable_name, cond_tt in conds.items():
+        node_func = make_node_func(variable_name, cond_tt)
+        node_funcs.append(node_func)
+        domains[variable_name] = node_func._domain
+    return build_bbn(*node_funcs, domains=domains)
 
 
 def make_undirected_copy(dag):
