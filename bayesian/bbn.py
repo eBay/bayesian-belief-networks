@@ -57,12 +57,12 @@ class BBN(Graph):
         fh.write('digraph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
-        for node in sorted(self.nodes, key=lambda x:x.name):
+        for node in sorted(self.nodes, key=lambda x: x.name):
             fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
             for child in node.children:
                 edge = (node.name, child.name)
                 edges.add(edge)
-        for source, target in sorted(edges, key=lambda x:(x[0], x[1])):
+        for source, target in sorted(edges, key=lambda x: (x[0], x[1])):
             fh.write('  %s -> %s;\n' % (source, target))
         fh.write('}\n')
         return fh.getvalue()
@@ -246,17 +246,16 @@ class JoinTree(UndirectedGraph):
                                 if value != evidence[variable]:
                                     clique.potential_tt[k] = 0
 
-
     def initial_likelihoods(self, assignments, bbn):
         # TODO: Since this is the same every time we should probably
         # cache it.
         l = defaultdict(dict)
         for clique, bbn_nodes in assignments.iteritems():
             for node in bbn_nodes:
-                for value in bbn.domains.get(node.variable_name, [True, False]):
+                for value in bbn.domains.get(
+                        node.variable_name, [True, False]):
                     l[(node.variable_name, value)] = 1
         return l
-
 
     def assign_clusters(self, bbn):
         assignments_by_family = dict()
@@ -401,7 +400,7 @@ class JoinTree(UndirectedGraph):
             entry = transform(
                 k,
                 clique_node.variable_names,
-                [bbn_node.variable_name]) # XXXXXX
+                [bbn_node.variable_name])
             tt[entry] += v
 
         # Now if this node was evidenced we need to normalize
@@ -414,7 +413,6 @@ class Clique(object):
 
     def __init__(self, cluster):
         self.nodes = cluster
-
 
     def __repr__(self):
         vars = sorted([n.variable_name for n in self.nodes])
@@ -555,8 +553,9 @@ class JoinTreeCliqueNode(UndirectedNode):
             if target.potential_tt[k] == 0:
                 tt[k] = 0
             else:
-                tt[k] = target.potential_tt[k] * (sepset.potential_tt[entry] /
-                                                  sepset.potential_tt_old[entry])
+                tt[k] = target.potential_tt[k] * (
+                    sepset.potential_tt[entry] /
+                    sepset.potential_tt_old[entry])
         target.potential_tt = tt
 
     def __repr__(self):
@@ -756,6 +755,7 @@ def make_node_func(variable_name, conditions):
             tt[key_] = prob
 
     argspec = [k[0] for k in key_]
+
     def node_func(*args):
         key = []
         for arg, val in zip(argspec, args):
