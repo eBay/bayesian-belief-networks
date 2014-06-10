@@ -3,6 +3,7 @@ import pytest
 
 import os
 
+from collections import Counter
 from bayesian.bbn import *
 from bayesian.utils import make_key
 
@@ -40,6 +41,39 @@ def pytest_funcarg__sprinkler_graph(request):
         )
     return bbn
 
+
+def pytest_funcarg__sprinkler_bbn(request):
+    '''Sprinkler BBN built with build_bbn.'''
+    def f_rain(rain):
+        if rain is True:
+            return 0.2
+        return 0.8
+
+
+    def f_sprinkler(rain, sprinkler):
+        if rain is False and sprinkler is True:
+            return 0.4
+        if rain is False and sprinkler is False:
+            return 0.6
+        if rain is True and sprinkler is True:
+            return 0.01
+        if rain is True and sprinkler is False:
+            return 0.99
+
+
+    def f_grass_wet(sprinkler, rain, grass_wet):
+        table = dict()
+        table['fft'] = 0.0
+        table['fff'] = 1.0
+        table['ftt'] = 0.8
+        table['ftf'] = 0.2
+        table['tft'] = 0.9
+        table['tff'] = 0.1
+        table['ttt'] = 0.99
+        table['ttf'] = 0.01
+        return table[make_key(sprinkler, rain, grass_wet)]
+
+    return build_bbn(f_rain, f_sprinkler, f_grass_wet)
 
 def pytest_funcarg__huang_darwiche_nodes(request):
     '''The nodes for the Huang Darwich example'''
@@ -148,6 +182,37 @@ def pytest_funcarg__huang_darwiche_jt(request):
     jt = build_join_tree(dag, priority_func_override)
     return jt
 
+
+def pytest_funcarg__monty_bbn(request):
+    def f_prize_door(prize_door):
+        return 1.0 / 3
+
+
+    def f_guest_door(guest_door):
+        return 1.0 / 3
+
+
+    def f_monty_door(prize_door, guest_door, monty_door):
+        if prize_door == guest_door:
+            if prize_door == monty_door:
+                return 0
+            else:
+                return 0.5
+        elif prize_door == monty_door:
+            return 0
+        elif guest_door == monty_door:
+            return 0
+        return 1
+
+    g = build_bbn(
+        f_prize_door,
+        f_guest_door,
+        f_monty_door,
+        domains=dict(
+            prize_door=['A', 'B', 'C'],
+            guest_door=['A', 'B', 'C'],
+            monty_door=['A', 'B', 'C']))
+    return g
 
 class TestBBN():
 
@@ -696,3 +761,50 @@ def test_build_bbn_from_conditionals():
     assert close_enough(result[('prize_door', 'A')], 0.333)
     assert close_enough(result[('prize_door', 'B')], 0)
     assert close_enough(result[('prize_door', 'C')], 0.667)
+
+
+def valid_sample(samples, query_result):
+    '''For a group of samples from
+    a query result ensure that
+    the sample is approximately equivalent
+    to the query_result which is the
+    true distribution.'''
+    counts = Counter()
+    for sample in samples:
+        for var, val in sample.items():
+            counts[(var, val)] += 1
+    # Now lets normalize for each count...
+    result = True
+    for k, v in counts.items():
+        counts[k] = v / len(samples)
+        if not close_enough(counts[k], query_result[k], r=1):
+            result = False
+            print counts[k], query_result[k]
+    print counts
+    return result
+
+def test_draw_sample_monty(monty_bbn):
+    '''Note this test is non-deterministic
+    but should pass most of the time.'''
+    query_result = monty_bbn.query()
+    samples = monty_bbn.draw_samples(query_result, n=100000)
+    assert valid_sample(samples, query_result)
+
+    # Now test with some different queries...
+    query_result = monty_bbn.query(prize_door='A')
+    samples = monty_bbn.draw_samples(query_result, n=100000)
+    assert valid_sample(samples, query_result)
+
+    query_result = monty_bbn.query(guest_door='A', monty_door='B')
+    samples = monty_bbn.draw_samples(query_result, n=100000)
+    print query_result
+
+    assert valid_sample(samples, query_result)
+
+
+
+def test_draw_sample_sprinkler(sprinkler_bbn):
+
+    query_result = sprinkler_bbn.query()
+    samples = sprinkler_bbn.draw_samples(query_result, 10000)
+    assert valid_sample(samples, query_result)

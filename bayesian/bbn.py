@@ -4,6 +4,7 @@ import sys
 import copy
 import heapq
 
+from random import random
 from StringIO import StringIO
 from itertools import combinations, product
 from collections import defaultdict
@@ -116,6 +117,28 @@ class BBN(Graph):
             else:
                 tab.add_row([node, value, '%8.6f' % prob])
         print tab
+
+    def draw_samples(self, query_result, n=1):
+        '''Return a list of n samples'''
+        samples = []
+        while len(samples) < n:
+            s = dict()
+            vals_by_var = defaultdict(list)
+            for k, v in query_result.items():
+                var, val = k
+                vals_by_var[var].append(val)
+            for var, vals in vals_by_var.items():
+                vals.sort(reverse=True)
+                t = 0
+                r = random()
+                while s.get(var) is None:
+                    t += query_result[(var, vals[-1])]
+                    if r <= t:
+                        s[var] = vals[-1]
+                    else:
+                        vals.pop()
+            samples.append(s)
+        return samples
 
 
 class JoinTree(UndirectedGraph):
