@@ -7,6 +7,8 @@ from collections import defaultdict
 from itertools import combinations
 from StringIO import StringIO
 
+from bayesian.utils import get_args
+
 class Node(object):
 
     def __init__(self, name, parents=[], children=[]):
