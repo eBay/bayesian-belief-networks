@@ -1,4 +1,5 @@
 '''Simple Part of Speech Tagging Example'''
+from collections import defaultdict
 from bayesian.graph import UndirectedNode, UndirectedGraph
 from bayesian.bbn import JoinTreeSepSetNode, clique_tree_sum_product, build_bbn
 from bayesian.bbn import make_undirected_copy, make_moralized_copy
@@ -302,9 +303,10 @@ def build_um_from_feature_functions(feature_functions, sentence, weights,
     for y_node in y_nodes:
         domains[y_node.variable_name] = y_domain
         ug_connect(y_node, X_node)
+
     # And now build the graph...
-    node_dict = dict([(node.name, node) for node in y_nodes + [X_node]])
-    import ipdb; ipdb.set_trace()
+    node_dict = dict([(node.name, node) for
+                      node in y_nodes + [X_node]])
     um = UndirectedModel(node_dict, domains=domains)
     return um
 
@@ -480,14 +482,26 @@ class Template(object):
         self.args = args
 
 
-def expand_feature_function(feature_function, y_nodes):
+def expand_feature_function(feature_function, y_nodes, merged_variables):
+    '''What happens if one or more of the feature
+    function args are in a clique???
+    Seems if we know that one of the y_nodes is
+    in a cluster we have to use the combined var...
+    But we dont know which ones of them are combined so
+    actually we need all of the clusters...'''
     y_nodes.sort(key=lambda x:int(x.name[1]))
     # The smallest numbered y_node goes in parameter
     # y_p, the next into y, X is the same
     # and i is set to the largest of the
     # y nodes.
     i = int(y_nodes[-1].name[-1])
-    def new_feature_func(y_p, y, X):
+    # First determine the modified argspec based on
+    # the merged_variables...
+    argspec = []
+    def new_feature_func(y_p, y, X, merged_variables=merged_variables):
+        # Now if any of the variables have been merged
+        # we need to unmerge(split) them here to call
+        # the original function.
         return feature_function(y_p, y, X, i)
     new_feature_func.argspec = [node.name for node in y_nodes] + ['X']
     new_feature_func.original_func = feature_function
@@ -520,15 +534,40 @@ def make_starter_function(name, feature_function, S):
     return starter_function
 
 
+def resolve_merged_variables(variable_names, combined_vars):
+    '''We need a mapping from the original
+    variable_names in the factor clique
+    to the sepset clique which is now
+    a variable node in the factor graph
+    and back again so that we can split
+    and unsplit combined variables.
+    '''
+    original_to_merged = dict()
+    merged_to_original = defaultdict(set)
+    for variable_name in variable_names:
+        merged_vars = combined_vars.get(variable_name, [variable_name])
+        merged_name = '_'.join(merged_vars)
+        original_to_merged[variable_name] = merged_vars
+        for merged_var in merged_vars:
+            merged_to_original[merged_name].add(merged_var)
+    return original_to_merged, merged_to_original
+
+
 def expand_feature_functions(jt, feature_functions, S):
     # For now lets assume all the feature functions
     # are of the same 'template' and therefore apply
     # to all clusters....
     t = Template("chain", ['y_prev', 'y', 'X', 'i'])
-    for cluster in jt.nodes:
-        if isinstance(cluster, JoinTreeSepSetNode):
-            continue
+    for cluster in jt.clique_nodes:
+
         print cluster
+        combined_vars = dict()
+        for sepset_node in cluster.neighbours:
+            for variable_name in sepset_node.variable_names:
+                combined_vars[variable_name] = sorted(sepset_node.variable_names)
+        variable_names = cluster.variable_names
+        import ipdb; ipdb.set_trace()
+        merged_variables = resolve_merged_variables(variable_names, combined_vars)
         new_feature_functions = []
         #print cluster.clique.nodes
         for feature_func in feature_functions_:
@@ -542,7 +581,7 @@ def expand_feature_functions(jt, feature_functions, S):
                     make_starter_function('y0', feature_func, S))
             y_nodes.sort(key=lambda x:int(x.name[1]))
             new_feature_functions.append(
-                expand_feature_function(feature_func, y_nodes))
+                expand_feature_function(feature_func, y_nodes, jt.sepset_nodes))
             # We also need the artificial start node....
         # We should attach the expanded functions to
         # each clique so we have them later...
@@ -560,6 +599,14 @@ def expand_feature_functions_fg(fg, feature_functions, S, weights):
     assert len(feature_functions) == len(weights)
     for func, weight in zip(feature_functions, weights):
         func.weight = weight
+    # We need to create a mapping of original variables
+    # to any sepset they are involved in.
+    # Not all variables will be in a sepset.
+    combined_vars = dict()
+    for sepset_node in fg.sepset_nodes:
+        import ipdb; ipdb.set_trace()
+        for variable_name in sepset.variable_names:
+            combined_vars[variable_name] = sorted(sepset.variable_names)
     for factor_node in fg.factor_nodes():
         print factor_node
         new_feature_functions = []
@@ -589,6 +636,7 @@ def expand_feature_functions_fg(fg, feature_functions, S, weights):
                 # And we only create the additional
                 # functions if there is more than
                 # 1 token
+                import ipdb; ipdb.set_trace()
                 y_nodes.sort(key=lambda x:int(x.name[1]))
                 new_feature_functions.append(
                     expand_feature_function(feature_func, y_nodes))
@@ -715,12 +763,12 @@ if __name__ == '__main__':
     # First lets look at what the convert_to_bbn does
     # with a sequential like directed model
     dag = get_bbn()
-    dag.export('dag_sequential.gv')
+    #dag.export('dag_sequential.gv')
 
     # Ok the dag seems correct for a tagger model
     # now we will look at the fg that it creates...
     fg = dag.convert_to_factor_graph()
-    fg.export('fg_sequential.gv')
+    #fg.export('fg_sequential.gv')
 
     # So the fg I still need to verify is correct
     # but it has y0 and y4 ie the first and
@@ -730,14 +778,14 @@ if __name__ == '__main__':
     # Now lets look at the ug that gets
     # created prior to the fg.
     ug = make_undirected_copy(dag)
-    ug.export('ug_sequential.gv')
+    #ug.export('ug_sequential.gv')
 
     # The undirected copy is essentially
     # the same as the dag for this model
     # just with the arrows removed.
     # Now lets look at the moralized version
     mg = make_moralized_copy(ug, dag)
-    mg.export('mg_moralized.gv')
+    #mg.export('mg_moralized.gv')
 
     # Since the ug is already fully
     # moralized this is once again just the
@@ -749,7 +797,7 @@ if __name__ == '__main__':
     # Now lets also look at the jt that is built
     # with build_join_tree()
     jt = dag.build_join_tree()
-    jt.export('jt_sequential.gv')
+    #jt.export('jt_sequential.gv')
     # Okay so actually the two join trees
     # are the same so thats good!
 
@@ -773,7 +821,7 @@ if __name__ == '__main__':
     # Lets try to build the graph for S1...
     s1_ug = build_ug(training_examples[0][0])
     # Now lets look at the graph...
-    s1_ug.export('s1_ug.gv')
+    #s1_ug.export('s1_ug.gv')
     # Ok! that graph looks good, now the only difference
     # is that the cancer graph has the potential functions
     # already assigned and "attached" so we have to figure
@@ -783,9 +831,9 @@ if __name__ == '__main__':
     # that ug...
 
     s1_jt = build_join_tree_from_ug(s1_ug)
-    s1_jt.export('s1_jt.gv')
+    #s1_jt.export('s1_jt.gv')
     jt_from_ug = build_join_tree_from_ug(ug)
-    jt_from_ug.export('jt_from_ug.gv')
+    #jt_from_ug.export('jt_from_ug.gv')
 
     # Okay so now I have a convert_to_factor_graph
     # method in undirected graph class so lets
@@ -797,7 +845,7 @@ if __name__ == '__main__':
     # the UndirectedGraph class to the UndirectedModel class
     s1_um = build_um(training_examples[0][0])
     # Lets first take a look at it...
-    s1_um.export('s1_um.gv')
+    #s1_um.export('s1_um.gv')
 
     # Ok that looks fine now to see if the
     # convert_to_factor_graph will work....
@@ -855,7 +903,6 @@ if __name__ == '__main__':
     # Then we can include each one of
     # these functions in the potential for
     # each cluster...
-    #import ipdb; ipdb.set_trace()
     expanded_feature_functions = expand_feature_functions(s1_jt, feature_functions_, S1)
     # The above should have also attached the
     # expanded feature functions to each clique
@@ -870,7 +917,6 @@ if __name__ == '__main__':
             print cluster.name
         else:
             print cluster.clique.nodes
-        #import ipdb; ipdb.set_trace()
         for f in cluster.expanded_feature_functions:
             print f.__name__, get_args(f), f.original_func.__name__
         print '----------------------------------------'
@@ -953,8 +999,7 @@ if __name__ == '__main__':
     um_small = build_small_um('Shannon')
     print um_small
     fg_small = um_small.convert_to_factor_graph()
-    fg_small.export('fg_small.gv')
-    import ipdb; ipdb.set_trace()
+    #fg_small.export('fg_small.gv')
     # Ok so the weight is only on the original func it
     # needs to also be on the func
     expanded_feature_functions_fg_small = expand_feature_functions_fg(fg_small, feature_functions_, ('Shannon',), weights)
@@ -963,11 +1008,6 @@ if __name__ == '__main__':
         for f in factor_node.expanded_feature_functions:
             print f.__name__, get_args(f), f.original_func.__name__
         print '----------------------------------------'
-
-    #fg_small.q()
-    # Okay so right now the call to factor_node[0].func('NAME', ('Shannon'))
-    # just returns 0.... some bug somewhere...
-    # Lets try stepping through it....
 
     # Remember that X should always be a tuple or list
     # NOT just a string....
@@ -990,12 +1030,11 @@ if __name__ == '__main__':
     output_alphabet = ['NAME', 'OTHER']
     generic_um = build_um_from_feature_functions(
         feature_functions_, ('Shannon',), weights, output_alphabet)
-    generic_um.export('generic_um.gv')
+    #generic_um.export('generic_um.gv')
     # Okay so the generic um looks correct....
     # Now to look at the converted um to factor graph...
     generic_fg = generic_um.convert_to_factor_graph()
-    import ipdb; ipdb.set_trace()
-    generic_fg.export('generic_fg.gv')
+    #generic_fg.export('generic_fg.gv')
     # generic_fg also looks good....
     # Now to attach the feature functions...
     expand_feature_functions_fg(
@@ -1014,11 +1053,54 @@ if __name__ == '__main__':
     # Anyway this is enough progress for
     # a push...
 
-    # When I trace into it the cache is already set???
-    # is it maybe getting set by the call in lccrf?
-    # lets get rid of that call....
-    # Oh, its happening in the .q() call above...
-    # comment that out too...
-    # Mmmmm so our func is a product func.... while the g_ funcs
-    # are sums of products....
-    # going to code a make_sum_func ....
+    # Okay so at this point its probably worthwhile having
+    # a repl loop to play through several examples....
+    while True:
+        X = raw_input('Input Sentence -> ')
+        X_seq = tuple(X.split())
+        if len(X_seq) > 2:
+            import ipdb; ipdb.set_trace()
+            print X_seq
+        um = build_um_from_feature_functions(
+            feature_functions_, X_seq, weights, output_alphabet)
+        fg = um.convert_to_factor_graph()
+        expand_feature_functions_fg(fg, feature_functions_, X_seq, weights)
+        fg.q()
+        # Okay this loop works for sequences up to two
+        # tokens but not 3 or more, so need to step
+        # through, when we have 3 or more there are
+        # more than 1 clique so I guess its something to
+        # do with the clique interactions...
+        # Okay so actually the problem looks like
+        # the factor argspec when it combines a plane
+        # variable node to a clique variable node
+        # the argspec is wrong, interstingly it
+        # has the correct call args somehow...
+        # So I need to look at the propagation and see
+        # where that argspec is messing up....
+        # I should how for example the earthquake and/or cancer
+        # graphs get it right because they also have
+        # combined clique variable nodes...
+        # Ok so cancer converted doesnt have any
+        # combined variable clique nodes all the sepset
+        # intersections just have one variable...
+        # Lets try the Huange Darwiche graph....
+        # Okay so the Huang Darwiche one has a similar issue...
+        # Lets start off by looking at the domains for
+        # the combined nodes...
+        # Okay so the combined node has a domain
+        # consisting of tuples which may be ok...
+        # So the argspecs for the factor node
+        # neighbours is just the original vars
+        # so the argspec doesnt match the domain,
+        # so now lets look at how the clique tree
+        # sum product does it for the huang_darwiche
+        # graph....
+        # Okay so the test_clique_tree_huang_darwiche_sum_product
+        # works so lets look at the difference....
+        # Also we should ensure that the test is actually
+        # calling the clique_tree_sum_product routine...
+        # okay it is calling the right function...
+        # Looks like from initialize_factors in bbn
+        # we just have to build the sum_func using
+        # the *original* nodes

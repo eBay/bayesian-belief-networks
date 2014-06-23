@@ -901,3 +901,11 @@ def test_memoization_on_messages(happiness_bbn):
     for clique_node in happiness_bbn._jt.clique_nodes:
         for source, message in clique_node.received_messages.items():
             assert len(message.call_count) <= (2 ** len(message.argspec))
+
+
+def test_clique_tree_sum_product_huang_darwiche(huang_darwiche_dag):
+    huang_darwiche_copy = copy.deepcopy(huang_darwiche_dag)
+    huang_darwiche_copy.inference_method = 'clique_tree_sum_product'
+    huang_darwiche_copy.q()
+    assert all_configurations_equal(
+            huang_darwiche_dag, huang_darwiche_copy)
