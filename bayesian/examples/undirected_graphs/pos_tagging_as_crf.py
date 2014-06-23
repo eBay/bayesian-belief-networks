@@ -497,6 +497,23 @@ def expand_feature_function(feature_function, y_nodes, merged_variables):
     i = int(y_nodes[-1].name[-1])
     # First determine the modified argspec based on
     # the merged_variables...
+    # The argspec can only consist of the variable
+    # names from neighbouring variable nodes.
+    # if one or more of the args to the original
+    # function is a combined var, then we have
+    # to wrap the function in a wrapper taking
+    # the combined_var as an argument and then
+    # unwrapping the combined var and calling
+    # the original func with the unwrapped
+    # value...
+    wrapped_arg_spec = []
+    for original_name, merged_names in merged_var
+    for arg in get_args(feature_function):
+        if arg == 'j':
+            # The j value is derived from the
+            # position in the sequence
+            continue
+        if arg
     argspec = []
     def new_feature_func(y_p, y, X, merged_variables=merged_variables):
         # Now if any of the variables have been merged
@@ -603,21 +620,24 @@ def expand_feature_functions_fg(fg, feature_functions, S, weights):
     # to any sepset they are involved in.
     # Not all variables will be in a sepset.
     combined_vars = dict()
-    for sepset_node in fg.sepset_nodes:
-        import ipdb; ipdb.set_trace()
-        for variable_name in sepset.variable_names:
-            combined_vars[variable_name] = sorted(sepset.variable_names)
+    for variable_node in fg.variable_nodes():
+        original_variable_names = sorted([node.name for node in
+                                   variable_node.original_nodes])
+        for variable_name in original_variable_names:
+            combined_vars[variable_name] = original_variable_names
     for factor_node in fg.factor_nodes():
         print factor_node
         new_feature_functions = []
+        y_nodes = sorted([n for n in
+                          factor_node.original_nodes
+                          if n.name.startswith('y')])
+        y_node_names = [var_name for var_name in
+                        factor_node.original_vars
+                        if var_name.startswith('y')]
         for feature_func in feature_functions_:
             # Lets assume that we have a template
             # that we know is associated with
             # the function...
-            y_nodes = [n for n in factor_node.original_nodes if n.name.startswith('y')]
-            y_node_names = [var_name for var_name in \
-                            factor_node.original_vars if \
-                            var_name.startswith('y')]
             # The below is for the starter func in
             # the case where we have at least 2 y
             # variables (y0 and y1 should be in the same
@@ -637,9 +657,11 @@ def expand_feature_functions_fg(fg, feature_functions, S, weights):
                 # functions if there is more than
                 # 1 token
                 import ipdb; ipdb.set_trace()
-                y_nodes.sort(key=lambda x:int(x.name[1]))
+                #y_nodes.sort(key=lambda x:int(x.name[1]))
                 new_feature_functions.append(
-                    expand_feature_function(feature_func, y_nodes))
+                    expand_feature_function(
+                        feature_func, y_nodes,
+                        combined_vars))
         # We should attach the expanded functions to
         # each clique so we have them later...
         factor_node.expanded_feature_functions = new_feature_functions
@@ -758,6 +780,12 @@ def make_sum_func(factors, weights):
     #return memoize(sum_func)
     return sum_func
 
+def unroll_graph(template, data):
+    '''Can we construct a general unroll
+    algorithm, we would need the template
+    to in some way specify how to
+    attach onto the data...'''
+    pass
 
 if __name__ == '__main__':
     # First lets look at what the convert_to_bbn does
@@ -819,7 +847,7 @@ if __name__ == '__main__':
     #lccrf.weights = op.fmin_l_bfgs_b(optimal, w, approx_grad=1)[0].tolist()
 
     # Lets try to build the graph for S1...
-    s1_ug = build_ug(training_examples[0][0])
+    #s1_ug = build_ug(training_examples[0][0])
     # Now lets look at the graph...
     #s1_ug.export('s1_ug.gv')
     # Ok! that graph looks good, now the only difference
@@ -830,9 +858,9 @@ if __name__ == '__main__':
     # Ok so now we will try to build the join tree from
     # that ug...
 
-    s1_jt = build_join_tree_from_ug(s1_ug)
+    #s1_jt = build_join_tree_from_ug(s1_ug)
     #s1_jt.export('s1_jt.gv')
-    jt_from_ug = build_join_tree_from_ug(ug)
+    #jt_from_ug = build_join_tree_from_ug(ug)
     #jt_from_ug.export('jt_from_ug.gv')
 
     # Okay so now I have a convert_to_factor_graph
@@ -843,13 +871,13 @@ if __name__ == '__main__':
     # but not sure if its the same as convert_to_factor_graph
     # so I will move the convert_to_factor_graph from
     # the UndirectedGraph class to the UndirectedModel class
-    s1_um = build_um(training_examples[0][0])
+    #s1_um = build_um(training_examples[0][0])
     # Lets first take a look at it...
     #s1_um.export('s1_um.gv')
 
     # Ok that looks fine now to see if the
     # convert_to_factor_graph will work....
-    s1_fg = s1_um.convert_to_factor_graph()
+    #s1_fg = s1_um.convert_to_factor_graph()
 
     # Ok, so this is good! (With exception
     # that I put a dummy unity func on
@@ -903,23 +931,23 @@ if __name__ == '__main__':
     # Then we can include each one of
     # these functions in the potential for
     # each cluster...
-    expanded_feature_functions = expand_feature_functions(s1_jt, feature_functions_, S1)
+    #expanded_feature_functions = expand_feature_functions(s1_jt, feature_functions_, S1)
     # The above should have also attached the
     # expanded feature functions to each clique
     # so lets just print them out here to verify...
-    for cluster in s1_jt.nodes:
-        if isinstance(cluster, JoinTreeSepSetNode):
-            # For now we have not assigned any
-            # functions to the SepSet nodes
-            # which may be okay for linear
-            # chains but not in arb. graphs...
-            continue
-            print cluster.name
-        else:
-            print cluster.clique.nodes
-        for f in cluster.expanded_feature_functions:
-            print f.__name__, get_args(f), f.original_func.__name__
-        print '----------------------------------------'
+    #for cluster in s1_jt.nodes:
+    #    if isinstance(cluster, JoinTreeSepSetNode):
+    #        # For now we have not assigned any
+    #        # functions to the SepSet nodes
+    #        # which may be okay for linear
+    #        # chains but not in arb. graphs...
+    #        continue
+    #        print cluster.name
+    #    else:
+    #        print cluster.clique.nodes
+    #    for f in cluster.expanded_feature_functions:
+    #        print f.__name__, get_args(f), f.original_func.__name__
+    #    print '----------------------------------------'
 
     # So now we have the factor graph built with
     # dummy unity functions and we also
@@ -935,13 +963,13 @@ if __name__ == '__main__':
 
     # These are the weights from the lccrf training...
     weights = [3.174603174603173, 3.977272727272726, 1.9607843137254881, 5.194805194805184, 6.779661016949148, 1.9801980198019793, 7.6923076922798295, 1.9801980198019793, 3.8461538461399147]
-    expanded_feature_functions_fg = expand_feature_functions_fg(s1_fg, feature_functions_, S1, weights)
+    #expanded_feature_functions_fg = expand_feature_functions_fg(s1_fg, feature_functions_, S1, weights)
 
-    for factor_node in s1_fg.factor_nodes():
-        print factor_node
-        for f in factor_node.expanded_feature_functions:
-            print f.__name__, get_args(f), f.original_func.__name__
-        print '----------------------------------------'
+    #for factor_node in s1_fg.factor_nodes():
+    #    print factor_node
+    #    for f in factor_node.expanded_feature_functions:
+    #        print f.__name__, get_args(f), f.original_func.__name__
+    #    print '----------------------------------------'
 
     # Okay so the above also built the potential function
     # and assigned it to the factor nodes....
@@ -996,29 +1024,29 @@ if __name__ == '__main__':
     # weights into the factor graph...
     # It seems that we could maybe put them in
     # the expand_feature_functions_fg....
-    um_small = build_small_um('Shannon')
-    print um_small
-    fg_small = um_small.convert_to_factor_graph()
+    #um_small = build_small_um('Shannon')
+    #print um_small
+    #fg_small = um_small.convert_to_factor_graph()
     #fg_small.export('fg_small.gv')
     # Ok so the weight is only on the original func it
     # needs to also be on the func
-    expanded_feature_functions_fg_small = expand_feature_functions_fg(fg_small, feature_functions_, ('Shannon',), weights)
-    for factor_node in fg_small.factor_nodes():
-        print factor_node
-        for f in factor_node.expanded_feature_functions:
-            print f.__name__, get_args(f), f.original_func.__name__
-        print '----------------------------------------'
+    #expanded_feature_functions_fg_small = expand_feature_functions_fg(fg_small, feature_functions_, ('Shannon',), weights)
+    #for factor_node in fg_small.factor_nodes():
+    #    print factor_node
+    #    for f in factor_node.expanded_feature_functions:
+    #        print f.__name__, get_args(f), f.original_func.__name__
+    #    print '----------------------------------------'
 
     # Remember that X should always be a tuple or list
     # NOT just a string....
-    f = fg_small.factor_nodes()[0].func
-    print f('NAME', ('Shannon',))
-    print f('OTHER', ('Shannon',))
+    #f = fg_small.factor_nodes()[0].func
+    #print f('NAME', ('Shannon',))
+    #print f('OTHER', ('Shannon',))
     # Ok!!! Woohoo these are now returning
     # the same as the g_ func above
     # ie the non-normalized results...
     # so now lets see what the .q does...
-    fg_small.q()
+    #fg_small.q()
     # Yeah! it works correctly only thing
     # is its still not normalized but that
     # should be easy....
@@ -1027,6 +1055,7 @@ if __name__ == '__main__':
     # Actually before that lets see if
     # I can call build the one token version
     # using generic functions....
+    import ipdb; ipdb.set_trace()
     output_alphabet = ['NAME', 'OTHER']
     generic_um = build_um_from_feature_functions(
         feature_functions_, ('Shannon',), weights, output_alphabet)
@@ -1104,3 +1133,6 @@ if __name__ == '__main__':
         # Looks like from initialize_factors in bbn
         # we just have to build the sum_func using
         # the *original* nodes
+        # We could also try placing the functions
+        # on the original um.... This should
+        # be easier???
