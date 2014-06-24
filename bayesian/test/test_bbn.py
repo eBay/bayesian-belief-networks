@@ -909,3 +909,17 @@ def test_clique_tree_sum_product_huang_darwiche(huang_darwiche_dag):
     huang_darwiche_copy.q()
     assert all_configurations_equal(
             huang_darwiche_dag, huang_darwiche_copy)
+
+def test_clique_tree_sum_product_huang_darwiche_undirected(
+        huang_darwiche_dag):
+    '''For this test we want to test the
+    clique_tree_sum_product function starting
+    out from an undirected graph. We know
+    that this function works on the
+    undirected graph formed from the
+    initial bbn.'''
+    huang_darwiche_copy = copy.deepcopy(huang_darwiche_dag)
+    huang_darwiche_copy.inference_method = 'clique_tree_sum_product'
+    huang_darwiche_copy.q()
+    assert all_configurations_equal(
+            huang_darwiche_dag, huang_darwiche_copy)
