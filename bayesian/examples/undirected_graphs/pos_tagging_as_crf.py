@@ -349,6 +349,45 @@ def build_um_from_feature_functions(feature_functions, sentence, weights,
     um = UndirectedModel(node_dict, domains=domains)
     return um
 
+def build_um_from_sentence(S, y_domain):
+    # Okay for each token in the sequence we
+    # need a y node and initially just assign
+    # the unity function, the actual feature
+    # functions will be applied later...
+
+    y_nodes = []
+    for i, token in enumerate(S):
+        node_name = 'y%s' % i
+        y_node = UndirectedModelNode(node_name, make_unity([node_name]))
+        y_node.func.domains = {
+            node_name: y_domain }
+        y_node.variable_name = node_name
+        y_nodes.append(y_node)
+
+    # Now for each pair of adjacent nodes
+    # we want to connect them...
+    for left_node, right_node in zip(y_nodes, y_nodes[1:]):
+        ug_connect(left_node, right_node)
+
+    # And now we need the X node for the
+    # input sentence...
+    X_node = UndirectedModelNode('X', make_unity('X'))
+    X_node.func.domains = dict(X = [S])
+    X_node.variable_name = 'X'
+
+    # And connect the X node to all the
+    # y nodes building the domains as we go...
+    domains = dict(X=[S])
+    for y_node in y_nodes:
+        domains[y_node.variable_name] = y_domain
+        ug_connect(y_node, X_node)
+
+    # And now build the graph...
+    node_dict = dict([(node.name, node) for
+                      node in y_nodes + [X_node]])
+    um = UndirectedModel(node_dict, domains=domains)
+    return um
+
 
 def build_ug(sentence):
     # S1 = ('The', 'first', 'president', 'was', 'George', 'Washington')
@@ -1023,18 +1062,26 @@ if __name__ == '__main__':
     S = ('Claude', 'Shannon', 'was', 'a', 'genius')
     # First lets look at what the convert_to_bbn does
     # with a sequential like directed model
-    import ipdb; ipdb.set_trace()
+
     dag = get_bbn(S)
     #dag.export('dag_sequential.gv')
 
     attach_feature_functions(dag, feature_functions_, S, weights)
     dag.inference_method = 'clique_tree_sum_product'
     dag.q()
+    # Ok so this at least runs and gets reasonably good looking
+    # results.
+    # Now we need to see if we can reproduce the same result
+    # starting off from the um
 
 
     # Ok the dag seems correct for a tagger model
     # now we will look at the fg that it creates...
-    fg = dag.convert_to_factor_graph()
+    #fg = dag.convert_to_factor_graph()
+    # for some reason after attaching the functions
+    # the converted factor graph doesnt work
+    # any more. Need to check why but for
+    # now will look at the um
     #fg.export('fg_sequential.gv')
 
     # So the fg I still need to verify is correct
@@ -1044,8 +1091,52 @@ if __name__ == '__main__':
     # variables are inside sepset nodes.
     # Now lets look at the ug that gets
     # created prior to the fg.
+    # We want to make sure that from
+    # the ug we can get the same or
+    # at least valid 'assignments'.
+    # For assignments we need both
+    # a valid join tree and the original
+    # graph, and make sure that each
+    # potential function is assigned
+    # to at least one clique.
     ug = make_undirected_copy(dag)
+    #import ipdb; ipdb.set_trace()
     #ug.export('ug_sequential.gv')
+
+    um_direct = build_um_from_sentence(S, output_alphabet)
+    # Now we need to set up the argspecs for each node
+    # as this is where the attach feature functions knows
+    # how to attach each function to each node...
+    for node in um_direct.nodes:
+        if node.name == 'y0':
+            node.argspec = ['y0', 'X']
+        elif node.name.startswith('y'):
+            i = int(node.name[1:])
+            node.argspec = ['y%s' % (i - 1), 'y%s' % i, 'X']
+        else:
+            # For the X node we basicly leave it at unity...
+            pass
+
+    #um_direct.export('um_direct.gv')
+    # Great the graph looks correct now lets see if
+    # we can attach the functions the same way
+    # that we did for the bbn...
+    import ipdb; ipdb.set_trace()
+    # Need to debug next line...
+    #attach_feature_functions(um_direct, feature_functions_, S, weights)
+    attach_feature_functions(um_direct, feature_functions_, S, weights)
+    # The .q() is almost working...
+    # the problem is that the clique node functions
+    # do not have domains...
+    # Okay I have fixed the domains...
+    # the issue now is the functions that are unity
+    # are causing an issue....
+    # Not sure how to handle the unity...
+    # Mmmmm what about just excluding any unity
+    # functions in a clique as long as that clique
+    # has other functions????
+    um_direct.q()
+
 
     # The undirected copy is essentially
     # the same as the dag for this model
