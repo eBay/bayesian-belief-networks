@@ -1,5 +1,7 @@
 '''Simple Part of Speech Tagging Example'''
 from collections import defaultdict
+from pprint import pprint
+
 from bayesian.graph import UndirectedNode, UndirectedGraph
 from bayesian.undirected_graphical_model import UndirectedModelNode
 from bayesian.bbn import JoinTreeSepSetNode, clique_tree_sum_product, build_bbn
@@ -386,6 +388,19 @@ def build_um_from_sentence(S, y_domain):
     node_dict = dict([(node.name, node) for
                       node in y_nodes + [X_node]])
     um = UndirectedModel(node_dict, domains=domains)
+    # Now we just want to modify the argspecs
+    # so that the feature functions get attached
+    # correctly. (Until we find a better way to do this)
+    for node in um.nodes:
+        if node.name == 'y0':
+            node.argspec = ['y0', 'X']
+        elif node.name.startswith('y'):
+            i = int(node.name[1:])
+            node.argspec = ['y%s' % (i - 1), 'y%s' % i, 'X']
+        else:
+            # For the X node we basicly leave it at unity...
+            pass
+
     return um
 
 
@@ -1100,9 +1115,6 @@ if __name__ == '__main__':
     # potential function is assigned
     # to at least one clique.
     ug = make_undirected_copy(dag)
-    #import ipdb; ipdb.set_trace()
-    #ug.export('ug_sequential.gv')
-
     um_direct = build_um_from_sentence(S, output_alphabet)
     # Now we need to set up the argspecs for each node
     # as this is where the attach feature functions knows
@@ -1121,28 +1133,39 @@ if __name__ == '__main__':
     # Great the graph looks correct now lets see if
     # we can attach the functions the same way
     # that we did for the bbn...
-    import ipdb; ipdb.set_trace()
-    # Need to debug next line...
-    #attach_feature_functions(um_direct, feature_functions_, S, weights)
     attach_feature_functions(um_direct, feature_functions_, S, weights)
-    # The .q() is almost working...
-    # the problem is that the clique node functions
-    # do not have domains...
-    # Okay I have fixed the domains...
-    # the issue now is the functions that are unity
-    # are causing an issue....
-    # Not sure how to handle the unity...
-    # Mmmmm what about just excluding any unity
-    # functions in a clique as long as that clique
-    # has other functions????
+    # The .q() is now giving the
+    # same results as the bbn!
+    # Now we need to check it against the
+    # lccrf as I think its using sum-product
+    # and not max-sum...
     um_direct.q()
+
+    w = [0.5] * len(feature_functions_)
+    #optimal(w)
+    #learned_weights = op.fmin_l_bfgs(optimal, w, approx_grad=1)
+    lccrf = build_lccrf(
+        ['NAME', 'OTHER'], feature_functions_)
+
+    lccrf.weights = weights
+    # So lets do this in a repeated loop...
+    while True:
+        X = raw_input('Input Sentence -> ')
+        X_seq = tuple(X.split())
+        um = build_um_from_sentence(X_seq, ['NAME', 'OTHER'])
+        # Now we need to move the argspec stuff
+        # into the build_um....
+        attach_feature_functions(um, feature_functions_, X_seq, weights)
+        um.q()
+        # Now we will also call the lccrf to compare...
+        pprint(lccrf.q(X))
 
 
     # The undirected copy is essentially
     # the same as the dag for this model
     # just with the arrows removed.
     # Now lets look at the moralized version
-    mg = make_moralized_copy(ug, dag)
+    #mg = make_moralized_copy(ug, dag)
     #mg.export('mg_moralized.gv')
 
     # Since the ug is already fully
@@ -1154,7 +1177,7 @@ if __name__ == '__main__':
 
     # Now lets also look at the jt that is built
     # with build_join_tree()
-    jt = dag.build_join_tree()
+    #jt = dag.build_join_tree()
     #jt.export('jt_sequential.gv')
     # Okay so actually the two join trees
     # are the same so thats good!
