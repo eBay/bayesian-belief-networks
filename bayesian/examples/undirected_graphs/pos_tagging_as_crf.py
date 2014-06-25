@@ -512,7 +512,6 @@ if __name__ == '__main__':
         # Now we need to move the argspec stuff
         # into the build_um....
         attach_feature_functions(um, feature_functions_, X_seq, weights)
-        import ipdb; ipdb.set_trace()
         um_result = um.q()
         print um_result
         y_nodes = sorted([node.name for node
@@ -529,16 +528,13 @@ if __name__ == '__main__':
             labels.append(max_label)
         print labels
         # Now we will also call the lccrf to compare...
-        import ipdb; ipdb.set_trace()
         lccrf_result = lccrf.q(X)
         pprint(lccrf_result)
 
-    # Okay so the above also built the potential function
-    # and assigned it to the factor nodes....
-    # Now we need to see if we get the same result
-    # as Viterbi!!!!!
-    # So first we will let the training run....
-    # And then we need to dump the parameter weights...
+    # We now get the same results for both so
+    # I will start looking at training...
+    # for this we would need the normalizing
+    # Z/partition function.
 
     #print 'Training CRF...'
     #weights = lccrf.batch_train(training_examples)
