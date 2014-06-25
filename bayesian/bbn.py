@@ -16,7 +16,8 @@ from bayesian.graph import triangulate
 from bayesian.factor_graph import VariableNode, FactorNode
 from bayesian.factor_graph import connect as fg_connect
 from bayesian.factor_graph import FactorGraph, unity, make_unity
-from bayesian.factor_graph import make_product_func, make_not_sum_func
+from bayesian.factor_graph import make_product_func, make_not_sum_func, make_sum_func
+from bayesian.factor_graph import make_arg_max_func #as make_not_sum_func
 from bayesian.factor_graph import build_graph as build_factor_graph
 
 from bayesian.utils import get_args, named_base_type_factory
@@ -824,13 +825,17 @@ class JoinTreeCliqueNode(UndirectedNode):
             sepset_to_target.intersection)
         return vars
 
-    def initialize_factors(self, bbn_nodes):
+    def initialize_factors(self, bbn_nodes, log_domain=False):
         """From the BBN nodes in this
         clique, build the initial potential
         function from the factor functions."""
         factors = [node.func for node in bbn_nodes]
-        self.potential_func = make_product_func(factors)
-        self.original_potential_func = make_product_func(factors)
+        if log_domain:
+            self.potential_func = make_sum_func(factors)
+            self.original_potential_func = make_sum_func(factors)
+        else:
+            self.potential_func = make_product_func(factors)
+            self.original_potential_func = make_product_func(factors)
 
 
     def ready(self):
@@ -877,7 +882,8 @@ class JoinTreeCliqueNode(UndirectedNode):
                     neighbours.add(clique_node)
         return neighbours
 
-    def make_message(self, target_node, aggregator='sum'):
+    def make_message(self, target_node, log_domain=False, operator=sum):
+
         '''
         To construct the message from
         a variable node to a factor
@@ -894,9 +900,9 @@ class JoinTreeCliqueNode(UndirectedNode):
             """The only difference when a node
             is a leaf is that there is no
             product func to be made"""
-            message = CliqueMessage(self, target_node, [],
-                              make_not_sum_func(self.potential_func, sepset))
-
+            message = CliqueMessage(
+                self, target_node, [],
+                make_not_sum_func(self.potential_func, sepset, operator))
             return message
         factors = [self.potential_func]
         neighbours = self.clique_neighbours
@@ -910,8 +916,12 @@ class JoinTreeCliqueNode(UndirectedNode):
                 import ipdb; ipdb.set_trace()
                 print node.received_messages
                 raise
-        product_func = make_product_func(factors)
-        not_sum_func = make_not_sum_func(product_func, sepset)
+        if log_domain:
+            product_func = make_sum_func(factors)
+        else:
+            product_func = make_product_func(factors)
+        not_sum_func = make_not_sum_func(product_func, sepset, operator)
+        #not_sum_func = make_arg_max_func(product_func, sepset)
         message = CliqueMessage(
             self, target_node, factors, not_sum_func)
         return message
@@ -1414,7 +1424,8 @@ def make_evidence_func(func, args, pos, value):
     return evidence_func
 
 
-def clique_tree_sum_product(clique_tree, bbn, evidence={}):
+def clique_tree_sum_product(clique_tree, bbn, evidence={},
+                            log_domain=False, operator=sum):
     """Implements the sum-product algorithm on
     the induced clique tree formed from the bbn."""
 
@@ -1425,7 +1436,7 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
     # the clique nodes...
     for clique_node in clique_tree.clique_nodes:
         clique_node.initialize_factors(
-            assignments[clique_node])
+            assignments[clique_node], log_domain=log_domain)
         # Now if we have an observation for
         # any variables in the potential function
         # we simply multiply the indicator function...
@@ -1450,7 +1461,7 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
             break
         for clique_node in ready_nodes:
             target = clique_node.get_target()
-            message = clique_node.make_message(target)
+            message = clique_node.make_message(target, log_domain, operator)
             clique_node.send(message)
     # Now we can return all the marginals...
     result = dict()
@@ -1464,12 +1475,19 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
                 if bbn_node.variable_name not in (
                         [n.variable_name for n in clique_node.clique.nodes]):
                     continue
-                product_func = make_product_func(
-                    #### This is where the error is!!!! We need to use
-                    # the *original* potential func!!!!
-                    [clique_node.original_potential_func] +
-                    clique_node.received_messages.values())
-                not_sum_func = make_not_sum_func(product_func, bbn_node.variable_name)
+                if log_domain:
+                    aggregator_func = make_sum_func(
+                        [clique_node.original_potential_func] +
+                        clique_node.received_messages.values())
+                else:
+
+                    aggregator_func = make_product_func(
+                        #### This is where the error is!!!! We need to use
+                        # the *original* potential func!!!!
+                        [clique_node.original_potential_func] +
+                        clique_node.received_messages.values())
+                not_sum_func = make_not_sum_func(
+                    aggregator_func, bbn_node.variable_name, operator)
 
                 # Todo: fix this to iterate over the whole domain...
                 normalizer = 0 # not_sum_func(True) + not_sum_func(False)
@@ -1477,8 +1495,11 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={}):
                     bbn_node.variable_name, [True, False])
 
                 for val in domain:
+                    #result[(bbn_node.variable_name, val)] = (
+                    #    not_sum_func(val))
                     result[(bbn_node.variable_name, val)] = (
                         not_sum_func(val))
+
                     normalizer += result[(bbn_node.variable_name, val)]
                 if normalizer:
                     for val in domain:

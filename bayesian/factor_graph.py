@@ -402,6 +402,93 @@ def eliminate_var(f, var):
     return eliminated
 
 
+def eliminate_var(f, var, operator=max):
+    #import ipdb; ipdb.set_trace()
+    '''
+    Given a function f return a new
+    function which sums over the variable
+    we want to eliminate
+
+    This may be where we have the opportunity
+    to remove the use of .value....
+
+    '''
+    arg_spec = get_args(f)
+    assert var in arg_spec
+    pos = arg_spec.index(var)
+    new_spec = arg_spec[:]
+    try:
+        new_spec.remove(var)
+    except:
+        import ipdb; ipdb.set_trace()
+        print 'remove'
+        raise
+    # Lets say the orginal argspec is
+    # ('a', 'b', 'c', 'd') and they
+    # are all Booleans
+    # Now lets say we want to eliminate c
+    # This means we want to sum over
+    # f(a, b, True, d) and f(a, b, False, d)
+    # Seems like all we have to do is know
+    # the positionn of c and thats it???
+    # Ok so its not as simple as that...
+    # this is because when the *call* is made
+    # to the eliminated function, as opposed
+    # to when its built then its only
+    # called with ('a', 'b', 'd')
+    eliminated_pos = arg_spec.index(var)
+
+    def eliminated(*args):
+        template = arg_spec[:]
+        total = 0
+        call_args = template[:]
+        i = 0
+        for arg in args:
+            # To be able to remove .value we
+            # first need to also be able to
+            # remove .name in fact .value is
+            # just a side effect of having to
+            # rely on .name. This means we
+            # probably need to construct a
+            # a list containing the names
+            # of the args based on the position
+            # they are being called.
+            if i == eliminated_pos:
+                # We need to increment i
+                # once more to skip over
+                # the variable being marginalized
+                call_args[i] = 'marginalize me!'
+                i += 1
+            if i >= len(call_args):
+                #import ipdb; ipdb.set_trace()
+                print call_args, arg_spec, args
+                raise
+            call_args[i] = arg
+            i += 1
+
+        # Instead of summing and returning the
+        # total we now record the results and
+        # then return then maximum...
+        all_results = []
+        for val in f.domains.get(var, [True, False]):
+            call_args[pos] = val
+            try:
+                res = f(*call_args)
+            except:
+                import ipdb; ipdb.set_trace()
+                print 'Error!'
+                res = f(*call_args)
+                raise
+            #total += f(*call_args)
+            all_results.append(res)
+        print all_results
+        return operator(all_results)
+
+    eliminated.argspec = new_spec
+    eliminated.domains = f.domains
+    return eliminated
+
+
 def memoize(f):
     '''
     The goal of message passing
@@ -437,7 +524,7 @@ def memoize(f):
     return memoized
 
 
-def make_not_sum_func(product_func, keep_vars):
+def make_not_sum_func(product_func, keep_vars, operator=sum):
     '''
     Given a function with some set of
     arguments, and a single argument to keep,
@@ -452,7 +539,7 @@ def make_not_sum_func(product_func, keep_vars):
     new_func = product_func
     for arg in args:
         if arg not in keep_vars:
-            new_func = eliminate_var(new_func, arg)
+            new_func = eliminate_var(new_func, arg, operator)
     new_func = memoize(new_func)
     return new_func
 
@@ -537,15 +624,17 @@ def eliminate_var_max(f, var):
     return eliminated_max
 
 #def make_arg_max_func(product_func, keep_var):
-def make_arg_max_func(product_func, target_node):
-    keep_var = target_node.name
+def make_arg_max_func(product_func, keep_vars):
+    if isinstance(keep_vars, str):
+        keep_vars = set([keep_vars])
+    #keep_var = target_node.name
     args = get_args(product_func)
     #new_func = copy.deepcopy(product_func)
     new_func = product_func
     for arg in args:
-        if arg != keep_var:
+        if arg not in keep_vars:
             new_func = eliminate_var_max(new_func, arg)
-            #new_func = memoize(new_func)
+            new_func = memoize(new_func)
     return new_func
 
 
@@ -835,9 +924,12 @@ def make_product_func(factors):
     return memoize(product_func)
 
 
-def make_unity(argspec):
+def make_unity(argspec, log_domain=False):
     def unity(*x):
-        return 1
+        if log_domain:
+            return 0
+        else:
+            return 1
     unity.argspec = argspec
     unity.__name__ = '1'
     test_args = [True] * len(argspec)
@@ -1540,3 +1632,56 @@ def build_graph(*args, **kwds):
         connect(factor_node, [variable_nodes[x] for x in factor_args])
     graph = FactorGraph(variable_nodes.values() + factor_nodes, name=name)
     return graph
+
+def make_sum_func(factors):
+    '''
+    This is a copy of the factor_graph.make_product_func
+    except that it sums since we are working in the
+    log domain.
+    '''
+    args_map = {}
+    all_args = []
+    domains = {}
+    for factor in factors:
+        args_map[factor] = get_args(factor)
+        all_args += args_map[factor]
+        if hasattr(factor, 'domains'):
+            domains.update(factor.domains)
+    args = list(set(all_args))
+
+    def sum_func(*sum_func_args):
+        arg_dict = dict(zip(args, sum_func_args))
+        result = 0
+        for factor in factors:
+            # We need to build the correct argument
+            # list to call this factor with.
+            factor_args = []
+            for arg in get_args(factor):
+                if arg in arg_dict:
+                    factor_args.append(arg_dict[arg])
+            #if not factor_args:
+            #    # Since we always require
+            #    # at least one argument we
+            #    # insert a dummy argument
+            #    # so that the unity function works.
+            #    factor_args.append('dummy')
+            try:
+                res = factor(*factor_args)
+            except:
+                # This is just for debugging purposes
+                # remove before final
+                import ipdb; ipdb.set_trace()
+                res = factor(*factor_args)
+            if res < 0:
+                import ipdb; ipdb.set_trace()
+                print 'negative result from product func...'
+                res = factor(*factor_args)
+            result += res
+        return result
+
+    sum_func.argspec = args
+    sum_func.factors = factors
+    sum_func.domains = domains
+    # For now I will not memoize
+    #return memoize(sum_func)
+    return sum_func
