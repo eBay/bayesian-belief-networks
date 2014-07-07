@@ -122,6 +122,7 @@ class BBN(Graph):
         '''query is a dict of currently evidenced
         variables and is none by default.'''
         samples = []
+        result_cache = dict()
         # We need to add evidence variables to the sample...
         while len(samples) < n:
             sample = dict(query)
@@ -129,7 +130,10 @@ class BBN(Graph):
                 next_node = choice([node for node in
                                     self.nodes if
                                     node.variable_name not in sample])
-                result = self.query(**sample)
+                key = tuple(sorted(sample.items()))
+                if key not in result_cache:
+                    result_cache[key] = self.query(**sample)
+                result = result_cache[key]
                 var_density = [r for r in result.items()
                                if r[0][0]==next_node.variable_name]
                 cumulative_density = var_density[:1]

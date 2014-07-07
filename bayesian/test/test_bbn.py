@@ -777,33 +777,33 @@ def valid_sample(samples, query_result):
     result = True
     for k, v in counts.items():
         counts[k] = v / len(samples)
-        if not close_enough(counts.get(k, 0), query_result[k], r=0):
+        difference = abs(counts.get(k, 0) - query_result[k])
+        if round(difference, 2) > 0.01:
             result = False
-            print counts[k], query_result[k]
-    print counts
     return result
+
 
 def test_draw_sample_monty(monty_bbn):
     '''Note this test is non-deterministic
     but should pass most of the time.'''
     query_result = monty_bbn.query()
-    samples = monty_bbn.draw_samples(n=1000)
+    samples = monty_bbn.draw_samples(n=10000)
     assert valid_sample(samples, query_result)
 
     # Now test with some different queries...
     query = dict(guest_door='A')
     query_result = monty_bbn.query(**query)
-    samples = monty_bbn.draw_samples(query, n=1000)
+    samples = monty_bbn.draw_samples(query, n=10000)
     assert valid_sample(samples, query_result)
 
     query = dict(guest_door='A', monty_door='B')
     query_result = monty_bbn.query(**query)
-    samples = monty_bbn.draw_samples(query, n=1000)
+    samples = monty_bbn.draw_samples(query, n=10000)
     assert valid_sample(samples, query_result)
 
 
 def test_draw_sample_sprinkler(sprinkler_bbn):
 
     query_result = sprinkler_bbn.query()
-    samples = sprinkler_bbn.draw_samples(query_result, 10000)
+    samples = sprinkler_bbn.draw_samples({}, 10000)
     assert valid_sample(samples, query_result)
