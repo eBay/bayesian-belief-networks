@@ -460,7 +460,7 @@ def eliminate_var(f, var, operator=max):
                 call_args[i] = 'marginalize me!'
                 i += 1
             if i >= len(call_args):
-                #import ipdb; ipdb.set_trace()
+                import ipdb; ipdb.set_trace()
                 print call_args, arg_spec, args
                 raise
             call_args[i] = arg
@@ -481,7 +481,6 @@ def eliminate_var(f, var, operator=max):
                 raise
             #total += f(*call_args)
             all_results.append(res)
-        print all_results
         return operator(all_results)
 
     eliminated.argspec = new_spec

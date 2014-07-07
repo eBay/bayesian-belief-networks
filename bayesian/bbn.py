@@ -90,7 +90,7 @@ class BBN(Graph):
             # We need to clear out all
             # nodes received messages...
             jt.reset()
-            return clique_tree_sum_product(jt, self, kwds)
+            return clique_tree_sum_product(jt, self, kwds, log_domain=False, operator=sum)
         elif self.inference_method != 'huang_darwiche':
             raise "NotImplemented"
 
@@ -317,7 +317,7 @@ class BBN(Graph):
             for factor_node_name, factor_node in fg_factor_nodes.items():
                 if set(variable_node.original_variable_names).intersection(
                         get_args(factor_node.func)):
-                    print variable_node
+                    pass
                     #dispatcher = make_dispatcher(
                     #    fg_variable_nodes.values(), factor_node.func)
 
@@ -499,6 +499,9 @@ class JoinTree(UndirectedGraph):
 
         assigned = set()
         for node in bbn.nodes:
+            if node.name == 'y2011':
+                import ipdb; ipdb.set_trace()
+                print node.name
             args = get_args(node.func)
             if len(args) == 1:
                 # If the func has only 1 arg
@@ -535,7 +538,11 @@ class JoinTree(UndirectedGraph):
                                   self.clique_nodes if
                                   (set(clique_node.variable_names).
                                    issuperset(family))]
-            assert len(containing_cliques) >= 1
+            try:
+                assert len(containing_cliques) >= 1
+            except:
+                import ipdb; ipdb.set_trace()
+                print family
             for clique in containing_cliques:
                 if node in assigned:
                     # Make sure we assign all original
