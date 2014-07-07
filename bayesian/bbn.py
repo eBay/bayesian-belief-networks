@@ -4,7 +4,7 @@ import sys
 import copy
 import heapq
 
-from random import random
+from random import random, choice
 from StringIO import StringIO
 from itertools import combinations, product
 from collections import defaultdict
@@ -118,26 +118,29 @@ class BBN(Graph):
                 tab.add_row([node, value, '%8.6f' % prob])
         print tab
 
-    def draw_samples(self, query_result, n=1):
-        '''Return a list of n samples'''
+    def draw_samples(self, query={}, n=1):
+        '''query is a dict of currently evidenced
+        variables and is none by default.'''
         samples = []
+        # We need to add evidence variables to the sample...
         while len(samples) < n:
-            s = dict()
-            vals_by_var = defaultdict(list)
-            for k, v in query_result.items():
-                var, val = k
-                vals_by_var[var].append(val)
-            for var, vals in vals_by_var.items():
-                vals.sort(reverse=True)
-                t = 0
+            sample = dict(query)
+            while len(sample) < len(self.nodes):
+                next_node = choice([node for node in
+                                    self.nodes if
+                                    node.variable_name not in sample])
+                result = self.query(**sample)
+                var_density = [r for r in result.items()
+                               if r[0][0]==next_node.variable_name]
+                cumulative_density = var_density[:1]
+                for key, mass in var_density[1:]:
+                    cumulative_density.append((key, cumulative_density[-1][1] + mass))
                 r = random()
-                while s.get(var) is None:
-                    t += query_result[(var, vals[-1])]
-                    if r <= t:
-                        s[var] = vals[-1]
-                    else:
-                        vals.pop()
-            samples.append(s)
+                i = 0
+                while r > cumulative_density[i][1]:
+                    i += 1
+                sample[next_node.variable_name] = cumulative_density[i][0][1]
+            samples.append(sample)
         return samples
 
 
