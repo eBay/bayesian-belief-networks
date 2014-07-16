@@ -12,7 +12,7 @@ from bayesian.examples.bbns.monty_hall import g as monty_bbn
 from bayesian.examples.bbns.earthquake import g as earthquake_bbn
 from bayesian.examples.bbns.cancer import g as cancer_bbn
 from bayesian.examples.bbns.happiness import g as happiness_bbn
-
+from bayesian.examples.bbns.student import g as student_bbn
 
 def r3(x):
     return round(x, 3)
@@ -170,6 +170,33 @@ def pytest_funcarg__cancer_bbn(request):
 
 def pytest_funcarg__happiness_bbn(request):
     return happiness_bbn
+
+
+def pytest_funcarg__map_bbn(request):
+    '''Small two node BBN from KF 13.1'''
+    def f_a(a):
+        if a:
+            return 0.6
+        else:
+            return 0.4
+
+    def f_b(a, b):
+        if a:
+            if b:
+                return 0.45
+            else:
+                return 0.55
+        else:
+            if b:
+                return 0.9
+            else:
+                return 0.1
+
+    return build_bbn(f_a, f_b)
+
+
+def pytest_funcarg__student_bbn(request):
+    return student_bbn
 
 
 def variable_domains_match_function_domains(fg):
@@ -923,3 +950,65 @@ def test_clique_tree_sum_product_huang_darwiche_undirected(
     huang_darwiche_copy.q()
     assert all_configurations_equal(
             huang_darwiche_dag, huang_darwiche_copy)
+
+
+def test_MAP_query(map_bbn, student_bbn):
+
+    # First ensure the maximum of the marginals
+    # matches KF 555
+    result = map_bbn.query(a=True)
+    assert round(
+        max([result[('b', True)], result[('b', False)]]), 2) == 0.55
+    result = map_bbn.query(a=False)
+    assert round(
+        max([result[('b', True)], result[('b', False)]]), 2) == 0.9
+
+    # Now lets change the inference method and ensure we
+    # get the same results...
+    map_bbn.inference_method = 'clique_tree_sum_product'
+    result = map_bbn.query(a=True)
+    assert round(
+        max([result[('b', True)], result[('b', False)]]), 2) == 0.55
+    result = map_bbn.query(a=False)
+    assert round(
+        max([result[('b', True)], result[('b', False)]]), 2) == 0.9
+
+    # Okay now we want to change from sum product to max sum...
+    result = map_bbn.mpe_query()
+    assert round(max(result.values()), 2) == 0.36
+
+    # Now lets pick the most likely assignment....
+    most_likely = dict()
+    for var in ['a', 'b']:
+        most_likely[var] = max(
+            [x for x in result.items() if x[0][0]==var],
+            key=lambda x:x[1])[0][1]
+    assert most_likely['a'] is False
+    assert most_likely['b'] is True
+
+    # Now test the student BBN to make sure
+    # we get same results as KF
+    student_bbn.inference_method = 'clique_tree_sum_product'
+    result = student_bbn.mpe_query()
+
+    # See KF page 559 for the student example
+    # here the mpe assignments should be:
+    # d = True
+    # i = False
+    # g = 3
+    # s = False
+    # l = False
+    # with probability approx. 0.184
+    assert round(max(result.values()), 3) == 0.184
+
+    # Now get the assignments from the results...
+    most_likely = dict()
+    for var in [n.variable_name for n in student_bbn.nodes]:
+        most_likely[var] = max(
+            [x for x in result.items() if x[0][0]==var],
+            key=lambda x:x[1])[0][1]
+    assert most_likely['d'] is True
+    assert most_likely['i'] is False
+    assert most_likely['g'] == 3
+    assert most_likely['s'] is False
+    assert most_likely['l'] is False

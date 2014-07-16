@@ -140,6 +140,29 @@ class BBN(Graph):
                 tab.add_row([node, value, '%8.6f' % prob])
         print tab
 
+    def mpe_query(self, **kwds):
+        '''We adopt the use of 'mpe' (MPE)
+        instead of the more traditional MAP
+        for 'Most Probable Explanation'
+        for doing most likely joint
+        assignment queries.
+        NOTE also that this type of query
+        is only currently supported by
+        the clique tree sum product
+        inference method and not by
+        the Huang Darwiche method.'''
+        if self.inference_method != 'clique_tree_sum_product':
+            print >> sys.stderr, (
+                'For MPE/MAP queries please use '
+                'the clique_tree_sum_product inference method.')
+            raise "NotImplemented"
+        if not hasattr(self, '_jt'):
+            self._jt = self.build_join_tree()
+        jt = self._jt
+        jt.reset()
+        return clique_tree_sum_product(
+            jt, self, kwds, log_domain=False, operator=max)
+
     def convert_to_factor_graph(self, assignments=None):
         """
         Convert to a factor graph
@@ -1508,7 +1531,7 @@ def clique_tree_sum_product(clique_tree, bbn, evidence={},
                         not_sum_func(val))
 
                     normalizer += result[(bbn_node.variable_name, val)]
-                if normalizer:
+                if normalizer and operator==sum:
                     for val in domain:
                         result[(bbn_node.variable_name, val)] /= normalizer
                 marginalized.add(bbn_node.variable_name)
