@@ -387,10 +387,10 @@ def eliminate_var(f, var):
             try:
                 res = f(*call_args)
             except:
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
                 print 'Error!'
                 res = f(*call_args)
-                raise
+                #raise
             total += f(*call_args)
         return total
 
@@ -475,10 +475,10 @@ def eliminate_var(f, var, operator=max):
             try:
                 res = f(*call_args)
             except:
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
                 print 'Error!'
                 res = f(*call_args)
-                raise
+                #raise
             #total += f(*call_args)
             all_results.append(res)
         return operator(all_results)
@@ -911,9 +911,9 @@ def make_product_func(factors):
             except:
                 res = factor(*factor_args)
             if res < 0:
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
                 print 'negative result from product func...'
-                res = factor(*factor_args)
+                #res = factor(*factor_args)
             result *= res
         return result
 
@@ -1669,12 +1669,13 @@ def make_sum_func(factors):
             except:
                 # This is just for debugging purposes
                 # remove before final
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
                 res = factor(*factor_args)
             if res < 0:
-                import ipdb; ipdb.set_trace()
-                print 'negative result from product func...'
-                res = factor(*factor_args)
+                pass
+                #import ipdb; ipdb.set_trace()
+                #print 'negative result from product func...'
+                #res = factor(*factor_args)
             result += res
         return result
 

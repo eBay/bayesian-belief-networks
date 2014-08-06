@@ -289,7 +289,7 @@ def expand_feature_functions(jt, feature_functions, S):
     t = Template("chain", ['y_prev', 'y', 'X', 'i'])
     for cluster in jt.clique_nodes:
 
-        print cluster
+        #print cluster
         combined_vars = dict()
         for sepset_node in cluster.neighbours:
             for variable_name in sepset_node.variable_names:
@@ -474,7 +474,7 @@ def attach_feature_functions(g, feature_functions, S, weights):
             for func in feature_functions:
                 functions.append(
                     customize_feature_function(node, func, S))
-            print [f.argspec for f in functions]
+            #print [f.argspec for f in functions]
             node.func = make_sum_func(functions)
             node.argspec = node.func.argspec
 
@@ -512,7 +512,9 @@ if __name__ == '__main__':
         # Now we need to move the argspec stuff
         # into the build_um....
         attach_feature_functions(um, feature_functions_, X_seq, weights)
+        import ipdb; ipdb.set_trace()
         um_result = um.q()
+        print 'Undirected Graph Results:'
         print um_result
         y_nodes = sorted([node.name for node
                           in um.nodes if node.name.startswith('y')])
@@ -529,6 +531,7 @@ if __name__ == '__main__':
         print labels
         # Now we will also call the lccrf to compare...
         lccrf_result = lccrf.q(X)
+        print 'LCCRF Result:'
         pprint(lccrf_result)
 
     # We now get the same results for both so

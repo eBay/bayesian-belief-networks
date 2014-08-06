@@ -5,6 +5,20 @@ from itertools import product as xproduct
 from bayesian.examples.bbns.huang_darwiche import *
 from bayesian.examples.undirected_graphs.monty_2 import *
 from bayesian.undirected_graphical_model import *
+from bayesian.linear_chain_crf import build_lccrf
+from bayesian.examples.undirected_graphs.pos_tagging_as_crf import(
+    indicator_func_8,
+    indicator_func_9,
+    indicator_func_10,
+    indicator_func_11,
+    indicator_func_12,
+    indicator_func_13,
+    indicator_func_14,
+    indicator_func_15,
+    indicator_func_16,)
+from bayesian.examples.undirected_graphs.pos_tagging_as_crf import(
+    build_um_from_sentence,
+    attach_feature_functions)
 
 
 def pytest_funcarg__huang_darwiche_factors(request):
@@ -60,6 +74,45 @@ def pytest_funcarg__f_monty_door(request):
             return 0
         return 1
     return f_monty_door
+
+
+def pytest_funcarg__pos_tag_weights(request):
+    return (
+        3.174603174603173,
+        3.977272727272726,
+        1.9607843137254881,
+        5.194805194805184,
+        6.779661016949148,
+        1.9801980198019793,
+        7.6923076922798295,
+        1.9801980198019793,
+        3.8461538461399147
+    )
+
+
+def pytest_funcarg__pos_tag_feature_functions(request):
+    return (
+        indicator_func_8,
+        indicator_func_9,
+        indicator_func_10,
+        indicator_func_11,
+        indicator_func_12,
+        indicator_func_13,
+        indicator_func_14,
+        indicator_func_15,
+        indicator_func_16,
+    )
+
+
+def pytest_funcarg__pos_tag_lccrf(request):
+    output_alphabet = ['NAME', 'OTHER']
+        # These are the weights from the lccrf training...
+    weights = pytest_funcarg__pos_tag_weights(request)
+    feature_functions = pytest_funcarg__pos_tag_feature_functions(request)
+    lccrf = build_lccrf(
+        output_alphabet, feature_functions)
+    lccrf.weights = weights
+    return lccrf
 
 
 class TestUndirectedGraph():
@@ -179,3 +232,51 @@ def test_verify(undirected_monty_model):
 def test_build_factor_graph(undirected_monty_model):
     fg = undirected_monty_model.build_factor_graph()
     fg.q()
+
+
+def test_lccrf_results_same_as_crf_results(
+        pos_tag_lccrf, pos_tag_feature_functions, pos_tag_weights):
+    '''Since for the lccrf we are using
+    the viterbi algorithm and for
+    general crfs we are using the
+    clique_tree_sum_product algorithm
+    we want to verify that we get the
+    same results when using identical weights.
+    '''
+    test_sentences = (
+        'Claude Shannon',
+        'the first president was George Washington',
+        'George Washington was the first president',
+    )
+    from pprint import pprint
+    for sentence in test_sentences:
+        pos_tag_lccrf.q(sentence)
+        X_seq = tuple(sentence.split())
+        um = build_um_from_sentence(X_seq, ['NAME', 'OTHER'])
+        um.log_domain = True
+        attach_feature_functions(
+            um, pos_tag_feature_functions,
+            X_seq, pos_tag_weights)
+        result = um.mpe_query()
+        most_likely = dict()
+        for var in um.variables:
+            most_likely[var] = max(
+                [x for x in result.items() if x[0][0]==var],
+                key=lambda x:x[1])[0][1]
+
+        pprint(most_likely)
+        max_potential = max(result.values())
+        # Which variables are at the max potential?
+        # Now to normalize we take any of the
+        # maxes and divide by the total of that
+        # variables potential assignments
+        last_var_name = 'y{}'.format(len(X_seq) - 1)
+        total = sum([x[1] for x in result.items() if x[0][0] == last_var_name])
+        mpe_prob = max_potential / total
+        #import ipdb; ipdb.set_trace()
+        # Seems like we need to know the *last*
+        # variable that was computed in the
+        # variable elimination since the
+        # values assigned to other variables
+        # than the mpe value may be higher...
+        print mpe_prob
