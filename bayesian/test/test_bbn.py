@@ -728,15 +728,43 @@ def test_build_bbn_from_conditionals():
         "guest_door": [
             [[], {"A": 1/3, "B": 1/3, "C": 1/3}]],
         "monty_door": [
-            [[["prize_door", "A"], ["guest_door", "A"]], {"A": 0, "B": 0.5, "C": 0.5}],
-            [[["prize_door", "A"], ["guest_door", "B"]], {"A": 0, "B": 0, "C": 1}],
-            [[["prize_door", "A"], ["guest_door", "C"]], {"A": 0, "B": 1, "C": 0}],
-            [[["prize_door", "B"], ["guest_door", "A"]], {"A": 0, "B": 0, "C": 1}],
-            [[["prize_door", "B"], ["guest_door", "B"]], {"A": 0.5, "B": 0, "C": 0.5}],
-            [[["prize_door", "B"], ["guest_door", "C"]], {"A": 1, "B": 0, "C": 0}],
-            [[["prize_door", "C"], ["guest_door", "A"]], {"A": 0, "B": 1, "C": 0}],
-            [[["prize_door", "C"], ["guest_door", "B"]], {"A": 1, "B": 0, "C": 0}],
-            [[["prize_door", "C"], ["guest_door", "C"]], {"A": 0.5, "B": 0.5, "C": 0}],
+            [[["prize_door", "A"], ["guest_door", "A"]], {
+                "A": 0,
+                "B": 0.5,
+                "C": 0.5
+            }],
+            [[["prize_door", "A"], ["guest_door", "B"]], {
+                "A": 0,
+                "B": 0,
+                "C": 1}],
+            [[["prize_door", "A"], ["guest_door", "C"]], {
+                "A": 0,
+                "B": 1,
+                "C": 0}],
+            [[["prize_door", "B"], ["guest_door", "A"]], {
+                "A": 0,
+                "B": 0,
+                "C": 1}],
+            [[["prize_door", "B"], ["guest_door", "B"]], {
+                "A": 0.5,
+                "B": 0,
+                "C": 0.5}],
+            [[["prize_door", "B"], ["guest_door", "C"]], {
+                "A": 1,
+                "B": 0,
+                "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "A"]], {
+                "A": 0,
+                "B": 1,
+                "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "B"]], {
+                "A": 1,
+                "B": 0,
+                "C": 0}],
+            [[["prize_door", "C"], ["guest_door", "C"]], {
+                "A": 0.5,
+                "B": 0.5,
+                "C": 0}],
         ]
     }
     g = build_bbn_from_conditionals(UPDATE)
