@@ -7,6 +7,9 @@ import copy
 import inspect
 import random
 
+# from py2neo import Graph
+import py2neo
+
 from collections import defaultdict
 from itertools import product as iter_product
 from Queue import Queue
@@ -1104,6 +1107,36 @@ class FactorGraph(object):
             [(k, v / len(samples)) for k, v in counts.items()])
         return normalized
 
+    def loadToNeo(self, connection=None):
+        if connection:
+            neoGraph = py2neo.Graph(connection)
+        else:
+            neoGraph = py2neo.Graph()
+
+        # WARNING WARNING
+        neoGraph.delete_all()
+
+        # edges = set()
+        vertices = dict() # used to capture the Neo Nodes
+        for node in self.nodes:
+            if isinstance(node, FactorNode):
+                vertices[node.name] = py2neo.Node("FactorNode", name=node.name)
+                # fh.write('  %s [ shape="rectangle" color="red"];\n' % node.name)
+            else:
+                vertices[node.name] = py2neo.Node("VariableNode", name=node.name)
+                # fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
+        # Build the edges
+        for node in self.nodes:
+            for neighbour in node.neighbours:
+                # edge = [node.name, neighbour.name]
+                # edge = tuple(sorted(edge))
+
+                edge = py2neo.Relationship(vertices[node.name], "INFLUENCES", vertices[neighbour.name], since=1999)
+                # edges.add(edge)
+                neoGraph.create(edge)
+
+        # for source, target in edges:
+        #     fh.write('  %s -- %s;\n' % (source, target))
 
     def export(self, filename=None, format='graphviz'):
         '''Export the graph in GraphViz dot language.'''
