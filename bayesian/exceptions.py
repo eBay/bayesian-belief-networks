@@ -39,6 +39,13 @@ class VariableNotInGraphError(Exception):
     pass
 
 
+class VariableValueNotInDomainError(Exception):
+    """Raised when a BBN is queried with
+    a value for a variable that is not within
+    that variables domain."""
+    pass
+
+
 class IncorrectInferenceMethodError(Exception):
     '''Raise when attempt is made to
     generate samples when the inference

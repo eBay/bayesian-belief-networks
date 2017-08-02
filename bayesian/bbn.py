@@ -16,6 +16,7 @@ from bayesian.graph import Node, UndirectedNode, connect
 from bayesian.graph import Graph, UndirectedGraph
 from bayesian.utils import get_args, named_base_type_factory
 from bayesian.utils import get_original_factors
+from bayesian.exceptions import VariableNotInGraphError, VariableValueNotInDomainError
 
 
 class BBNNode(Node):
@@ -71,7 +72,27 @@ class BBN(Graph):
         jt = build_join_tree(self)
         return jt
 
+    def validate_keyvals(self, kwds):
+        '''
+        When evidence in the form of
+        keyvals are provided to the .query() method
+        validate that all keys match a variable name
+        and that all vals are in the domain of
+        the variable
+        '''
+        vars = set([n.variable_name for n in self.nodes])
+        for k, v in kwds.items():
+            if k not in vars:
+                raise VariableNotInGraphError(k)
+            domain = self.domains.get(k, (True, False))
+            if not any([v is x for x in domain]):
+                s = '{}={}'.format(k, v)
+                raise VariableValueNotInDomainError(s)
+
     def query(self, **kwds):
+        # First check that the keyvals
+        # provided are valid for this graph...
+        self.validate_keyvals(kwds)
         jt = self.build_join_tree()
         assignments = jt.assign_clusters(self)
         jt.initialize_potentials(assignments, self, kwds)

@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='Bayesian',
-    version='0.1.6',
+    version='0.1.7',
     author='Neville Newey',
     author_email='nn@theneweys.org',
     packages=['bayesian', 'bayesian.test', 'bayesian.examples',
