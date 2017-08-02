@@ -7,7 +7,7 @@ import heapq
 from random import random, choice
 from StringIO import StringIO
 from itertools import combinations, product
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from prettytable import PrettyTable
 
@@ -188,13 +188,29 @@ class JoinTree(UndirectedGraph):
         fh.write('graph G {\n')
         fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
+
+        c = Counter()
+        for node in self.nodes:
+            c[str(node.name)] += 1
+        i = Counter()
+        for node in self.nodes:
+            if c[str(node.name)] > 1:
+                # This name appears more than once
+                # so we will append a unique integer to ensure
+                # that the node name in the graphviz source
+                # is unique
+                node.unique_name = '{}{}'.format(str(node.name), i[str(node.name)])
+                i[str(node.name)] += 1
+            else:
+                node.unique_name = str(node.name)
+
         for node in self.nodes:
             if isinstance(node, JoinTreeSepSetNode):
-                fh.write('  %s [ shape="box" color="blue"];\n' % node.name)
+                fh.write('  %s [ shape="box" color="blue"];\n' % node.unique_name)
             else:
-                fh.write('  %s [ shape="ellipse" color="red"];\n' % node.name)
+                fh.write('  %s [ shape="ellipse" color="red"];\n' % node.unique_name)
             for neighbour in node.neighbours:
-                edge = [node.name, neighbour.name]
+                edge = [node.unique_name, neighbour.unique_name]
                 edges.add(tuple(sorted(edge)))
         for source, target in edges:
             fh.write('  %s -- %s;\n' % (source, target))
