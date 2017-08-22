@@ -72,7 +72,7 @@ class BBN(Graph):
         jt = build_join_tree(self)
         return jt
 
-    def validate_keyvals(self, kwds):
+    def validate_keyvals(self, **kwds):
         '''
         When evidence in the form of
         keyvals are provided to the .query() method
@@ -88,11 +88,12 @@ class BBN(Graph):
             if not any([v is x for x in domain]):
                 s = '{}={}'.format(k, v)
                 raise VariableValueNotInDomainError(s)
+        return True
 
     def query(self, **kwds):
         # First check that the keyvals
         # provided are valid for this graph...
-        self.validate_keyvals(kwds)
+        self.validate_keyvals(**kwds)
         jt = self.build_join_tree()
         assignments = jt.assign_clusters(self)
         jt.initialize_potentials(assignments, self, kwds)

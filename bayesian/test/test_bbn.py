@@ -6,6 +6,7 @@ import os
 from collections import Counter
 from bayesian.bbn import *
 from bayesian.utils import make_key
+from bayesian.exceptions import *
 
 
 def r3(x):
@@ -835,3 +836,23 @@ def test_draw_sample_sprinkler(sprinkler_bbn):
     query_result = sprinkler_bbn.query()
     samples = sprinkler_bbn.draw_samples({}, 10000)
     assert valid_sample(samples, query_result)
+
+
+def test_validate_keyvals(monty_bbn, sprinkler_bbn):
+    # Tests for non-binary variables...
+    assert monty_bbn.validate_keyvals()
+    assert monty_bbn.validate_keyvals(monty_door='A')
+    assert monty_bbn.validate_keyvals(monty_door='A', guest_door='B')
+    assert monty_bbn.validate_keyvals(monty_door='A', guest_door='B', prize_door='C')
+    with pytest.raises(VariableNotInGraphError):
+        monty_bbn.validate_keyvals(error_door='A')
+    with pytest.raises(VariableValueNotInDomainError):
+        monty_bbn.validate_keyvals(monty_door='D')
+    # Tests for binary (True/False) domain
+    assert sprinkler_bbn.validate_keyvals()
+    assert sprinkler_bbn.validate_keyvals(rain=True)
+    assert sprinkler_bbn.validate_keyvals(rain=False)
+    with pytest.raises(VariableNotInGraphError):
+        sprinkler_bbn.validate_keyvals(thunder=False)
+    with pytest.raises(VariableValueNotInDomainError):
+        sprinkler_bbn.validate_keyvals(rain='should fail')
