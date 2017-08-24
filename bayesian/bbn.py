@@ -85,7 +85,7 @@ class BBN(Graph):
             if k not in vars:
                 raise VariableNotInGraphError(k)
             domain = self.domains.get(k, (True, False))
-            if not any([v is x for x in domain]):
+            if not v in domain:
                 s = '{}={}'.format(k, v)
                 raise VariableValueNotInDomainError(s)
         return True

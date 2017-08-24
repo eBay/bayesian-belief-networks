@@ -856,3 +856,11 @@ def test_validate_keyvals(monty_bbn, sprinkler_bbn):
         sprinkler_bbn.validate_keyvals(thunder=False)
     with pytest.raises(VariableValueNotInDomainError):
         sprinkler_bbn.validate_keyvals(rain='should fail')
+    # Now test passing in a dict with ** notation as this
+    # seems to break the "in" operator
+    query = dict(
+        monty_door='A',
+        guest_door=u'B',
+        prize_door='C')
+    assert monty_bbn.validate_keyvals(**query)
+    monty_bbn.q(**query)
