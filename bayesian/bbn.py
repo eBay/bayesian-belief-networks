@@ -4,6 +4,8 @@ import sys
 import copy
 import heapq
 
+import py2neo
+
 from random import random, choice
 from StringIO import StringIO
 from itertools import combinations, product
@@ -53,10 +55,22 @@ class BBN(Graph):
         for variable_name, node in nodes_dict.items():
             node.variable_name = variable_name
 
+    def export(self, filename=None, format='graphviz'):
+        '''Export the graph in GraphViz dot language.'''
+        if filename:
+            fh = open(filename, 'w')
+        else:
+            fh = sys.stdout
+        if format != 'graphviz':
+            raise 'Unsupported Export Format.'
+
+        fh.write(self.get_graphviz_source())
+
     def get_graphviz_source(self):
         fh = StringIO()
         fh.write('digraph G {\n')
-        fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
+        # fh.write('  graph [ dpi = 300 bgcolor="transparent" rankdir="LR"];\n')
+        fh.write('  graph [ bgcolor="transparent" rankdir="LR"];\n')
         edges = set()
         for node in sorted(self.nodes, key=lambda x: x.name):
             fh.write('  %s [ shape="ellipse" color="blue"];\n' % node.name)
@@ -67,6 +81,30 @@ class BBN(Graph):
             fh.write('  %s -> %s;\n' % (source, target))
         fh.write('}\n')
         return fh.getvalue()
+
+    def loadToNeo(self, connection=None):
+        if connection:
+            neoGraph = py2neo.Graph(connection)
+        else:
+            neoGraph = py2neo.Graph()
+
+        # WARNING WARNING
+        neoGraph.delete_all()
+        vertices = dict() # used to capture the Neo Nodes
+        edges = set()
+        for node in sorted(self.nodes, key=lambda x: x.name):
+            # vertices[node.name] = py2neo.Node("Node", name=node.name, variable_name=node.variable_name)
+            vertices[node.name] = py2neo.Node("Node", name=node.name)
+            # Add to the edge list
+            for child in node.children:
+                edge = (node.name, child.name)
+                edges.add(edge)
+        # Iterate through the edges
+        for source, target in sorted(edges, key=lambda x: (x[0], x[1])):
+            print('  %s -> %s;\n' % (source, target))
+            edge = py2neo.Relationship(vertices[source], "CHILD", vertices[target])
+            # edges.add(edge)
+            neoGraph.create(edge)
 
     def build_join_tree(self):
         jt = build_join_tree(self)
