@@ -17,7 +17,10 @@ def get_args(func):
     '''
     if hasattr(func, 'argspec'):
         return func.argspec
-    return inspect.getargspec(func).args
+    output = inspect.getargspec(func).args
+    if 'self' in output:
+        output.remove('self')
+    return output
 
 
 def make_key(*args):
