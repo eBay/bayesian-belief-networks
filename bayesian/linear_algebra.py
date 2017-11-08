@@ -1,5 +1,6 @@
-'''Very Basic backup Matrix ops for non-Numpy installs'''
+"""Very Basic backup Matrix ops for non-Numpy installs."""
 from copy import deepcopy
+
 
 class Matrix(object):
 
@@ -11,7 +12,7 @@ class Matrix(object):
             self.rows = rows
 
     def append(self, row):
-        '''Like list.append but must be a tuple.'''
+        """Like list.append but must be a tuple."""
         self.rows.append(row)
 
     def __len__(self):
@@ -30,7 +31,6 @@ class Matrix(object):
         if isinstance(item, tuple):
             row, col = item
             return self.rows[row][col]
-
 
     def __setitem__(self, item, val):
         row, col = item
@@ -82,7 +82,7 @@ class Matrix(object):
 
     @property
     def T(self):
-        '''Transpose'''
+        """Transpose"""
         result = zeros((len(self.rows[0]), len(self.rows)))
         for i in range(0, len(self.rows)):
             for j in range(0, len(self.rows[0])):
@@ -91,7 +91,7 @@ class Matrix(object):
 
     @property
     def I(self):
-        '''Inverse named I to emulate numpy API'''
+        """Inverse named I to emulate numpy API"""
         assert len(self.rows) == len(self.rows[0])
         if len(self.rows) == 1:
             return Matrix([[1.0 / self[0, 0]]])
@@ -139,7 +139,7 @@ def inner_product(x, y):
 
 
 def zeros(size):
-    '''Emulate the Numpy np.zeros factory'''
+    """Emulate the Numpy np.zeros factory"""
     rows, cols = size
     m = Matrix()
     for i in range(0, rows):
@@ -153,8 +153,9 @@ def make_identity(j):
         m[i, i] = 1
     return m
 
+
 def split(means, sigma):
-    ''' Split the means and covariance matrix
+    """Split the means and covariance matrix
     into 'parts' as in wikipedia article ie
 
     mu = | mu_x |
@@ -171,14 +172,13 @@ def split(means, sigma):
     Also we will make dim(sigma_yy)
     always (1,1)
 
-
-    '''
+    """
     mu_x = means[0:-1]
     mu_2 = means[-1:]
-    sigma_11 = sigma[0:len(means) -1, 0:len(means) -1]
-    sigma_12 = sigma[:-1,-1:]
+    sigma_11 = sigma[0:len(means) - 1, 0:len(means) - 1]
+    sigma_12 = sigma[:-1, -1:]
     sigma_21 = sigma_12.T
-    sigma_22 = sigma[len(means) -1:, len(means) - 1:]
+    sigma_22 = sigma[len(means) - 1:, len(means) - 1:]
     return mu_1, mu_2, sigma_11, sigma_12, sigma_21, sigma_22
 
 

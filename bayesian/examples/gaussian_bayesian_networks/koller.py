@@ -1,7 +1,7 @@
-'''This example is from Koller & Friedman example 7.3 page 252'''
+"""This example is from Koller & Friedman example 7.3 page 252."""
 from bayesian.gaussian_bayesian_network import *
 
-'''
+"""
 This is a simple example with 3 variables:
 
          +----+    +----+    +----+
@@ -18,7 +18,7 @@ Remember that in our gaussian decorators
 we are using Standard Deviation while the
 Koller example uses Variance.
 
-'''
+"""
 
 
 @gaussian(1, 2)

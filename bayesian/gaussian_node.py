@@ -8,13 +8,12 @@ from bayesian.gaussian import make_gaussian_cdf
 from bayesian.utils import get_args
 
 
-
 def conditional_covariance_matrix(sigma_11, sigma_12, sigma_22, sigma_21):
     return sigma_11 - sigma_12 * (sigma_22 ** -1) * sigma_21
 
 
 def split(means, sigma):
-    ''' Split the means and covariance matrix
+    """Split the means and covariance matrix
     into 'parts' as in wikipedia article ie
 
     mu = | mu_1 |
@@ -31,8 +30,7 @@ def split(means, sigma):
     Also we will make sim(sigma_22)
     always (1,1)
 
-
-    '''
+    """
     mu_1 = means[0:-1]
     mu_2 = means[-1:]
     sigma_11 = sigma[0:len(means) -1, 0:len(means) -1]
@@ -43,7 +41,7 @@ def split(means, sigma):
 
 
 def conditional_mean(mu_1, mu_2, a, sigma_12, sigma_22):
-    '''These arg names are from the Wikipedia article'''
+    """These arg names are from the Wikipedia article."""
     mean = mu_1 + sigma_12 * sigma_22 ** -1 * (a - mu_2)
     return mean
 
@@ -56,12 +54,12 @@ def build_sigma_from_std_devs(std_devs):
 
 
 def get_parent_from_betas(betas, child):
-    '''Return all betas ending at child'''
+    """Return all betas ending at child."""
     return [k for k, v in betas.items() if k[0] == child]
 
 
 def conditional_to_joint_sigma_2(s, C, variances, betas):
-    '''
+    """
     This is derived from the psuedo code
     on page 538, Schachter and Kenley.
     http://www.stanford.edu/dept/MSandE/cgi-bin/people/faculty/shachter/pdfs/gaussid.pdf
@@ -89,8 +87,7 @@ def conditional_to_joint_sigma_2(s, C, variances, betas):
     Woohoo, this works for the river example!!!!
     Now I will write an _3 version that
     uses more sensible arguments...
-
-    '''
+    """
 
     sigma = np.zeros((len(s), len(s)))
     for j in s:

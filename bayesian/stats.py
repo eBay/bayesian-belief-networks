@@ -1,5 +1,5 @@
 from __future__ import division
-'''Basic Stats functionality'''
+"""Basic Stats functionality"""
 
 import math
 from collections import defaultdict
@@ -29,12 +29,12 @@ class Vector(object):
 
     @property
     def mode(self):
-        '''
+        """
         NB: For now we are always
         returning only one mode
         so if the sample is multimodal
         this is not reliable
-        '''
+        """
         l = self.l[:]
         counts = defaultdict(int)
         for x in l:
@@ -49,7 +49,7 @@ class Vector(object):
 
     @property
     def std_dev(self):
-        '''Corrected sample standard deviation.'''
+        """Corrected sample standard deviation."""
         return math.sqrt(self.variance)
 
     @property
@@ -60,26 +60,26 @@ class Vector(object):
 
     @property
     def variance(self):
-        '''Corrected (unbiased) sample variance'''
+        """Corrected (unbiased) sample variance."""
         mu = self.mean
         sumsq = sum([math.pow(x - mu, 2) for x in self.l])
         return sumsq / (len(self.l) - 1)
 
     @property
     def mean_absolute_deviation(self):
-        '''Mean of absolute differences to mean'''
+        """Mean of absolute differences to mean."""
         mu = self.mean
         return sum([abs(x - mu) for x in self.l]) / len(self.l)
 
     @property
     def median_absolute_deviation(self):
-        '''Mean of absolute differences to median'''
+        """Mean of absolute differences to median."""
         mu = self.median
         return sum([abs(x - mu) for x in self.l]) / len(self.l)
 
     @property
     def mode_absolute_deviation(self):
-        '''Mean of absolute differences to a mode*'''
+        """Mean of absolute differences to a mode*"""
         mu = self.mode
         return sum([abs(x - mu) for x in self.l]) / len(self.l)
 

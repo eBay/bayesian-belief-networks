@@ -9,13 +9,13 @@ from prettytable import PrettyTable
 from bayesian.linear_algebra import Matrix, zeros
 
 
-'''
+"""
 Provides Gaussian Density functions and
 approximation to Gaussian CDF.
 see https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution
 "Numerical approximations for the normal CDF"
 For the multivariate case we use the statsmodels module.
-'''
+"""
 
 b0 = 0.2316419
 b1 = 0.319381530
@@ -26,7 +26,7 @@ b5 = 1.330274429
 
 
 def std_gaussian_cdf(x):
-    '''Zelen & Severo approximation'''
+    """Zelen & Severo approximation"""
     g = make_gaussian(0, 1)
     t = 1 / (1 + b0 * x)
     return 1 - g(x) * (
@@ -65,7 +65,7 @@ def make_gaussian_cdf(mean, std_dev):
 
 
 def make_log_normal(mean, std_dev, base=math.e):
-    '''
+    """
     Example of approximate log normal distribution:
     In [13]: t = [5, 5, 5, 5, 6, 10, 10, 20, 50]
 
@@ -84,8 +84,7 @@ def make_log_normal(mean, std_dev, base=math.e):
     When constructing the log-normal,
     keep in mind that the mean parameter is the
     mean of the log of the values.
-
-    '''
+    """
     def log_normal(x):
 
         return 1 / (x * (2 * math.pi * std_dev * std_dev) ** 0.5) * \
@@ -107,7 +106,7 @@ def make_log_normal_cdf(mean, std_dev, base=math.e):
 
 def discretize_gaussian(mu, stddev, buckets,
                         func_name='f_output_var', var_name='output_var'):
-    '''Given gaussian distribution parameters
+    """Given gaussian distribution parameters
     generate python code that specifies
     a discretized function suitable for
     use in a bayesian belief network.
@@ -130,7 +129,7 @@ def discretize_gaussian(mu, stddev, buckets,
     automatically convert the numeric
     value into the correct discrete
     value.
-    '''
+    """
     result = []
 
     cdf = make_gaussian_cdf(mu, stddev)
@@ -170,19 +169,18 @@ def discretize_gaussian(mu, stddev, buckets,
                                 # we will make the buckets a list of
                                 # buckets one per arg for easy zip.
 
-
     return '\n'.join(result), probs.keys()
 
 
 def discretize_multivariate_guassian(
         means, cov, buckets, parent_vars, cdf,
         func_name='f_output_var', var_name='output_var'):
-    '''buckets should be an iterable of iterables
+    """buckets should be an iterable of iterables
     where each element represnts the buckets into
     which the corresponding variable should be
     discretized.
     cov is the covariance matrix.
-    cdf is a callable'''
+    cdf is a callable"""
     assert len(means) == len(stddevs)
     assert len(stddevs) == len(buckets)
     assert len(buckets) == len(parent_vars)
@@ -219,10 +217,10 @@ def discretize_multivariate_guassian(
 
 
 def marginalize_joint(x, mu, sigma):
-    '''Given joint parameters we want to
+    """Given joint parameters we want to
     marginilize out the xth one.
     Assume that sigma is represented as a
-    list of lists.'''
+    list of lists."""
     new_mu = mu[:]
     del new_mu[x]
     new_sigma = []
@@ -237,7 +235,7 @@ def marginalize_joint(x, mu, sigma):
 
 def joint_to_conditional(
         mu_x, mu_y, sigma_xx, sigma_xy, sigma_yx, sigma_yy):
-    '''
+    """
     See Page 22 from MB08.
     p(X, Y) = N ([mu_x]; [sigma_xx sigma_xy])
                  [mu_y]; [sigma_yx sigma_yy]
@@ -262,7 +260,7 @@ def joint_to_conditional(
     arithemetic.
     size(sigma) = (len(mu), len(mu))
     len(mu) = len(x) + 1
-    '''
+    """
     beta_0 = (mu_y - sigma_yx * sigma_xx.I * mu_x)[0, 0]
     beta = sigma_yx * sigma_xx.I
     sigma = sigma_yy - sigma_yx * sigma_xx.I * sigma_xy
@@ -271,7 +269,7 @@ def joint_to_conditional(
 
 def conditional_to_joint(
         mu_x, sigma_x, beta_0, beta, sigma_c):
-    '''
+    """
     This is from page 19 of
     http://webdocs.cs.ualberta.ca/~greiner/C-651/SLIDES/MB08_GaussianNetworks.pdf
     We are given the parameters of a conditional
@@ -285,8 +283,7 @@ def conditional_to_joint(
      [mu_X2],
      .....
      [mu_Xn]]
-
-    '''
+    """
     mu = MeansVector.zeros((len(beta.rows) + 1, 1))
     for i in range(len(mu_x.rows)):
         mu[i, 0] = mu_x[i, 0]
@@ -315,9 +312,9 @@ def conditional_to_joint(
 
 
 class NamedMatrix(Matrix):
-    '''Wrapper allowing referencing
+    """Wrapper allowing referencing
     of columns and rows by variable
-    name'''
+    name."""
 
     def __init__(self, rows=[], names=[]):
         super(NamedMatrix, self).__init__(rows)
@@ -328,8 +325,8 @@ class NamedMatrix(Matrix):
 
     @classmethod
     def zeros(cls, shape, names=[]):
-        '''Alternate constructor that
-        creates a zero based matrix'''
+        """Alternate constructor that
+        creates a zero based matrix."""
         rows, cols = shape
         matrix_rows = []
         for i in range(0, rows):
@@ -399,9 +396,9 @@ class NamedMatrix(Matrix):
 
 
 class CovarianceMatrix(NamedMatrix):
-    '''Wrapper allowing referencing
+    """Wrapper allowing referencing
     of columns and rows by variable
-    name'''
+    name."""
 
     def __init__(self, rows=[], names=[]):
         super(CovarianceMatrix, self).__init__(rows)
@@ -411,7 +408,7 @@ class CovarianceMatrix(NamedMatrix):
         self.set_names(names)
 
     def split(self, name):
-        '''Split into sigma_xx, sigma_yy etc...'''
+        """Split into sigma_xx, sigma_yy etc..."""
         assert name in self.names
         x_names = [n for n in self.name_ordering if n != name]
         sigma_xx = CovarianceMatrix.zeros(
@@ -439,15 +436,14 @@ class CovarianceMatrix(NamedMatrix):
 
 
 class MeansVector(NamedMatrix):
-    '''Wrapper allowing referencing
+    """Wrapper allowing referencing
     of rows by variable name.
     In this implementation we will
     always consider a vector of means
     to be a vertical matrix with
     a shape of n rows and 1 col.
     The rows will be named.
-    '''
-
+    """
 
     def __init__(self, rows=[], names=[]):
         super(MeansVector, self).__init__(rows)
@@ -501,11 +497,10 @@ class MeansVector(NamedMatrix):
         return tab.get_string()
 
     def split(self, name):
-        '''Split into mu_x and mu_y'''
+        """Split into mu_x and mu_y"""
         assert name in self.names
         x_names = [n for n in self.name_ordering if n != name]
-        mu_x = MeansVector.zeros((len(self) - 1, 1),
-                         names=x_names)
+        mu_x = MeansVector.zeros((len(self) - 1, 1), names=x_names)
         mu_y = MeansVector.zeros((1, 1), names=[name])
 
         for row in self.name_ordering:

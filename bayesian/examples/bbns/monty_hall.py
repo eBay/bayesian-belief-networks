@@ -1,7 +1,7 @@
-'''The Monty Hall Problem Modelled as a Bayesian Belief Network'''
+"""The Monty Hall Problem Modelled as a Bayesian Belief Network."""
 from bayesian.bbn import *
 
-'''
+"""
 As BBN:
 
 
@@ -25,7 +25,7 @@ Now Query: Given Guest chooses door A
 and Monty chooses door B, should guest
 switch to C or stay with A?
 
-'''
+"""
 
 
 def f_prize_door(prize_door):

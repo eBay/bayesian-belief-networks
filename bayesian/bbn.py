@@ -1,5 +1,5 @@
 from __future__ import division
-'''Data Structures to represent a BBN as a DAG.'''
+"""Data Structures to represent a BBN as a DAG."""
 import sys
 import copy
 import heapq
@@ -33,7 +33,7 @@ class BBNNode(Node):
 
 
 class BBN(Graph):
-    '''A Directed Acyclic Graph'''
+    """A Directed Acyclic Graph."""
 
     def __init__(self, nodes_dict, name=None, domains={}):
         self.nodes = nodes_dict.values()
@@ -73,13 +73,13 @@ class BBN(Graph):
         return jt
 
     def validate_keyvals(self, **kwds):
-        '''
+        """
         When evidence in the form of
         keyvals are provided to the .query() method
         validate that all keys match a variable name
         and that all vals are in the domain of
-        the variable
-        '''
+        the variable.
+        """
         vars = set([n.variable_name for n in self.nodes])
         for k, v in kwds.items():
             if k not in vars:
@@ -123,9 +123,9 @@ class BBN(Graph):
         return marginals
 
     def q(self, **kwds):
-        '''Interactive user friendly wrapper
-        around query()
-        '''
+        """Interactive user friendly wrapper
+        around query().
+        """
         result = self.query(**kwds)
         tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
         tab.align = 'l'
@@ -141,8 +141,8 @@ class BBN(Graph):
         print tab
 
     def draw_samples(self, query={}, n=1):
-        '''query is a dict of currently evidenced
-        variables and is none by default.'''
+        """query is a dict of currently evidenced
+        variables and is none by default."""
         samples = []
         result_cache = dict()
         # We need to add evidence variables to the sample...
@@ -157,7 +157,7 @@ class BBN(Graph):
                     result_cache[key] = self.query(**sample)
                 result = result_cache[key]
                 var_density = [r for r in result.items()
-                               if r[0][0]==next_node.variable_name]
+                               if r[0][0] == next_node.variable_name]
                 cumulative_density = var_density[:1]
                 for key, mass in var_density[1:]:
                     cumulative_density.append((key, cumulative_density[-1][1] + mass))
@@ -355,7 +355,7 @@ class JoinTree(UndirectedGraph):
         return assignments_by_clique
 
     def propagate(self, starting_clique=None):
-        '''Refer to H&D pg. 20'''
+        """Refer to H&D pg. 20."""
 
         # Step 1 is to choose an arbitrary clique cluster
         # as starting cluster
@@ -408,7 +408,7 @@ class JoinTree(UndirectedGraph):
                     receiver=sender)
 
     def marginal(self, bbn_node):
-        '''Remember that the original
+        """Remember that the original
         variables that we are interested in
         are actually in the bbn. However
         when we constructed the JT we did
@@ -419,7 +419,7 @@ class JoinTree(UndirectedGraph):
         For efficiency we should come back
         to this and add some pointers
         or an index.
-        '''
+        """
 
         # First we will find the JT nodes that
         # contain the bbn_node ie all the nodes
@@ -465,7 +465,7 @@ class Clique(object):
 
 
 def transform(x, X, R):
-    '''Transform a Potential Truth Table
+    """Transform a Potential Truth Table
     Entry into a different variable space.
     For example if we have the
     entry [True, True, False] representing
@@ -477,7 +477,8 @@ def transform(x, X, R):
     for the clique set X and R represents
     the argument list for the sepset.
     This implies that R is always a subset
-    of X'''
+    of X.
+    """
     entry = []
     for r in R:
         pos = X.index(r)
@@ -503,8 +504,8 @@ class JoinTreeCliqueNode(UndirectedNode):
 
     @property
     def variable_names(self):
-        '''Return the set of variable names
-        that this clique represents'''
+        """Return the set of variable names
+        that this clique represents."""
         var_names = []
         for node in self.clique.nodes:
             var_names.append(node.variable_name)
@@ -512,10 +513,9 @@ class JoinTreeCliqueNode(UndirectedNode):
 
     @property
     def neighbouring_cliques(self):
-        '''Return the neighbouring cliques
+        """Return the neighbouring cliques
         this is used during the propagation algorithm.
-
-        '''
+        """
         neighbours = set()
         for sepset_node in self.neighbours:
             # All *immediate* neighbours will
@@ -528,7 +528,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         return neighbours
 
     def pass_message(self, target):
-        '''Pass a message from this node to the
+        """Pass a message from this node to the
         recipient node during propagation.
 
         NB: It may turnout at this point that
@@ -539,7 +539,7 @@ class JoinTreeCliqueNode(UndirectedNode):
         graph sum product propagation.
         In theory this should be the same
         and since the semantics are already
-        worked out it would be easier.'''
+        worked out it would be easier."""
 
         # Find the sepset node between the
         # source and target nodes.
@@ -553,12 +553,12 @@ class JoinTreeCliqueNode(UndirectedNode):
         self.absorb(sepset_node, target)
 
     def project(self, sepset_node):
-        '''See page 20 of PPTC.
+        """See page 20 of PPTC.
         We assign a new potential tt to
         the sepset which consists of the
         potential of the source node
         with all variables not in R marginalized.
-        '''
+        """
         assert sepset_node in self.neighbours
         # First we make a copy of the
         # old potential tt
@@ -610,7 +610,7 @@ class JoinTreeCliqueNode(UndirectedNode):
 class SepSet(object):
 
     def __init__(self, X, Y):
-        '''X and Y are cliques represented as sets.'''
+        """X and Y are cliques represented as sets."""
         self.X = X
         self.Y = Y
         self.label = list(X.nodes.intersection(Y.nodes))
@@ -621,25 +621,26 @@ class SepSet(object):
 
     @property
     def cost(self):
-        '''Since cost is used as a tie-breaker
+        """Since cost is used as a tie-breaker
         and is an optimization for inference time
         we will punt on it for now. Instead we
         will just use the assumption that all
         variables in X and Y are binary and thus
         use a weight of 2.
         TODO: come back to this and compute
-        actual weights
-        '''
+        actual weights.
+        """
         return 2 ** len(self.X.nodes) + 2 ** len(self.Y.nodes)
 
     def insertable(self, forest):
-        '''A sepset can only be inserted
+        """A sepset can only be inserted
         into the JT if the cliques it
         separates are NOT already on
         the same tree.
         NOTE: For efficiency we should
         add an index that indexes cliques
-        into the trees in the forest.'''
+        into the trees in the forest.
+        """
         X_trees = [t for t in forest if self.X in
                    [n.clique for n in t.clique_nodes]]
         Y_trees = [t for t in forest if self.Y in
@@ -651,7 +652,7 @@ class SepSet(object):
         return False
 
     def insert(self, forest):
-        '''Inserting this sepset into
+        """Inserting this sepset into
         a forest, providing the two
         cliques are in different trees,
         means that effectively we are
@@ -665,7 +666,7 @@ class SepSet(object):
         second tree from the forest
         as it is now joined to the
         first.
-        '''
+        """
         X_tree = [t for t in forest if self.X in
                   [n.clique for n in t.clique_nodes]][0]
         Y_tree = [t for t in forest if self.Y in
@@ -710,8 +711,8 @@ class JoinTreeSepSetNode(UndirectedNode):
 
     @property
     def variable_names(self):
-        '''Return the set of variable names
-        that this sepset represents'''
+        """Return the set of variable names
+        that this sepset represents."""
         # TODO: we are assuming here
         # that X and Y are each separate
         # variables from the BBN which means
@@ -726,8 +727,8 @@ class JoinTreeSepSetNode(UndirectedNode):
 
 
 def build_bbn(*args, **kwds):
-    '''Builds a BBN Graph from
-    a list of functions and domains'''
+    """Builds a BBN Graph from
+    a list of functions and domains."""
     variables = set()
     domains = kwds.get('domains', {})
     name = kwds.get('name')
@@ -823,8 +824,8 @@ def build_bbn_from_conditionals(conds):
 
 
 def make_undirected_copy(dag):
-    '''Returns an exact copy of the dag
-    except that direction of edges are dropped.'''
+    """Returns an exact copy of the dag
+    except that direction of edges are dropped."""
     nodes = dict()
     for node in dag.nodes:
         undirected_node = UndirectedNode(
@@ -848,8 +849,8 @@ def make_undirected_copy(dag):
 
 
 def make_moralized_copy(gu, dag):
-    '''gu is an undirected graph being
-    a copy of dag.'''
+    """gu is an undirected graph being
+    a copy of dag."""
     gm = copy.deepcopy(gu)
     gm_nodes = dict(
         [(node.name, node) for node in gm.nodes])
@@ -868,9 +869,9 @@ def make_moralized_copy(gu, dag):
 
 
 def priority_func(node):
-    '''Specify the rules for computing
+    """Specify the rules for computing
     priority of a node. See Harwiche and Wang pg 12.
-    '''
+    """
     # We need to calculate the number of edges
     # that would be added.
     # For each node, we need to connect all
@@ -899,19 +900,21 @@ def construct_priority_queue(nodes, priority_func=priority_func):
 
 
 def record_cliques(cliques, cluster):
-    '''We only want to save the cluster
+    """We only want to save the cluster
     if it is not a subset of any clique
     already saved.
-    Argument cluster must be a set'''
+    Argument cluster must be a set.
+    """
     if any([cluster.issubset(c.nodes) for c in cliques]):
         return
     cliques.append(Clique(cluster))
 
 
 def triangulate(gm, priority_func=priority_func):
-    '''Triangulate the moralized Graph. (in Place)
+    """Triangulate the moralized Graph. (in Place)
     and return the cliques of the triangulated
-    graph as well as the elimination ordering.'''
+    graph as well as the elimination ordering.
+    """
 
     # First we will make a copy of gm...
     gm_ = copy.deepcopy(gm)

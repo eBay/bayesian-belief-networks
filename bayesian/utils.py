@@ -1,11 +1,13 @@
-'''Some Useful Helper Functions'''
+"""Some Useful Helper Functions"""
 import inspect
 
 from prettytable import PrettyTable
 
 # TODO: Find a better location for get_args
+
+
 def get_args(func):
-    '''
+    """
     Return the names of the arguments
     of a function as a list of strings.
     This is so that we can omit certain
@@ -14,14 +16,14 @@ def get_args(func):
     make_product_func do not return
     an argspec, so we add a argspec
     attribute at creation time.
-    '''
+    """
     if hasattr(func, 'argspec'):
         return func.argspec
     return inspect.getargspec(func).args
 
 
 def make_key(*args):
-    '''Handy for short truth table keys'''
+    """Handy for short truth table keys."""
     key = ''
     for a in args:
         if hasattr(a, 'value'):
@@ -32,9 +34,9 @@ def make_key(*args):
 
 
 def named_base_type_factory(v, l):
-    '''Note this does not work
+    """Note this does not work
     for bool since bool is not
-    subclassable'''
+    subclassable"""
     return type(
         'labeled_{}'.format(type(v).__name__),
         (type(v), ),
@@ -42,7 +44,7 @@ def named_base_type_factory(v, l):
 
 
 def get_original_factors(factors):
-    '''
+    """
     For a set of factors, we want to
     get a mapping of the variables to
     the factor which first introduces the
@@ -54,7 +56,7 @@ def get_original_factors(factors):
     we will have to discover the 'original'
     factor that introduces the variable
     iteratively.
-    '''
+    """
     original_factors = dict()
     while len(original_factors) < len(factors):
         for factor in factors:
@@ -66,7 +68,7 @@ def get_original_factors(factors):
 
 
 def shrink_matrix(x):
-    '''Remove Nulls'''
+    """Remove Nulls"""
     while True:
         if len([x for x in m[0] if x is None]) == x.cols:
             x.pop()

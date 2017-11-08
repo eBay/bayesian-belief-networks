@@ -1,4 +1,4 @@
-'''Example from Wikipedia: http://en.wikipedia.org/wiki/Bayesian_network'''
+"""Example from Wikipedia: http://en.wikipedia.org/wiki/Bayesian_network."""
 
 from bayesian.bbn import *
 from bayesian.utils import make_key

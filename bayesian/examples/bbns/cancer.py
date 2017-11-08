@@ -1,9 +1,9 @@
-'''This is the example from Chapter 2 BAI'''
+"""This is the example from Chapter 2 BAI"""
 from bayesian.bbn import *
 
 
 def fP(P):
-    '''Pollution'''
+    """Pollution"""
     if P == 'high':
         return 0.1
     elif P == 'low':
@@ -11,7 +11,7 @@ def fP(P):
 
 
 def fS(S):
-    '''Smoker'''
+    """Smoker"""
     if S is True:
         return 0.3
     elif S is False:
@@ -19,7 +19,7 @@ def fS(S):
 
 
 def fC(P, S, C):
-    '''Cancer'''
+    """Cancer"""
     table = dict()
     table['ttt'] = 0.05
     table['ttf'] = 0.95
@@ -37,7 +37,7 @@ def fC(P, S, C):
 
 
 def fX(C, X):
-    '''X-ray'''
+    """X-ray"""
     table = dict()
     table['tt'] = 0.9
     table['tf'] = 0.1
@@ -50,7 +50,7 @@ def fX(C, X):
 
 
 def fD(C, D):
-    '''Dyspnoeia'''
+    """Dyspnoeia"""
     table = dict()
     table['tt'] = 0.65
     table['tf'] = 0.35
