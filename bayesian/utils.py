@@ -1,8 +1,6 @@
 '''Some Useful Helper Functions'''
 import inspect
 
-from prettytable import PrettyTable
-
 # TODO: Find a better location for get_args
 def get_args(func):
     '''
