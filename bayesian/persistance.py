@@ -1,4 +1,4 @@
-'''Handle Persistance of Pre-generated Samples'''
+"""Handle Persistance of Pre-generated Samples"""
 import os
 import sqlite3
 
@@ -34,7 +34,7 @@ S2P_MAPPING = {
 
 
 def domains_to_metadata(domains):
-    '''Construct a metadata dict
+    """Construct a metadata dict
     out of the domains dict.
     The domains dict has the following
     form:
@@ -43,7 +43,7 @@ def domains_to_metadata(domains):
     The metadata dict has the following form:
     keys: (same as above)
     vals: A string representing the sqlite data type
-    (i.e 'integer' for bool and 'varchar' for str)'''
+    (i.e 'integer' for bool and 'varchar' for str)"""
     metadata = dict()
     for k, v in domains.items():
         # Assume that all values in the domain
@@ -64,7 +64,7 @@ def ensure_data_dir_exists(filename):
 
 
 def initialize_sample_db(conn, metadata):
-    '''Create a new SQLite sample database
+    """Create a new SQLite sample database
     with the appropriate column names.
     metadata should be a dict of column
     names with a type. Currently if
@@ -72,7 +72,7 @@ def initialize_sample_db(conn, metadata):
     we map it to integers 1 and 0.
     All other variables are considered
     to be categorical and are mapped
-    to varchar'''
+    to varchar."""
     type_specs = []
     for column, sqlite_type in metadata.items():
         type_specs.append((column, sqlite_type))
@@ -85,7 +85,7 @@ def initialize_sample_db(conn, metadata):
 
 
 def build_row_factory(conn):
-    '''
+    """
     Introspect the samples table
     to build the row_factory
     function. We will assume that
@@ -94,7 +94,7 @@ def build_row_factory(conn):
     Should we encounter a numeric
     value not in (0, 1) we will
     raise an error.
-    '''
+    """
     cur = conn.cursor()
     cur.execute("pragma table_info('samples')")
     cols = cur.fetchall()
@@ -151,14 +151,14 @@ class SampleDB(object):
         return cur.fetchall()
 
     def save_sample(self, sample):
-        '''
+        """
         Given a list of tuples
         (col, val) representing
         a sample save it to the sqlite db
         with default type mapping.
         The sqlite3 module automatically
         converts booleans to integers.
-        '''
+        """
         #keys, vals = zip(*sample.items())
         keys = [x[0] for x in sample]
         vals = [x[1] for x in sample]

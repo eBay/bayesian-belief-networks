@@ -1,11 +1,11 @@
-'''This example is from http://www.cs.ubc.ca/~murphyk/Bayes/Charniak_91.pdf'''
+"""This example is from http://www.cs.ubc.ca/~murphyk/Bayes/Charniak_91.pdf"""
 from bayesian.bbn import build_bbn
 from bayesian.utils import make_key
 
-'''
+"""
 This problem is also sometimes referred to
 as "the Dog Problem"
-'''
+"""
 
 
 def family_out(fo):

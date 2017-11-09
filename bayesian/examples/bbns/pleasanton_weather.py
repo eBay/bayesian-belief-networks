@@ -1,9 +1,9 @@
-'''Simple Model of Pleasanton Weather'''
+"""Simple Model of Pleasanton Weather."""
 from __future__ import division
 
 from bayesian.bbn import build_bbn
 
-'''
+"""
 This is an extremely simple five
 variable model of the weather in
 Pleasanton, California.
@@ -27,7 +27,7 @@ though in Autumn/Fall, if it does
 rain, it may be only a few drops.
 The value for rain would in this
 case still be True.
-'''
+"""
 
 # Temp today conditioned on yesterday
 

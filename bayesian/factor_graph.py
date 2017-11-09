@@ -1,5 +1,5 @@
 from __future__ import division
-'''Implements Sum-Product Algorithm and Sampling over Factor Graphs'''
+"""Implements Sum-Product Algorithm and Sampling over Factor Graphs."""
 import os
 import csv
 import sys
@@ -21,6 +21,7 @@ from bayesian.utils import get_args
 DEBUG = False
 GREEN = '\033[92m'
 NORMAL = '\033[0m'
+
 
 class Node(object):
 
@@ -46,10 +47,10 @@ class Node(object):
         return sent_messages
 
     def message_report(self):
-        '''
+        """
         List out all messages Node
         currently has received.
-        '''
+        """
         print '------------------------------'
         print 'Messages at Node %s' % self.name
         print '------------------------------'
@@ -59,12 +60,12 @@ class Node(object):
         print '--'
 
     def get_target(self):
-        '''
+        """
         A node can only send to a neighbour if
         it has not already sent to that neighbour
         and it has received messages from all other
         neighbours.
-        '''
+        """
         neighbours = self.neighbours
         #if len(neighbours) - len(self.received_messages) > 1:
         #    return None
@@ -103,7 +104,7 @@ class VariableNode(Node):
         return '<VariableNode: %s:%s>' % (self.name, self.value)
 
     def marginal(self, val, normalizer=1.0):
-        '''
+        """
         The marginal function in a Variable
         Node is the product of all incoming
         messages. These should all be functions
@@ -111,7 +112,7 @@ class VariableNode(Node):
         When any of the variables in the
         network are constrained we need to
         normalize.
-        '''
+        """
         product = 1
         for _, message in self.received_messages.iteritems():
             product *= message(val)
@@ -122,9 +123,9 @@ class VariableNode(Node):
         self.value = None
 
     def verify_neighbour_types(self):
-        '''
+        """
         Check that all neighbours are of VariableNode type.
-        '''
+        """
         for node in self.neighbours:
             if not isinstance(node, FactorNode):
                 return False
@@ -147,9 +148,9 @@ class FactorNode(Node):
         return message
 
     def verify_neighbour_types(self):
-        '''
+        """
         Check that all neighbours are of VariableNode type.
-        '''
+        """
         for node in self.neighbours:
             if not isinstance(node, VariableNode):
                 return False
@@ -187,12 +188,12 @@ class FactorNode(Node):
         return product
 
     def add_evidence(self, node, value):
-        '''
+        """
         Here we modify the factor function
         to return 0 whenever it is called
         with the observed variable having
         a value other than the observed value.
-        '''
+        """
         args = get_args(self.func)
         pos = args.index(node.name)
         # Save the old func so that we
@@ -227,9 +228,9 @@ class Message(object):
             print factor
 
     def __call__(self, var):
-        '''
+        """
         Evaluate the message as a function
-        '''
+        """
         if getattr(self.func, '__name__', None) == 'unity':
             return 1
         assert not isinstance(var, VariableNode)
@@ -272,11 +273,11 @@ class FactorMessage(Message):
 
 
 def connect(a, b):
-    '''
+    """
     Make an edge between two nodes
     or between a source and several
     neighbours.
-    '''
+    """
     if not isinstance(b, list):
         b = [b]
     for b_ in b:
@@ -284,9 +285,8 @@ def connect(a, b):
         b_.neighbours.append(a)
 
 
-
 def eliminate_var(f, var):
-    '''
+    """
     Given a function f return a new
     function which sums over the variable
     we want to eliminate
@@ -294,7 +294,7 @@ def eliminate_var(f, var):
     This may be where we have the opportunity
     to remove the use of .value....
 
-    '''
+    """
     arg_spec = get_args(f)
     pos = arg_spec.index(var)
     new_spec = arg_spec[:]
@@ -353,14 +353,14 @@ def eliminate_var(f, var):
 
 
 def memoize(f):
-    '''
+    """
     The goal of message passing
     is to re-use results. This
     memoise is slightly modified from
     usual examples in that it caches
     the values of variables rather than
     the variables themselves.
-    '''
+    """
     cache = {}
 
     def memoized(*args):
@@ -378,7 +378,7 @@ def memoize(f):
 
 
 def make_not_sum_func(product_func, keep_var):
-    '''
+    """
     Given a function with some set of
     arguments, and a single argument to keep,
     construct a new function only of the
@@ -390,7 +390,7 @@ def make_not_sum_func(product_func, keep_var):
     to use .value on arguments....
     Looks like its actually in the
     eliminate var...
-    '''
+    """
     args = get_args(product_func)
     new_func = copy.deepcopy(product_func)
     for arg in args:
@@ -401,7 +401,7 @@ def make_not_sum_func(product_func, keep_var):
 
 
 def make_factor_node_message(node, target_node):
-    '''
+    """
     The rules for a factor node are:
     take the product of all the incoming
     messages (except for the destination
@@ -414,7 +414,7 @@ def make_factor_node_message(node, target_node):
     >>> target_node = object()
     >>> target_node.name = 'x2'
     >>> make_factor_node_message(node, target_node)
-    '''
+    """
 
     if node.is_leaf():
         not_sum_func = make_not_sum_func(node.func, target_node.name)
@@ -454,7 +454,7 @@ def make_factor_node_message(node, target_node):
 
 
 def make_variable_node_message(node, target_node):
-    '''
+    """
     To construct the message from
     a variable node to a factor
     node we take the product of
@@ -463,7 +463,7 @@ def make_variable_node_message(node, target_node):
     message received from the target.
     If the source node is a leaf node
     then send the unity function.
-    '''
+    """
     if node.is_leaf():
         message = VariableMessage(
             node, target_node, [1], unity)
@@ -483,7 +483,7 @@ def make_variable_node_message(node, target_node):
 
 
 def make_product_func(factors):
-    '''
+    """
     Return a single callable from
     a list of factors which correctly
     applies the arguments to each
@@ -499,7 +499,7 @@ def make_product_func(factors):
     get the argument list correct.
     So we need to determine when and where its called...
 
-    '''
+    """
     args_map = {}
     all_args = []
     domains = {}
@@ -512,7 +512,6 @@ def make_product_func(factors):
             domains.update(factor.domains)
     args = list(set(all_args))
     # Perhaps if we sort the
-
 
     def product_func(*product_func_args):
         #import pytest; pytest.set_trace()
@@ -563,12 +562,12 @@ def expand_args(args):
 
 
 def dict_to_tuples(d):
-    '''
+    """
     Convert a dict whose values
     are lists to a list of
     tuples of the key with
     each of the values
-    '''
+    """
     retval = []
     for k, vals in d.iteritems():
         retval.append([(k, v) for v in vals])
@@ -576,18 +575,18 @@ def dict_to_tuples(d):
 
 
 def expand_parameters(arg_vals):
-    '''
+    """
     Given a list of args and values
     return a list of tuples
     containing all possible sequences
     of length n.
-    '''
+    """
     arg_tuples = dict_to_tuples(arg_vals)
     return [dict(args) for args in iter_product(*arg_tuples)]
 
 
 def add_evidence(node, value):
-    '''
+    """
     Set a variable node to an observed value.
     Note that for now this is achieved
     by modifying the factor functions
@@ -596,7 +595,7 @@ def add_evidence(node, value):
     we need to re-run the sum-product
     algorithm. We also need to normalize
     all marginal outcomes.
-    '''
+    """
     node.value = value
     neighbours = node.neighbours
     for factor_node in neighbours:
@@ -605,12 +604,12 @@ def add_evidence(node, value):
 
 
 def discover_sample_ordering(graph):
-    '''
+    """
     Try to get the order of variable nodes
     for sampling. This would be easier in
     the underlying BBN but lets try on
     the factor graph.
-    '''
+    """
     iterations = 0
     ordering = []
     pmf_ordering = []
@@ -646,9 +645,9 @@ def discover_sample_ordering(graph):
 
 
 def get_sample(ordering, evidence={}):
-    '''
+    """
     Given a valid ordering, sample the network.
-    '''
+    """
     sample = []
     sample_dict = dict()
     for var, func in ordering:
@@ -775,7 +774,7 @@ class FactorGraph(object):
 
     @property
     def sample_db_filename(self):
-        '''
+        """
         Get the name of the sqlite sample
         database for external sample
         generation and querying.
@@ -787,7 +786,7 @@ class FactorGraph(object):
         not been given an explict name
         it will be "default".
 
-        '''
+        """
         home = os.path.expanduser('~')
         return os.path.join(
             home, '.pypgm',
@@ -795,16 +794,16 @@ class FactorGraph(object):
             '%s.sqlite' % (self.name or 'default'))
 
     def reset(self):
-        '''
+        """
         Reset all nodes back to their initial state.
         We should do this before or after adding
         or removing evidence.
-        '''
+        """
         for node in self.nodes:
             node.reset()
 
     def has_cycles(self):
-        '''
+        """
         Check if the graph has cycles or not.
         We will do this by traversing starting
         from any leaf node and recording
@@ -813,7 +812,7 @@ class FactorGraph(object):
         an unexplored edge leads to a
         previously found node then it has
         cycles.
-        '''
+        """
         discovered_nodes = set()
         traversed_edges = set()
         q = Queue()
@@ -858,10 +857,10 @@ class FactorGraph(object):
         return False
 
     def verify(self):
-        '''
+        """
         Check several properties of the Factor Graph
         that should hold.
-        '''
+        """
         # Check that all nodes are either
         # instances of classes derived from
         # VariableNode or FactorNode.
@@ -927,13 +926,13 @@ class FactorGraph(object):
         return [node for node in self.nodes if node.is_leaf()]
 
     def get_eligible_senders(self):
-        '''
+        """
         Return a list of nodes that are
         eligible to send messages at this
         round. Only nodes that have received
         messages from all but one neighbour
         may send at any round.
-        '''
+        """
         eligible = []
         for node in self.nodes:
             if node.get_target():
@@ -941,10 +940,10 @@ class FactorGraph(object):
         return eligible
 
     def propagate(self):
-        '''
+        """
         This is the heart of the sum-product
         Message Passing Algorithm.
-        '''
+        """
         step = 1
         while True:
             eligible_senders = self.get_eligible_senders()
@@ -999,12 +998,12 @@ class FactorGraph(object):
         raise InvalidInferenceMethod
 
     def q(self, **kwds):
-        '''Wrapper around query
+        """Wrapper around query
 
         This method formats the query
         result in a nice human readable format
         for interactive use.
-        '''
+        """
         result = self.query(**kwds)
         tab = PrettyTable(['Node', 'Value', 'Marginal'], sortby='Node')
         tab.align = 'l'
@@ -1023,12 +1022,12 @@ class FactorGraph(object):
         return discover_sample_ordering(self)
 
     def get_sample(self, evidence={}):
-        '''
+        """
         We need to allow for setting
         certain observed variables and
         discarding mismatching
         samples as we generate them.
-        '''
+        """
         if not hasattr(self, 'sample_ordering'):
             self.sample_ordering = self.discover_sample_ordering()
         return get_sample(self.sample_ordering, evidence)
@@ -1054,11 +1053,11 @@ class FactorGraph(object):
         return normalized
 
     def generate_samples(self, n):
-        '''
+        """
         Generate and save samples to
         the SQLite sample db for this
         model.
-        '''
+        """
         if self.inference_method != 'sample_db':
             raise IncorrectInferenceMethodError(
                 'generate_samples() not support for inference method: %s' % \
@@ -1104,9 +1103,8 @@ class FactorGraph(object):
             [(k, v / len(samples)) for k, v in counts.items()])
         return normalized
 
-
     def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
+        """Export the graph in GraphViz dot language."""
         if filename:
             fh = open(filename, 'w')
         else:
@@ -1132,7 +1130,7 @@ class FactorGraph(object):
 
 
 def build_graph(*args, **kwds):
-    '''
+    """
     Automatically create all the
     variable and factor nodes
     using only function definitions.
@@ -1140,7 +1138,7 @@ def build_graph(*args, **kwds):
     the domains for variable nodes
     via the factor domains perhaps
     we should allow a domains dict?
-    '''
+    """
     # Lets start off identifying all the
     # variables by introspecting the
     # functions.

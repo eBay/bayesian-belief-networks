@@ -1,5 +1,6 @@
-'''Generic Graph Classes'''
+"""Generic Graph Classes."""
 from StringIO import StringIO
+
 
 class Node(object):
 
@@ -25,7 +26,7 @@ class UndirectedNode(object):
 class Graph(object):
 
     def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
+        """Export the graph in GraphViz dot language."""
         if format != 'graphviz':
             raise 'Unsupported Export Format.'
         if filename:
@@ -35,11 +36,11 @@ class Graph(object):
         fh.write(self.get_graphviz_source())
 
     def get_topological_sort(self):
-        '''In order to make this sort
+        """In order to make this sort
         deterministic we will use the
-        variable name as a secondary sort'''
+        variable name as a secondary sort."""
         l = []
-        l_set = set() # For speed
+        l_set = set()  # For speed
         s = [n for n in self.nodes.values() if not n.parents]
         s.sort(reverse=True, key=lambda x:x.variable_name)
         while s:
@@ -80,7 +81,7 @@ class UndirectedGraph(object):
         return fh.getvalue()
 
     def export(self, filename=None, format='graphviz'):
-        '''Export the graph in GraphViz dot language.'''
+        """Export the graph in GraphViz dot language."""
         if format != 'graphviz':
             raise 'Unsupported Export Format.'
         if filename:
@@ -91,11 +92,11 @@ class UndirectedGraph(object):
 
 
 def connect(parent, child):
-    '''
+    """
     Make an edge between a parent
     node and a child node.
     a - parent
     b - child
-    '''
+    """
     parent.children.append(child)
     child.parents.append(parent)

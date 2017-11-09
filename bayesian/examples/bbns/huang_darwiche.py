@@ -1,4 +1,4 @@
-'''The Example from Huang and Darwiche's Procedural Guide'''
+"""The Example from Huang and Darwiche's Procedural Guide"""
 from __future__ import division
 from bayesian.bbn import *
 from bayesian.utils import make_key

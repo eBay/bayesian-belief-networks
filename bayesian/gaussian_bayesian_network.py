@@ -1,4 +1,4 @@
-'''Classes for pure Gaussian Bayesian Networks'''
+"""Classes for pure Gaussian Bayesian Networks."""
 import math
 import types
 from functools import wraps
@@ -17,6 +17,7 @@ from bayesian.utils import get_args
 from bayesian.utils import get_original_factors
 from bayesian.exceptions import VariableNotInGraphError
 from bayesian.linear_algebra import Matrix
+
 
 def gaussian(mu, sigma):
     # This is the gaussian decorator
@@ -51,9 +52,9 @@ def conditional_gaussian(mu, sigma, betas):
 
         @wraps(f)
         def conditional_gaussianized(*args, **kwds):
-            '''Since this function will never
+            """Since this function will never
             be called directly we dont need anything here.
-            '''
+            """
             # First we need to construct a vector
             # out of the args...
             x = zeros((len(args), 1))
@@ -116,7 +117,7 @@ class GaussianBayesianGraph(Graph):
             node.index = i
 
     def get_joint_parameters(self):
-        '''Return the vector of means
+        """Return the vector of means
         and the covariance matrix
         for the full joint distribution.
         For now, by definition, all
@@ -124,7 +125,7 @@ class GaussianBayesianGraph(Graph):
         Bayesian Network are either
         univariate gaussian or
         conditional guassians.
-        '''
+        """
         ordered = self.get_topological_sort()
         mu_x = Matrix([[ordered[0].func.mean]])
         sigma_x = Matrix([[ordered[0].func.variance]])
@@ -180,12 +181,12 @@ class GaussianBayesianGraph(Graph):
         return result
 
     def q(self, **kwds):
-        '''Wrapper around query
-
+        """Wrapper around query
+        
         This method formats the query
         result in a nice human readable format
         for interactive use.
-        '''
+        """
         result = self.query(**kwds)
         mu = result['joint']['mu']
         sigma = result['joint']['sigma']
@@ -196,10 +197,8 @@ class GaussianBayesianGraph(Graph):
         print 'Means:'
         print mu
 
-
     def discover_sample_ordering(self):
         return discover_sample_ordering(self)
-
 
     def get_graphviz_source(self):
         fh = StringIO()
@@ -216,9 +215,10 @@ class GaussianBayesianGraph(Graph):
         fh.write('}\n')
         return fh.getvalue()
 
+
 def build_gbn(*args, **kwds):
-    '''Builds a Gaussian Bayesian Graph from
-    a list of functions'''
+    """Builds a Gaussian Bayesian Graph from
+    a list of functions."""
     variables = set()
     name = kwds.get('name')
     variable_nodes = dict()
@@ -300,6 +300,6 @@ def build_gbn(*args, **kwds):
 
 
 def build_graph(*args, **kwds):
-    '''For compatibility, this is
-    just a wrapper around build_gbn'''
+    """For compatibility, this is
+    just a wrapper around build_gbn."""
     return build_gbn(*args, **kwds)

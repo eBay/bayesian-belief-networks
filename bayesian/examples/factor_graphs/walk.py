@@ -1,10 +1,10 @@
+"""Simple Example Containing A Cycle."""
 from __future__ import division
-'''Simple Example Containing A Cycle'''
 
 from bayesian.factor_graph import *
 
 
-'''
+"""
 
                           Rain Forecast
                               |
@@ -20,7 +20,7 @@ from bayesian.factor_graph import *
 Our decision to go for a walk is based on two factors,
 the forecast for rain and on actual rain observed.
 
-'''
+"""
 
 
 def little_bool(var):

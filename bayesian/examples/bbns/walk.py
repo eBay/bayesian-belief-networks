@@ -1,10 +1,10 @@
-'''Simple Example Containing A Cycle'''
+"""Simple Example Containing A Cycle."""
 from __future__ import division
 
 from bayesian.bbn import *
 from bayesian.utils import make_key
 
-'''
+"""
 
                           Rain Forecast
                               |
@@ -20,7 +20,7 @@ from bayesian.utils import make_key
 Our decision to go for a walk is based on two factors,
 the forecast for rain and on actual rain observed.
 
-'''
+"""
 
 
 def f_forecast(forecast):

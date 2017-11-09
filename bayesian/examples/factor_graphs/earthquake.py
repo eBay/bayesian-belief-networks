@@ -1,4 +1,4 @@
-'''This is the earthquake example from 2.5.1 in BAI'''
+"""This is the earthquake example from 2.5.1 in BAI."""
 from bayesian.factor_graph import *
 
 
