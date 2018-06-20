@@ -216,7 +216,7 @@ probability that the variable it represents takes on a particular value in the
 variable's domain.
 
 In the case of f_prize_door, we want to return for each possible value of **A**, **B**, **C** (ie each door) the probability that the prize is hidden behind that door.
-Assuming that the door is hidden randomly behind any of the three doors the probability of it being behind any particular one is 1 / 3. Lets modify the stub to reflect this:
+Assuming that the prize is hidden randomly behind any of the three doors the probability of it being behind any particular one is 1 / 3. Lets modify the stub to reflect this:
 
 .. code-block :: python
 
