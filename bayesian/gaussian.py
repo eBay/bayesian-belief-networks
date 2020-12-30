@@ -178,7 +178,7 @@ def discretize_multivariate_guassian(
         means, cov, buckets, parent_vars, cdf,
         func_name='f_output_var', var_name='output_var'):
     '''buckets should be an iterable of iterables
-    where each element represnts the buckets into
+    where each element represents the buckets into
     which the corresponding variable should be
     discretized.
     cov is the covariance matrix.
